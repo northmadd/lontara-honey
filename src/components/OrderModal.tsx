@@ -7,7 +7,13 @@ import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { Product } from './ProductsSection';
 
-const WHATSAPP_NUMBER = '089520331695';
+const WHATSAPP_NUMBER = '6289520331695';
+
+const openWhatsApp = (message: string) => {
+  const encodedMessage = encodeURIComponent(message);
+  const webUrl = `https://api.whatsapp.com/send?phone=${WHATSAPP_NUMBER}&text=${encodedMessage}`;
+  window.open(webUrl, '_blank');
+};
 
 interface OrderModalProps {
   product: Product | null;
@@ -55,8 +61,7 @@ const OrderModal: React.FC<OrderModalProps> = ({ product, onClose }) => {
       `${formData.notes ? `Notes: ${formData.notes}` : ''}\n\n` +
       `Thank you for ordering Lontara Honey! 🐝`;
 
-    const whatsappUrl = `https://wa.me/${WHATSAPP_NUMBER.replace(/^0/, '62')}?text=${encodeURIComponent(message)}`;
-    window.open(whatsappUrl, '_blank');
+    openWhatsApp(message);
     onClose();
   };
 
