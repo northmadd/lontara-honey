@@ -2,13 +2,14 @@ import React from 'react';
 import { motion } from 'framer-motion';
 import { MessageCircle } from 'lucide-react';
 
-const WHATSAPP_NUMBER = '089520331695';
+const WHATSAPP_NUMBER = '6289520331695';
 
 const WhatsAppButton: React.FC = () => {
   const handleClick = () => {
     const message = 'Hello! I\'m interested in Lontara Honey products.';
-    const whatsappUrl = `https://wa.me/${WHATSAPP_NUMBER.replace(/^0/, '62')}?text=${encodeURIComponent(message)}`;
-    window.open(whatsappUrl, '_blank');
+    const encodedMessage = encodeURIComponent(message);
+    const webUrl = `https://api.whatsapp.com/send?phone=${WHATSAPP_NUMBER}&text=${encodedMessage}`;
+    window.open(webUrl, '_blank');
   };
 
   return (

@@ -3,6 +3,7 @@ import { useLanguage } from '@/contexts/LanguageContext';
 import { motion } from 'framer-motion';
 import { ShoppingBag } from 'lucide-react';
 import { Button } from '@/components/ui/button';
+import honeyVisual from '@/assets/honey-visual.png';
 
 export interface Product {
   id: string;
@@ -30,8 +31,15 @@ const ProductsSection: React.FC<ProductsSectionProps> = ({ products, onOrderProd
   };
 
   return (
-    <section className="py-24 bg-honey-gradient-soft">
-      <div className="container mx-auto px-4 md:px-6">
+    <section className="py-24 bg-gradient-to-br from-honey-cream via-honey-light/30 to-honey-gold/10 relative overflow-hidden">
+      {/* Decorative Background Elements */}
+      <div className="absolute left-0 top-20 opacity-20 pointer-events-none">
+        <img src={honeyVisual} alt="" className="w-80 h-80 object-contain -rotate-12" />
+      </div>
+      <div className="absolute right-0 bottom-20 opacity-15 pointer-events-none">
+        <img src={honeyVisual} alt="" className="w-64 h-64 object-contain rotate-12" />
+      </div>
+      <div className="container mx-auto px-4 md:px-6 relative z-10">
         {/* Header */}
         <motion.div
           className="text-center mb-16"

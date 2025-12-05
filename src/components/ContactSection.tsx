@@ -6,8 +6,16 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { toast } from '@/hooks/use-toast';
+import honeyVisual from '@/assets/honey-visual.png';
 
-const WHATSAPP_NUMBER = '089520331695';
+const WHATSAPP_NUMBER = '6289520331695';
+
+const openWhatsApp = (message: string) => {
+  // Use intent for Android, fallback for others
+  const encodedMessage = encodeURIComponent(message);
+  const webUrl = `https://api.whatsapp.com/send?phone=${WHATSAPP_NUMBER}&text=${encodedMessage}`;
+  window.open(webUrl, '_blank');
+};
 
 const ContactSection: React.FC = () => {
   const { t } = useLanguage();
@@ -21,9 +29,7 @@ const ContactSection: React.FC = () => {
     e.preventDefault();
     
     const message = `Hello Lontara Honey!\n\nName: ${formData.name}\nPhone: ${formData.phone}\n\nMessage:\n${formData.message}`;
-    const whatsappUrl = `https://wa.me/${WHATSAPP_NUMBER.replace(/^0/, '62')}?text=${encodeURIComponent(message)}`;
-    
-    window.open(whatsappUrl, '_blank');
+    openWhatsApp(message);
     toast({
       title: 'Redirecting to WhatsApp',
       description: 'Your message is ready to send!',
@@ -32,13 +38,17 @@ const ContactSection: React.FC = () => {
 
   const contactInfo = [
     { icon: MapPin, text: t('contact.address') },
-    { icon: Phone, text: '+62 ' + WHATSAPP_NUMBER.slice(1) },
+    { icon: Phone, text: '+62 89520331695' },
     { icon: Mail, text: 'hello@lontarahoney.com' },
   ];
 
   return (
-    <section className="py-24 bg-background">
-      <div className="container mx-auto px-4 md:px-6">
+    <section className="py-24 bg-gradient-to-br from-background via-honey-cream/20 to-honey-light/10 relative overflow-hidden">
+      {/* Decorative Honey Visual */}
+      <div className="absolute left-0 bottom-10 opacity-10 pointer-events-none">
+        <img src={honeyVisual} alt="" className="w-64 h-64 object-contain" />
+      </div>
+      <div className="container mx-auto px-4 md:px-6 relative z-10">
         <div className="grid lg:grid-cols-2 gap-16">
           {/* Contact Info */}
           <motion.div
@@ -75,7 +85,7 @@ const ContactSection: React.FC = () => {
             <Button
               size="lg"
               className="honey-gradient text-foreground border-0 hover:opacity-90"
-              onClick={() => window.open(`https://wa.me/${WHATSAPP_NUMBER.replace(/^0/, '62')}`, '_blank')}
+              onClick={() => openWhatsApp('Hello! I\'m interested in Lontara Honey products.')}
             >
               <Phone className="w-5 h-5 mr-2" />
               {t('contact.whatsapp')}
