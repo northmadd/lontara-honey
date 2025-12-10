@@ -1,5 +1,6 @@
 import React, { useEffect, useState, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
+import logoLontara from '@/assets/logo-lontara.png';
 
 interface IntroScreenProps {
   onComplete: () => void;
@@ -144,7 +145,7 @@ const IntroScreen: React.FC<IntroScreenProps> = ({ onComplete }) => {
             >
               <div className="relative inline-block">
                 <motion.div
-                  className="w-32 h-32 md:w-40 md:h-40 mx-auto rounded-full flex items-center justify-center"
+                  className="w-32 h-32 md:w-40 md:h-40 mx-auto rounded-full flex items-center justify-center overflow-hidden bg-black/40"
                   style={{
                     background: 'linear-gradient(135deg, #d4a056 0%, #c4872e 50%, #8b5a1b 100%)',
                     boxShadow: '0 0 60px rgba(212,160,86,0.6), inset 0 0 30px rgba(255,255,255,0.2)',
@@ -158,7 +159,11 @@ const IntroScreen: React.FC<IntroScreenProps> = ({ onComplete }) => {
                   }}
                   transition={{ duration: 2, repeat: Infinity }}
                 >
-                  <span className="text-4xl md:text-5xl">🍯</span>
+                  <img
+                    src={logoLontara}
+                    alt="Lontara Honey logo"
+                    className="w-full h-full object-contain"
+                  />
                 </motion.div>
                 
                 {/* Honey drop from logo */}

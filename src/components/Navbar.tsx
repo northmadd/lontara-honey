@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { Menu, X, Globe } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
+import logoLontara from '@/assets/logo-lontara.png';
 
 interface NavbarProps {
   onNavigate: (section: string) => void;
@@ -54,8 +55,8 @@ const Navbar: React.FC<NavbarProps> = ({ onNavigate, activeSection }) => {
               className="flex items-center gap-3 group"
               whileHover={{ scale: 1.02 }}
             >
-              <div className="w-10 h-10 rounded-full bg-honey-gradient flex items-center justify-center shadow-lg group-hover:honey-glow transition-all duration-300">
-                <span className="text-xl">🍯</span>
+              <div className="w-10 h-10 rounded-full overflow-hidden bg-white flex items-center justify-center shadow-lg group-hover:honey-glow transition-all duration-300">
+                <img src={logoLontara} alt="Lontara Honey logo" className="w-full h-full object-contain" />
               </div>
               <span className="font-serif text-xl font-bold text-foreground">
                 LONTARA <span className="text-honey-gold">HONEY</span>

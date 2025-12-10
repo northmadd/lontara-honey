@@ -83,7 +83,13 @@ const StorySection: React.FC<StorySectionProps> = ({ storyImages }) => {
                 </motion.div>
 
                 {/* Content */}
-                <div className={`lg:w-1/2 ${index % 2 === 0 ? 'lg:text-right' : 'lg:text-left'}`}>
+                <div
+                  className={`lg:w-1/2 ${
+                    index % 2 === 0
+                      ? 'lg:text-right lg:pr-16'
+                      : 'lg:text-left lg:pl-16'
+                  }`}
+                >
                   <h3 className="text-2xl md:text-3xl font-serif font-bold text-foreground mb-4">
                     {t(chapter.titleKey)}
                   </h3>
