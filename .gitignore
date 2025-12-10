@@ -8,9 +8,19 @@ pnpm-debug.log*
 lerna-debug.log*
 
 node_modules
-dist
-dist-ssr
 *.local
+
+# Allow specific files in dist for deployment
+!/dist
+/dist/*
+!/dist/index.html
+!/dist/assets
+!/dist/_redirects
+!/dist/_routes.json
+!/dist/_headers
+
+# Ignore other dist files
+/dist-ssr
 
 # Editor directories and files
 .vscode/*
