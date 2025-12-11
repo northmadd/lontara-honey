@@ -39,7 +39,7 @@ const AboutSection: React.FC<AboutSectionProps> = ({ aboutImage }) => {
             <div className="absolute -top-6 -left-6 w-48 h-48 rounded-full bg-honey-gold/20 blur-3xl" />
             <div className="absolute -bottom-6 -right-6 w-64 h-64 rounded-full bg-honey-amber/20 blur-3xl" />
             <motion.div
-              className="absolute -bottom-8 -right-8 w-32 h-32 honey-gradient rounded-2xl flex items-center justify-center shadow-xl"
+              className="absolute -bottom-10 -right-10 w-32 h-32 honey-gradient rounded-2xl flex items-center justify-center shadow-xl z-20"
               animate={{ rotate: [0, 5, -5, 0] }}
               transition={{ duration: 6, repeat: Infinity }}
             >
@@ -57,7 +57,8 @@ const AboutSection: React.FC<AboutSectionProps> = ({ aboutImage }) => {
             <span className="text-primary font-medium uppercase tracking-wider text-sm">
               {t('about.title')}
             </span>
-            <h2 className="text-4xl md:text-5xl font-serif font-bold text-foreground mt-2 mb-6">
+            <div className="mt-3 h-px w-24 bg-honey-gold/70" />
+            <h2 className="text-4xl md:text-5xl font-serif font-bold text-foreground mt-4 mb-6">
               {t('about.subtitle')}
             </h2>
             

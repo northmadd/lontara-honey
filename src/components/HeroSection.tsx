@@ -10,7 +10,7 @@ interface HeroSectionProps {
 }
 
 const HeroSection: React.FC<HeroSectionProps> = ({ onNavigate, heroImage }) => {
-  const { t } = useLanguage();
+  const { t, language } = useLanguage();
 
   return (
     <section className="relative min-h-screen flex items-center justify-center overflow-hidden">
@@ -43,6 +43,7 @@ const HeroSection: React.FC<HeroSectionProps> = ({ onNavigate, heroImage }) => {
       <div className="container mx-auto px-4 md:px-6 relative z-10">
         <div className="max-w-3xl">
           <motion.div
+            className="mt-4 md:mt-6"
             initial={{ opacity: 0, y: 30 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.8 }}
@@ -59,24 +60,50 @@ const HeroSection: React.FC<HeroSectionProps> = ({ onNavigate, heroImage }) => {
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.8, delay: 0.2 }}
           >
-            {t('hero.title').split(' ').map((word, i) => (
-              <span key={i}>
-                {i === 1 ? (
-                  <span className="honey-text-gradient">{word}</span>
-                ) : (
-                  word
-                )}{' '}
-              </span>
-            ))}
+            {language === 'id' ? (
+              <>
+                <span>
+                  Harta <span className="honey-text-gradient">Emas</span>
+                </span>
+                <br />
+                <span>dari Alam</span>
+              </>
+            ) : (
+              t('hero.title').split(' ').map((word, i) => (
+                <span key={i}>
+                  {i === 1 ? (
+                    <span className="honey-text-gradient">{word}</span>
+                  ) : (
+                    word
+                  )}{' '}
+                </span>
+              ))
+            )}
           </motion.h1>
 
           <motion.p
-            className="text-lg md:text-xl text-muted-foreground mb-8 max-w-2xl leading-relaxed"
+            className="text-lg md:text-xl text-muted-foreground mb-8 max-w-lg leading-relaxed"
             initial={{ opacity: 0, y: 30 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.8, delay: 0.4 }}
           >
-            {t('hero.description')}
+            {language === 'en' ? (
+              <>
+                Pure honey from Sulawesi's wild forests,
+                <br className="hidden sm:block" />
+                harvested with care by local beekeepers
+                <br className="hidden sm:block" />
+                and bottled fresh for your table.
+              </>
+            ) : (
+              <>
+                Madu murni dari hutan liar Sulawesi,
+                <br className="hidden sm:block" />
+                dipanen penuh hati oleh peternak lokal
+                <br className="hidden sm:block" />
+                dan dikemas segar untuk meja Anda.
+              </>
+            )}
           </motion.p>
 
           <motion.div
@@ -87,7 +114,7 @@ const HeroSection: React.FC<HeroSectionProps> = ({ onNavigate, heroImage }) => {
           >
             <Button
               size="lg"
-              className="group px-8 py-6 text-lg font-semibold honey-gradient text-foreground border-0 hover:opacity-90 transition-all duration-300 honey-glow"
+              className="group honey-gradient text-white border-0 hover:opacity-90 transition-all duration-300 honey-glow"
               onClick={() => onNavigate('products')}
             >
               {t('hero.cta')}

@@ -1,7 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import { useLanguage } from '@/contexts/LanguageContext';
-import { Menu, X, Globe } from 'lucide-react';
+import { Menu, X, Globe, Moon, Sun } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
+import { useTheme } from 'next-themes';
 import logoLontara from '@/assets/logo-lontara.png';
 
 interface NavbarProps {
@@ -11,6 +12,7 @@ interface NavbarProps {
 
 const Navbar: React.FC<NavbarProps> = ({ onNavigate, activeSection }) => {
   const { language, setLanguage, t } = useLanguage();
+  const { theme, setTheme } = useTheme();
   const [isScrolled, setIsScrolled] = useState(false);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
 
@@ -55,7 +57,7 @@ const Navbar: React.FC<NavbarProps> = ({ onNavigate, activeSection }) => {
               className="flex items-center gap-3 group"
               whileHover={{ scale: 1.02 }}
             >
-              <div className="w-10 h-10 rounded-full overflow-hidden bg-white flex items-center justify-center shadow-lg group-hover:honey-glow transition-all duration-300">
+              <div className="w-10 h-10 rounded-full overflow-hidden bg-[#ffe9c7] flex items-center justify-center shadow-lg ring-2 ring-honey-gold/80 group-hover:honey-glow transition-all duration-300">
                 <img src={logoLontara} alt="Lontara Honey logo" className="w-full h-full object-contain" />
               </div>
               <span className="font-serif text-xl font-bold text-foreground">
@@ -78,7 +80,7 @@ const Navbar: React.FC<NavbarProps> = ({ onNavigate, activeSection }) => {
               ))}
             </div>
 
-            {/* Language Toggle & Mobile Menu */}
+            {/* Language Toggle, Theme Toggle & Mobile Menu */}
             <div className="flex items-center gap-4">
               <button
                 onClick={() => setLanguage(language === 'en' ? 'id' : 'en')}
@@ -86,6 +88,18 @@ const Navbar: React.FC<NavbarProps> = ({ onNavigate, activeSection }) => {
               >
                 <Globe className="w-4 h-4" />
                 {language.toUpperCase()}
+              </button>
+
+              <button
+                onClick={() => setTheme(theme === 'dark' ? 'light' : 'dark')}
+                className="hidden md:inline-flex items-center justify-center w-10 h-10 rounded-full bg-secondary/50 hover:bg-secondary transition-colors"
+                aria-label="Toggle theme"
+              >
+                {theme === 'dark' ? (
+                  <Sun className="w-5 h-5" />
+                ) : (
+                  <Moon className="w-5 h-5" />
+                )}
               </button>
 
               {/* Mobile menu button */}

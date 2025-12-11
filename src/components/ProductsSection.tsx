@@ -7,11 +7,14 @@ import honeyVisual from '@/assets/honey-visual.png';
 
 export interface Product {
   id: string;
-  nameKey: string;
+  name: {
+    id: string;
+    en: string;
+  };
   price: number;
   weight: string;
   image: string;
-  type: 'plastic' | 'glass';
+  type: 'glass';
 }
 
 interface ProductsSectionProps {
@@ -51,10 +54,11 @@ const ProductsSection: React.FC<ProductsSectionProps> = ({ products, onOrderProd
           <span className="text-primary font-medium uppercase tracking-wider text-sm">
             {t('products.title')}
           </span>
-          <h2 className="text-4xl md:text-5xl font-serif font-bold text-foreground mt-2 mb-4">
+          <div className="mx-auto mt-3 h-px w-24 bg-honey-gold/70" />
+          <h2 className="text-4xl md:text-5xl font-serif font-bold text-foreground mt-4">
             {t('products.subtitle')}
           </h2>
-          <p className="text-muted-foreground max-w-2xl mx-auto">
+          <p className="mt-2 text-muted-foreground max-w-2xl mx-auto">
             {t('products.description')}
           </p>
         </motion.div>
@@ -72,39 +76,35 @@ const ProductsSection: React.FC<ProductsSectionProps> = ({ products, onOrderProd
               whileHover={{ y: -8 }}
             >
               {/* Product Image */}
-              <div className="relative h-64 overflow-hidden bg-gradient-to-br from-honey-light to-honey-cream">
+              <div className="relative h-80 overflow-hidden bg-gradient-to-br from-honey-light to-honey-cream rounded-xl">
                 <img
                   src={product.image}
-                  alt={t(product.nameKey)}
-                  className="w-full h-full object-contain p-8 transition-transform duration-500 group-hover:scale-110"
+                  alt={language === 'en' ? product.name.en : product.name.id}
+                  className="w-full h-full object-contain p-6 transition-transform duration-500 group-hover:scale-110 rounded-lg"
                 />
                 <div className="absolute top-4 right-4">
-                  <span className={`px-3 py-1 rounded-full text-xs font-medium ${
-                    product.type === 'glass' 
-                      ? 'bg-honey-amber/20 text-honey-dark' 
-                      : 'bg-primary/20 text-primary'
-                  }`}>
-                    {product.type === 'glass' ? 'Glass' : 'Plastic'}
+                  <span className={`px-3 py-1 rounded-full text-xs font-medium bg-amber-400 text-amber-900`}>
+                    Glass
                   </span>
                 </div>
               </div>
 
               {/* Product Info */}
-              <div className="p-6">
-                <h3 className="font-serif text-xl font-semibold text-foreground mb-2">
-                  {t(product.nameKey)}
+              <div className="p-3">
+                <h3 className="font-serif text-base font-semibold text-foreground mb-1">
+                  {language === 'en' ? product.name.en : product.name.id}
                 </h3>
-                <div className="flex items-center gap-2 text-muted-foreground text-sm mb-4">
+                <div className="flex items-center gap-2 text-muted-foreground text-xs mb-2">
                   <span>{t('products.weight')}:</span>
                   <span className="font-medium">{product.weight}</span>
                 </div>
-                <div className="flex items-center justify-between">
-                  <span className="text-2xl font-bold text-primary">
+                <div className="mt-3 space-y-2">
+                  <div className="text-lg font-bold text-primary">
                     {formatPrice(product.price)}
-                  </span>
+                  </div>
                   <Button
                     onClick={() => onOrderProduct(product)}
-                    className="honey-gradient text-foreground border-0 hover:opacity-90"
+                    className="honey-gradient text-white border-0 hover:opacity-90"
                   >
                     <ShoppingBag className="w-4 h-4 mr-2" />
                     {t('products.order')}

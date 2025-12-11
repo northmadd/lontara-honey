@@ -8,7 +8,7 @@ interface StorySectionProps {
 }
 
 const StorySection: React.FC<StorySectionProps> = ({ storyImages }) => {
-  const { t } = useLanguage();
+  const { t, language } = useLanguage();
 
   const chapters = [
     { titleKey: 'story.chapter1.title', textKey: 'story.chapter1.text', image: storyImages[0] },
@@ -35,8 +35,23 @@ const StorySection: React.FC<StorySectionProps> = ({ storyImages }) => {
           <span className="text-primary font-medium uppercase tracking-wider text-sm">
             {t('story.title')}
           </span>
-          <h2 className="text-4xl md:text-5xl font-serif font-bold text-foreground mt-2">
-            {t('story.subtitle')}
+          <div className="mx-auto mt-3 h-px w-24 bg-honey-gold/70" />
+          <h2 className="text-4xl md:text-5xl font-serif font-bold text-foreground mt-4 whitespace-pre-line">
+            {(() => {
+              const subtitle = t('story.subtitle');
+              if (language === 'en') {
+                const parts = subtitle.split(' to ');
+                if (parts.length === 2) {
+                  return `${parts[0]}\nto ${parts[1]}`;
+                }
+                return subtitle;
+              }
+              const parts = subtitle.split(' ke ');
+              if (parts.length === 2) {
+                return `${parts[0]}\nke ${parts[1]}`;
+              }
+              return subtitle;
+            })()}
           </h2>
         </motion.div>
 
@@ -86,8 +101,8 @@ const StorySection: React.FC<StorySectionProps> = ({ storyImages }) => {
                 <div
                   className={`lg:w-1/2 ${
                     index % 2 === 0
-                      ? 'lg:text-right lg:pr-16'
-                      : 'lg:text-left lg:pl-16'
+                      ? 'lg:text-right lg:pr-10'
+                      : 'lg:text-left lg:pl-10'
                   }`}
                 >
                   <h3 className="text-2xl md:text-3xl font-serif font-bold text-foreground mb-4">

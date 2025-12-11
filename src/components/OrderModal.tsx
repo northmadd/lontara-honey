@@ -51,7 +51,7 @@ const OrderModal: React.FC<OrderModalProps> = ({ product, onClose }) => {
     const paymentLabel = paymentMethods.find(p => p.id === formData.payment)?.label || formData.payment;
     
     const message = `🍯 *NEW ORDER - LONTARA HONEY*\n\n` +
-      `*Product:* ${t(product.nameKey)}\n` +
+      `*Product:* ${language === 'en' ? product.name.en : product.name.id}\n` +
       `*Weight:* ${product.weight}\n` +
       `*Price:* ${formatPrice(product.price)}\n\n` +
       `*Customer Details:*\n` +
@@ -81,7 +81,7 @@ const OrderModal: React.FC<OrderModalProps> = ({ product, onClose }) => {
 
         {/* Modal */}
         <motion.div
-          className="relative bg-card rounded-3xl shadow-2xl w-full max-w-lg max-h-[90vh] overflow-y-auto"
+          className="relative bg-card rounded-3xl shadow-2xl w-full max-w-md max-h-[90vh] overflow-y-auto"
           initial={{ scale: 0.9, opacity: 0, y: 20 }}
           animate={{ scale: 1, opacity: 1, y: 0 }}
           exit={{ scale: 0.9, opacity: 0, y: 20 }}
@@ -102,15 +102,15 @@ const OrderModal: React.FC<OrderModalProps> = ({ product, onClose }) => {
 
           {/* Product Summary */}
           <div className="p-6 bg-muted/50">
-            <div className="flex gap-4">
+            <div className="flex gap-4 items-start -mt-2">
               <img
                 src={product.image}
-                alt={t(product.nameKey)}
-                className="w-24 h-24 object-contain bg-background rounded-xl p-2"
+                alt={language === 'en' ? product.name.en : product.name.id}
+                className="w-14 h-14 object-contain bg-background rounded-2xl p-2"
               />
               <div>
                 <h3 className="font-semibold text-foreground">
-                  {t(product.nameKey)}
+                  {language === 'en' ? product.name.en : product.name.id}
                 </h3>
                 <p className="text-sm text-muted-foreground">
                   {t('products.weight')}: {product.weight}
@@ -131,7 +131,7 @@ const OrderModal: React.FC<OrderModalProps> = ({ product, onClose }) => {
               <Input
                 value={formData.name}
                 onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-                placeholder="John Doe"
+                placeholder="Your Name.."
                 required
               />
             </div>

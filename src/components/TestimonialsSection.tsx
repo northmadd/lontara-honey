@@ -55,10 +55,11 @@ const TestimonialsSection: React.FC<TestimonialsSectionProps> = ({ happyPeopleIm
           <span className="text-primary font-medium uppercase tracking-wider text-sm">
             {language === 'id' ? 'Testimoni' : 'Testimonials'}
           </span>
-          <h2 className="text-4xl md:text-5xl font-serif font-bold text-foreground mt-2 mb-4">
+          <div className="mx-auto mt-3 h-px w-24 bg-honey-gold/70" />
+          <h2 className="text-4xl md:text-5xl font-serif font-bold text-foreground mt-4">
             {language === 'id' ? 'Pelanggan Bahagia' : 'Happy Customers'}
           </h2>
-          <p className="text-muted-foreground max-w-2xl mx-auto">
+          <p className="mt-2 text-muted-foreground max-w-2xl mx-auto">
             {language === 'id' 
               ? 'Bergabung dengan ribuan pelanggan yang telah merasakan keajaiban madu Lontara'
               : 'Join thousands of customers who have experienced the magic of Lontara Honey'}
