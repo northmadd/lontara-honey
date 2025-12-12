@@ -28,7 +28,7 @@ const Footer: React.FC = () => {
   return (
     <footer className="bg-gradient-to-br from-white via-amber-50/30 to-yellow-50/20 text-black dark:from-[#1a120d] dark:via-[#2a1c0f]/80 dark:to-[#3c2414]/60 dark:text-white pt-16 pb-12 relative overflow-hidden">
       {/* Large Honey Image */}
-      <div className="absolute bottom-20 right-3 w-full pointer-events-none z-0">
+      <div className="absolute bottom-32 right-3 w-full pointer-events-none z-0">
         <div className="container mx-auto px-4 md:px-6">
           <div className="relative h-64 w-64 ml-4">
             <img
