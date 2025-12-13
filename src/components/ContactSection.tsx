@@ -24,6 +24,7 @@ const ContactSection: React.FC = () => {
     phone: '',
     message: '',
   });
+  const [mapError, setMapError] = useState(false);
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -57,13 +58,13 @@ const ContactSection: React.FC = () => {
   return (
     <section className="py-24 bg-gradient-to-br from-background via-honey-cream/10 to-honey-light/5 dark:from-background dark:via-background dark:to-background relative overflow-hidden">
       {/* Decorative Honey Visual */}
-      <div className="absolute left-0 bottom-10 opacity-10 pointer-events-none">
-        <img src={honeyVisual} alt="" className="w-64 h-64 object-contain" />
+      <div className="absolute left-0 bottom-10 opacity-10 pointer-events-none hidden md:block">
+        <img src={honeyVisual} alt="" className="w-48 h-48 md:w-64 md:h-64 object-contain" />
       </div>
       <div className="container mx-auto px-4 md:px-6 relative z-10">
         <div className="space-y-16">
           {/* Info + Form */}
-          <div className="grid lg:grid-cols-2 gap-16 items-start">
+          <div className="grid lg:grid-cols-2 gap-12 md:gap-16 items-start">
             {/* Left: Heading + Contact Info */}
             <motion.div
               initial={{ opacity: 0, x: -50 }}
@@ -145,7 +146,7 @@ const ContactSection: React.FC = () => {
                   <Input
                     value={formData.name}
                     onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-                    placeholder={language === 'en' ? 'Your Name' : 'Nama lengkap'}
+                    placeholder={language === 'en' ? 'Your Name..' : 'Nama lengkap..'}
                     required
                     className="bg-background"
                   />
@@ -195,13 +196,30 @@ const ContactSection: React.FC = () => {
             viewport={{ once: true }}
             transition={{ duration: 0.8 }}
           >
-            <iframe
-              title="Lontara Honey Location"
-              src="https://www.google.com/maps?q=Jl.+Pangkabinanga,+Pangkabinanga,+Pallangga,+Gowa,+Sulawesi+Selatan+92161&output=embed"
-              loading="lazy"
-              referrerPolicy="no-referrer-when-downgrade"
-              className="w-full h-72 md:h-96"
-            />
+            {mapError ? (
+              <div className="w-full h-72 md:h-96 flex items-center justify-center bg-muted/20">
+                <div className="text-center p-8">
+                  <MapPin className="w-12 h-12 mx-auto mb-4 text-muted-foreground" />
+                  <p className="text-muted-foreground">Map tidak dapat dimuat</p>
+                  <p className="text-sm text-muted-foreground mt-2">
+                    Jl. Pangkabinanga, Pangkabinanga, Pallangga, Gowa, Sulawesi Selatan 92161
+                  </p>
+                </div>
+              </div>
+            ) : (
+              <iframe
+                title="Lontara Honey Location"
+                src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3973.305487183139!2d119.4524519!3d-5.2146092!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x2dbee227ff58c4ad%3A0x5ea49915d8676ea5!2sRaja%20Madu%20Sulawesi!5e0!3m2!1sid!2sid!4v1765591742735!5m2!1sid!2sid"
+                width="100%"
+                height="450"
+                style={{ border: 0 }}
+                allowFullScreen
+                loading="lazy"
+                referrerPolicy="no-referrer-when-downgrade"
+                className="w-full h-72 md:h-96"
+                onError={() => setMapError(true)}
+              />
+            )}
           </motion.div>
         </div>
       </div>

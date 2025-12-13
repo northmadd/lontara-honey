@@ -4,6 +4,19 @@ import logoLontara from '@/assets/logo-lontara.png';
 import honeyFooter from '@/assets/honey-footer.png';
 
 const Footer: React.FC = () => {
+  const scrollToSection = (sectionId: string) => {
+    const element = document.getElementById(sectionId);
+    if (element) {
+      element.scrollIntoView({ behavior: 'smooth' });
+    }
+  };
+
+  const openWhatsApp = (message: string) => {
+    const phoneNumber = '6282347905543';
+    const webUrl = `https://wa.me/${phoneNumber}?text=${encodeURIComponent(message)}`;
+    window.open(webUrl, '_blank');
+  };
+
   const contactItems = [
     {
       icon: MapPin,
@@ -20,9 +33,9 @@ const Footer: React.FC = () => {
   ];
 
   const socialLinks = [
-    { icon: Instagram, href: '#', label: 'Instagram' },
-    { icon: PlayCircle, href: '#', label: 'TikTok' },
-    { icon: Youtube, href: '#', label: 'YouTube' },
+    { icon: Instagram, href: 'https://instagram.com/maduhutanlontara', label: 'Instagram' },
+    { icon: PlayCircle, href: 'https://tiktok.com/@maduhutanlontara', label: 'TikTok' },
+    { icon: Youtube, href: 'https://youtube.com/@rajamadusulawesi7380', label: 'YouTube' },
   ];
 
   return (
@@ -54,9 +67,9 @@ const Footer: React.FC = () => {
             </div>
             <div className="relative z-10">
               <h3 className="font-serif text-xl font-bold tracking-wide text-black dark:text-white">
-                LONTARA <span className="text-honey-gold dark:text-yellow-400">HONEY</span>
+                LONTARA <span className="text-honey-gold dark:text-honey-gold">HONEY</span>
               </h3>
-              <p className="mt-1 text-sm text-[#5D4037]/90 dark:text-white/80">
+              <p className="mt-1 text-sm text-[#5D4037]/90 dark:text-white/80 honey-script">
                 Pure honey from the heart of Sulawesi
               </p>
             </div>
@@ -65,49 +78,49 @@ const Footer: React.FC = () => {
           {/* Navigation */}
           <div>
             <div className="mb-4">
-              <h4 className="text-xs font-semibold tracking-[0.3em] uppercase text-honey-gold dark:text-yellow-300">
+              <h4 className="text-xs font-semibold tracking-[0.3em] uppercase text-honey-gold dark:text-honey-gold">
                 Navigation
               </h4>
-              <div className="mt-2 h-0.5 w-12 bg-honey-gold/60 dark:bg-yellow-300/50" />
+              <div className="mt-2 h-0.5 w-12 bg-honey-gold/60 dark:bg-honey-gold/50" />
             </div>
             <ul className="space-y-2 text-sm md:text-[0.85rem] text-[#2c1810] dark:text-white">
-              <li className="cursor-pointer transition-colors hover:text-[#8B0000] dark:hover:text-[#D4A347]">Home</li>
-              <li className="cursor-pointer transition-colors hover:text-[#8B0000] dark:hover:text-[#D4A347]">Products</li>
-              <li className="cursor-pointer transition-colors hover:text-[#8B0000] dark:hover:text-[#D4A347]">About</li>
-              <li className="cursor-pointer transition-colors hover:text-[#8B0000] dark:hover:text-[#D4A347]">Our Story</li>
-              <li className="cursor-pointer transition-colors hover:text-[#8B0000] dark:hover:text-[#D4A347]">Contact</li>
+              <li onClick={() => scrollToSection('home')} className="cursor-pointer transition-colors hover:text-[#8B0000] dark:hover:text-[#D4A347]">Home</li>
+              <li onClick={() => scrollToSection('products')} className="cursor-pointer transition-colors hover:text-[#8B0000] dark:hover:text-[#D4A347]">Products</li>
+              <li onClick={() => scrollToSection('about')} className="cursor-pointer transition-colors hover:text-[#8B0000] dark:hover:text-[#D4A347]">About</li>
+              <li onClick={() => scrollToSection('story')} className="cursor-pointer transition-colors hover:text-[#8B0000] dark:hover:text-[#D4A347]">Our Story</li>
+              <li onClick={() => scrollToSection('contact')} className="cursor-pointer transition-colors hover:text-[#8B0000] dark:hover:text-[#D4A347]">Contact</li>
             </ul>
           </div>
 
           {/* Quick Link */}
           <div>
             <div className="mb-4">
-              <h4 className="text-xs font-semibold tracking-[0.3em] uppercase text-honey-gold dark:text-yellow-300">
+              <h4 className="text-xs font-semibold tracking-[0.3em] uppercase text-honey-gold dark:text-honey-gold">
                 Quick Link
               </h4>
-              <div className="mt-2 h-0.5 w-12 bg-honey-gold/60 dark:bg-yellow-300/50" />
+              <div className="mt-2 h-0.5 w-12 bg-honey-gold/60 dark:bg-honey-gold/50" />
             </div>
             <ul className="space-y-2 text-sm md:text-[0.85rem] text-[#2c1810] dark:text-white">
-              <li className="cursor-pointer transition-colors hover:text-[#8B0000] dark:hover:text-[#D4A347]">FAQs</li>
-              <li className="cursor-pointer transition-colors hover:text-[#8B0000] dark:hover:text-[#D4A347]">Blog</li>
-              <li className="cursor-pointer transition-colors hover:text-[#8B0000] dark:hover:text-[#D4A347]">Booking</li>
-              <li className="cursor-pointer transition-colors hover:text-[#8B0000] dark:hover:text-[#D4A347]">Pages</li>
+              <li onClick={() => alert('FAQs coming soon!')} className="cursor-pointer transition-colors hover:text-[#8B0000] dark:hover:text-[#D4A347]">FAQs</li>
+              <li onClick={() => alert('Blog coming soon!')} className="cursor-pointer transition-colors hover:text-[#8B0000] dark:hover:text-[#D4A347]">Blog</li>
+              <li onClick={() => openWhatsApp('I would like to book Lontara Honey products')} className="cursor-pointer transition-colors hover:text-[#8B0000] dark:hover:text-[#D4A347]">Booking</li>
+              <li onClick={() => alert('Privacy Policy & Terms coming soon!')} className="cursor-pointer transition-colors hover:text-[#8B0000] dark:hover:text-[#D4A347]">Pages</li>
             </ul>
           </div>
 
           {/* Services */}
           <div>
             <div className="mb-4">
-              <h4 className="text-xs font-semibold tracking-[0.3em] uppercase text-honey-gold dark:text-yellow-300">
+              <h4 className="text-xs font-semibold tracking-[0.3em] uppercase text-honey-gold dark:text-honey-gold">
                 Services
               </h4>
-              <div className="mt-2 h-0.5 w-12 bg-honey-gold/60 dark:bg-yellow-300/50" />
+              <div className="mt-2 h-0.5 w-12 bg-honey-gold/60 dark:bg-honey-gold/50" />
             </div>
             <ul className="space-y-2 text-sm md:text-[0.85rem] text-[#2c1810] dark:text-white">
-              <li className="cursor-pointer transition-colors hover:text-[#8B0000] dark:hover:text-[#D4A347]">Premium Honey Supply</li>
-              <li className="cursor-pointer transition-colors hover:text-[#8B0000] dark:hover:text-[#D4A347]">Wholesale</li>
-              <li className="cursor-pointer transition-colors hover:text-[#8B0000] dark:hover:text-[#D4A347]">Retail</li>
-              <li className="cursor-pointer transition-colors hover:text-[#8B0000] dark:hover:text-[#D4A347]">Support</li>
+              <li onClick={() => scrollToSection('products')} className="cursor-pointer transition-colors hover:text-[#8B0000] dark:hover:text-[#D4A347]">Premium Honey Supply</li>
+              <li onClick={() => openWhatsApp('I am interested in wholesale Lontara Honey products')} className="cursor-pointer transition-colors hover:text-[#8B0000] dark:hover:text-[#D4A347]">Wholesale</li>
+              <li onClick={() => scrollToSection('products')} className="cursor-pointer transition-colors hover:text-[#8B0000] dark:hover:text-[#D4A347]">Retail</li>
+              <li onClick={() => scrollToSection('contact')} className="cursor-pointer transition-colors hover:text-[#8B0000] dark:hover:text-[#D4A347]">Support</li>
             </ul>
           </div>
         </div>

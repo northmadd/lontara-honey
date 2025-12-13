@@ -19,7 +19,7 @@ const AboutSection: React.FC<AboutSectionProps> = ({ aboutImage }) => {
   return (
     <section className="py-24 bg-background">
       <div className="container mx-auto px-4 md:px-6">
-        <div className="grid lg:grid-cols-2 gap-16 items-center">
+        <div className="grid lg:grid-cols-2 gap-12 md:gap-16 items-center">
           {/* Image */}
           <motion.div
             className="relative"
@@ -32,7 +32,7 @@ const AboutSection: React.FC<AboutSectionProps> = ({ aboutImage }) => {
               <img
                 src={aboutImage}
                 alt="About Lontara Honey"
-                className="w-full h-[500px] object-cover"
+                className="w-full h-[300px] md:h-[400px] lg:h-[500px] object-cover"
               />
             </div>
             {/* Decorative elements */}

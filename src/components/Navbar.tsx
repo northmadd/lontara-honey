@@ -151,6 +151,27 @@ const Navbar: React.FC<NavbarProps> = ({ onNavigate, activeSection }) => {
                     {item.label}
                   </motion.button>
                 ))}
+                
+                {/* Dark Mode Toggle for Mobile */}
+                <motion.div
+                  className="flex items-center justify-between px-4 py-3 rounded-xl bg-secondary/50"
+                  initial={{ x: -20, opacity: 0 }}
+                  animate={{ x: 0, opacity: 1 }}
+                  transition={{ delay: navItems.length * 0.1 }}
+                >
+                  <span className="text-lg font-medium">Dark Mode</span>
+                  <button
+                    onClick={() => setTheme(theme === 'dark' ? 'light' : 'dark')}
+                    className="flex items-center justify-center w-10 h-10 rounded-full bg-background hover:bg-accent transition-colors"
+                    aria-label="Toggle theme"
+                  >
+                    {theme === 'dark' ? (
+                      <Sun className="w-5 h-5" />
+                    ) : (
+                      <Moon className="w-5 h-5" />
+                    )}
+                  </button>
+                </motion.div>
               </div>
             </motion.div>
           </motion.div>

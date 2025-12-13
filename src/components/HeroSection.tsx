@@ -27,13 +27,13 @@ const HeroSection: React.FC<HeroSectionProps> = ({ onNavigate, heroImage }) => {
 
       {/* Floating elements */}
       <motion.div
-        className="absolute top-1/4 right-1/4 w-64 h-64 rounded-full opacity-20"
+        className="absolute top-1/4 right-1/4 w-32 h-32 md:w-64 md:h-64 rounded-full opacity-20"
         style={{ background: 'radial-gradient(circle, hsl(var(--honey-gold)) 0%, transparent 70%)' }}
         animate={{ y: [0, -30, 0], scale: [1, 1.1, 1] }}
         transition={{ duration: 8, repeat: Infinity, ease: "easeInOut" }}
       />
       <motion.div
-        className="absolute bottom-1/3 left-1/4 w-48 h-48 rounded-full opacity-15"
+        className="absolute bottom-1/3 left-1/4 w-24 h-24 md:w-48 md:h-48 rounded-full opacity-15"
         style={{ background: 'radial-gradient(circle, hsl(var(--honey-amber)) 0%, transparent 70%)' }}
         animate={{ y: [0, 20, 0], scale: [1, 1.05, 1] }}
         transition={{ duration: 6, repeat: Infinity, ease: "easeInOut", delay: 1 }}
@@ -50,12 +50,12 @@ const HeroSection: React.FC<HeroSectionProps> = ({ onNavigate, heroImage }) => {
           >
             <span className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-primary/10 text-primary text-sm font-medium mb-6">
               <span className="w-2 h-2 rounded-full bg-primary animate-pulse" />
-              {t('hero.subtitle')}
+              <span className="honey-script">{t('hero.subtitle')}</span>
             </span>
           </motion.div>
 
           <motion.h1
-            className="text-5xl md:text-6xl lg:text-7xl font-serif font-bold text-foreground mb-6 leading-tight"
+            className="text-4xl sm:text-5xl md:text-6xl lg:text-7xl font-serif font-bold text-foreground mb-6 leading-tight"
             initial={{ opacity: 0, y: 30 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.8, delay: 0.2 }}
@@ -82,7 +82,7 @@ const HeroSection: React.FC<HeroSectionProps> = ({ onNavigate, heroImage }) => {
           </motion.h1>
 
           <motion.p
-            className="text-lg md:text-xl text-muted-foreground mb-8 max-w-lg leading-relaxed"
+            className="text-base md:text-lg lg:text-xl text-muted-foreground mb-8 max-w-lg leading-relaxed"
             initial={{ opacity: 0, y: 30 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.8, delay: 0.4 }}
@@ -107,7 +107,7 @@ const HeroSection: React.FC<HeroSectionProps> = ({ onNavigate, heroImage }) => {
           </motion.p>
 
           <motion.div
-            className="flex flex-wrap gap-4"
+            className="flex flex-col sm:flex-wrap sm:flex-row gap-4"
             initial={{ opacity: 0, y: 30 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.8, delay: 0.6 }}
@@ -133,7 +133,7 @@ const HeroSection: React.FC<HeroSectionProps> = ({ onNavigate, heroImage }) => {
 
           {/* Stats */}
           <motion.div
-            className="mt-16 grid grid-cols-3 gap-8 max-w-md"
+            className="mt-16 grid grid-cols-3 gap-4 sm:gap-8 max-w-md"
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             transition={{ duration: 0.8, delay: 0.8 }}

@@ -12,27 +12,27 @@ const TestimonialsSection: React.FC<TestimonialsSectionProps> = ({ happyPeopleIm
 
   const testimonials = [
     {
-      name: 'Sarah M.',
-      role: language === 'id' ? 'Pelanggan Setia' : 'Loyal Customer',
+      name: 'Ammar Abdullah',
+      role: language === 'id' ? 'Desainer Profesional' : 'Professional Designer',
       text: language === 'id' 
         ? 'Madu terbaik yang pernah saya coba! Rasanya autentik dan kualitasnya luar biasa.'
         : 'The best honey I\'ve ever tasted! Authentic flavor and exceptional quality.',
       rating: 5,
     },
     {
-      name: 'Ahmad R.',
+      name: 'John Wick',
       role: language === 'id' ? 'Pengusaha Kuliner' : 'Culinary Entrepreneur',
       text: language === 'id'
-        ? 'Lontara Honey adalah pilihan utama untuk bisnis katering saya. Pelanggan selalu puas!'
-        : 'Lontara Honey is my top choice for my catering business. Customers always love it!',
+        ? 'Lontara Honey adalah pilihan utama untuk membuat tubuh saya selalu terjaga manfaatnya WOAW!!'
+        : 'Lontara Honey is the main choice to keep my body healthy. WOAW!!',
       rating: 5,
     },
     {
-      name: 'Maria L.',
-      role: language === 'id' ? 'Ibu Rumah Tangga' : 'Homemaker',
+      name: 'Hj. Ariani',
+      role: language === 'id' ? 'Pendiri Bisnis' : 'Business Founder',
       text: language === 'id'
-        ? 'Keluarga saya menyukai madu ini! Anak-anak sekarang lebih suka madu daripada gula.'
-        : 'My family loves this honey! Kids now prefer honey over sugar.',
+        ? 'Keluarga saya sangat menyukai madu ini! Anak-anak sekarang lebih suka madu daripada gula.'
+        : 'My family very loves this honey! Kids now prefer honey over sugar.',
       rating: 5,
     },
   ];
@@ -66,7 +66,7 @@ const TestimonialsSection: React.FC<TestimonialsSectionProps> = ({ happyPeopleIm
           </p>
         </motion.div>
 
-        <div className="grid lg:grid-cols-2 gap-12 items-center">
+        <div className="grid lg:grid-cols-2 gap-8 md:gap-12 items-center">
           {/* Image */}
           <motion.div
             className="relative rounded-3xl overflow-hidden shadow-2xl"
@@ -78,7 +78,7 @@ const TestimonialsSection: React.FC<TestimonialsSectionProps> = ({ happyPeopleIm
             <img
               src={happyPeopleImage}
               alt="Happy customers enjoying Lontara Honey"
-              className="w-full h-[400px] object-cover"
+              className="w-full h-[300px] md:h-[350px] lg:h-[400px] object-cover"
             />
             <div className="absolute inset-0 bg-gradient-to-t from-honey-dark/30 to-transparent" />
           </motion.div>

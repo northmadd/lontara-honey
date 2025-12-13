@@ -36,11 +36,11 @@ const ProductsSection: React.FC<ProductsSectionProps> = ({ products, onOrderProd
   return (
     <section className="py-24 bg-gradient-to-br from-honey-cream via-honey-light/30 to-honey-gold/10 relative overflow-hidden">
       {/* Decorative Background Elements */}
-      <div className="absolute left-0 top-20 opacity-20 pointer-events-none">
-        <img src={honeyVisual} alt="" className="w-80 h-80 object-contain -rotate-12" />
+      <div className="absolute left-0 top-20 opacity-20 pointer-events-none hidden md:block">
+        <img src={honeyVisual} alt="" className="w-64 h-64 md:w-80 md:h-80 object-contain -rotate-12" />
       </div>
-      <div className="absolute right-0 bottom-20 opacity-15 pointer-events-none">
-        <img src={honeyVisual} alt="" className="w-64 h-64 object-contain rotate-12" />
+      <div className="absolute right-0 bottom-20 opacity-15 pointer-events-none hidden lg:block">
+        <img src={honeyVisual} alt="" className="w-48 h-48 md:w-64 md:h-64 object-contain rotate-12" />
       </div>
       <div className="container mx-auto px-4 md:px-6 relative z-10">
         {/* Header */}
@@ -64,7 +64,7 @@ const ProductsSection: React.FC<ProductsSectionProps> = ({ products, onOrderProd
         </motion.div>
 
         {/* Products Grid */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6 md:gap-8">
           {products.map((product, index) => (
             <motion.div
               key={product.id}

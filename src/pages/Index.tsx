@@ -36,7 +36,10 @@ import stingless500g from '@/assets/stingless-485g.jpg';
 const products: Product[] = [
   {
     id: '1',
-    name: 'Acacia Honey 250g',
+    name: {
+      id: 'Madu Akasia 250g',
+      en: 'Acacia Honey 250g'
+    },
     price: 100000,
     weight: '250g',
     image: acacia250g,
@@ -44,7 +47,10 @@ const products: Product[] = [
   },
   {
     id: '2',
-    name: 'Forest Honey 350g',
+    name: {
+      id: 'Madu Hutan 350g',
+      en: 'Forest Honey 350g'
+    },
     price: 130000,
     weight: '350g',
     image: forest350g,
@@ -52,7 +58,10 @@ const products: Product[] = [
   },
   {
     id: '3',
-    name: 'Stingless Bee Honey 335g',
+    name: {
+      id: 'Madu Lebah Tanpa Sengat 335g',
+      en: 'Stingless Bee Honey 335g'
+    },
     price: 200000,
     weight: '335g',
     image: stingless200g,
@@ -60,7 +69,10 @@ const products: Product[] = [
   },
   {
     id: '4',
-    name: 'Acacia Honey 400g',
+    name: {
+      id: 'Madu Akasia 400g',
+      en: 'Acacia Honey 400g'
+    },
     price: 200000,
     weight: '400g',
     image: acacia130g,
@@ -68,7 +80,10 @@ const products: Product[] = [
   },
   {
     id: '5',
-    name: 'Acacia Honey 485g',
+    name: {
+      id: 'Madu Akasia 485g',
+      en: 'Acacia Honey 485g'
+    },
     price: 180000,
     weight: '485g',
     image: acacia485g,
@@ -76,7 +91,10 @@ const products: Product[] = [
   },
   {
     id: '6',
-    name: 'Acacia Honey 670g',
+    name: {
+      id: 'Madu Akasia 670g',
+      en: 'Acacia Honey 670g'
+    },
     price: 250000,
     weight: '670g',
     image: acacia670g,
@@ -84,7 +102,10 @@ const products: Product[] = [
   },
   {
     id: '7',
-    name: 'Forest Honey 400g',
+    name: {
+      id: 'Madu Hutan 400g',
+      en: 'Forest Honey 400g'
+    },
     price: 300000,
     weight: '400g',
     image: forest400g,
@@ -92,7 +113,10 @@ const products: Product[] = [
   },
   {
     id: '8',
-    name: 'Forest Honey 485g',
+    name: {
+      id: 'Madu Hutan 485g',
+      en: 'Forest Honey 485g'
+    },
     price: 300000,
     weight: '485g',
     image: forest485g,
@@ -100,7 +124,10 @@ const products: Product[] = [
   },
   {
     id: '9',
-    name: 'Stingless Bee Honey 400g',
+    name: {
+      id: 'Madu Lebah Tanpa Sengat 400g',
+      en: 'Stingless Bee Honey 400g'
+    },
     price: 350000,
     weight: '400g',
     image: stingless350g,
@@ -108,7 +135,10 @@ const products: Product[] = [
   },
   {
     id: '10',
-    name: 'Forest Honey 670g',
+    name: {
+      id: 'Madu Hutan 670g',
+      en: 'Forest Honey 670g'
+    },
     price: 350000,
     weight: '670g',
     image: forest670g,
@@ -116,7 +146,10 @@ const products: Product[] = [
   },
   {
     id: '11',
-    name: 'Stingless Bee Honey 485g',
+    name: {
+      id: 'Madu Lebah Tanpa Sengat 485g',
+      en: 'Stingless Bee Honey 485g'
+    },
     price: 350000,
     weight: '485g',
     image: stingless500g,
@@ -124,7 +157,10 @@ const products: Product[] = [
   },
   {
     id: '12',
-    name: 'Forest Honey 7kg',
+    name: {
+      id: 'Madu Hutan 7kg',
+      en: 'Forest Honey 7kg'
+    },
     price: 2000000,
     weight: '7kg',
     image: forest7kg,
@@ -186,28 +222,28 @@ const IndexContent: React.FC = () => {
     <div className="min-h-screen bg-background">
       <Navbar onNavigate={handleNavigate} activeSection={activeSection} />
       
-      <div ref={homeRef}>
+      <div ref={homeRef} id="home">
         <HeroSection onNavigate={handleNavigate} heroImage={heroImage} />
       </div>
       
-      <div ref={productsRef}>
+      <div ref={productsRef} id="products">
         <ProductsSection 
           products={products} 
           onOrderProduct={setSelectedProduct}
         />
       </div>
       
-      <div ref={aboutRef}>
+      <div ref={aboutRef} id="about">
         <AboutSection aboutImage={aboutImage} />
       </div>
       
-      <div ref={storyRef}>
+      <div ref={storyRef} id="story">
         <StorySection storyImages={storyImages} />
       </div>
       
       <TestimonialsSection happyPeopleImage={happyPeopleImage} />
       
-      <div ref={contactRef}>
+      <div ref={contactRef} id="contact">
         <ContactSection />
       </div>
       
