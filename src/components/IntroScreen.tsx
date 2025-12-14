@@ -28,32 +28,33 @@ const IntroScreen: React.FC<IntroScreenProps> = ({ onComplete }) => {
     if (!audioStarted && audioRef.current) {
       audioRef.current.play().catch(console.log);
       setAudioStarted(true);
-      
-      // Speak welcome message
-      if ('speechSynthesis' in window) {
-        const utterance = new SpeechSynthesisUtterance('Welcome to Lontara Honey, the golden treasure of Sulawesi');
-        utterance.rate = 0.9;
-        utterance.pitch = 1;
-        speechSynthesis.speak(utterance);
-      }
     }
   };
 
   useEffect(() => {
-    // Auto-start on first interaction
-    const startAudio = () => {
-      handleInteraction();
-      document.removeEventListener('click', startAudio);
-      document.removeEventListener('touchstart', startAudio);
+    // Auto-play audio immediately when intro starts
+    const playAudio = () => {
+      if (audioRef.current && !audioStarted) {
+        audioRef.current.play().then(() => {
+          setAudioStarted(true);
+        }).catch(() => {
+          // Fallback: try to play on first user interaction if autoplay is blocked
+          const startAudio = () => {
+            if (audioRef.current && !audioStarted) {
+              audioRef.current.play().then(() => {
+                setAudioStarted(true);
+              }).catch(console.log);
+            }
+          };
+          document.addEventListener('click', startAudio, { once: true });
+          document.addEventListener('touchstart', startAudio, { once: true });
+        });
+      }
     };
-    document.addEventListener('click', startAudio);
-    document.addEventListener('touchstart', startAudio);
     
-    return () => {
-      document.removeEventListener('click', startAudio);
-      document.removeEventListener('touchstart', startAudio);
-    };
-  }, []);
+    // Try to play immediately
+    playAudio();
+  }, [audioStarted]);
 
   return (
     <AnimatePresence>
@@ -66,11 +67,11 @@ const IntroScreen: React.FC<IntroScreenProps> = ({ onComplete }) => {
           transition={{ duration: 1 }}
           onClick={handleInteraction}
         >
-          {/* Background audio */}
+          {/* Background audio - honey ambient sound */}
           <audio
             ref={audioRef}
             loop
-            src="https://assets.mixkit.co/music/preview/mixkit-serene-view-443.mp3"
+            src="https://assets.mixkit.co/sfx/preview/mixkit-forest-birds-and-wind-ambience-1210.mp3"
             className="hidden"
           />
 
@@ -216,19 +217,6 @@ const IntroScreen: React.FC<IntroScreenProps> = ({ onComplete }) => {
               The Golden Treasure of Sulawesi
             </motion.p>
 
-            {/* Click hint */}
-            {!audioStarted && (
-              <motion.p
-                className="mt-12 text-sm tracking-wider"
-                style={{ color: '#705030' }}
-                initial={{ opacity: 0 }}
-                animate={{ opacity: [0, 1, 0] }}
-                transition={{ duration: 2, repeat: Infinity }}
-              >
-                Click anywhere to begin
-              </motion.p>
-            )}
-            
             {/* Skip button */}
             <motion.button
               onClick={(e) => {

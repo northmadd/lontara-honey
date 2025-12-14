@@ -28,7 +28,7 @@ const Footer: React.FC = () => {
     },
     {
       icon: Mail,
-      label: 'kaptenahmad01@gmail',
+      label: 'arianiamin74@gmail',
     },
   ];
 
