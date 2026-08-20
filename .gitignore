@@ -1,0 +1,34 @@
+# Logs
+logs
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+lerna-debug.log*
+
+node_modules
+*.local
+
+# Allow specific files in dist for deployment
+!/dist
+/dist/*
+!/dist/index.html
+!/dist/assets
+!/dist/_redirects
+!/dist/_routes.json
+!/dist/_headers
+
+# Ignore other dist files
+/dist-ssr
+
+# Editor directories and files
+.vscode/*
+!.vscode/extensions.json
+.idea
+.DS_Store
+*.suo
+*.ntvs*
+*.njsproj
+*.sln
+*.sw?
