@@ -440,3 +440,9 @@ body {
     letter-spacing: 0.2em;
   }
 }
+
+.cf-turnstile,
+.cf-turnstile iframe {
+  width: 100% !important;
+  min-width: 0 !important;
+}
