@@ -49,7 +49,6 @@ const BotVerificationGate: React.FC<BotVerificationGateProps> = ({ children }) =
   const [verificationLanguage, setVerificationLanguage] = useState<'id' | 'en'>('en');
   const [isChecking, setIsChecking] = useState(false);
   const [errorMessage, setErrorMessage] = useState('');
-  const [widgetSize, setWidgetSize] = useState<'flexible' | 'compact'>('flexible');
   const widgetContainerRef = useRef<HTMLDivElement | null>(null);
   const widgetIdRef = useRef<TurnstileWidgetId | null>(null);
 
@@ -76,7 +75,7 @@ const BotVerificationGate: React.FC<BotVerificationGateProps> = ({ children }) =
       widgetIdRef.current = window.turnstile.render(widgetContainerRef.current, {
         sitekey: siteKey,
         theme: 'dark',
-        size: widgetSize,
+        size: 'flexible',
         callback: async (token) => {
           setIsChecking(true);
           setErrorMessage('');
@@ -150,23 +149,37 @@ const BotVerificationGate: React.FC<BotVerificationGateProps> = ({ children }) =
       }
       existingScript?.removeEventListener('load', renderWidget);
     };
-  }, [isVerified, siteKey, verifyUrl, widgetSize]);
+  }, [isVerified, siteKey, verifyUrl]);
 
   useEffect(() => {
     const container = widgetContainerRef.current;
     if (!container || isVerified) return;
 
-    const measure = () => {
+    const applyScale = () => {
+      const wrap = container.firstElementChild as HTMLElement | null;
+      if (!wrap) return;
+
       const width = container.clientWidth;
-      setWidgetSize(width > 0 && width < 300 ? 'compact' : 'flexible');
+
+      if (width > 0 && width < 300) {
+        wrap.style.transform = `scale(${width / 300})`;
+        wrap.style.transformOrigin = 'top left';
+      } else {
+        wrap.style.transform = '';
+      }
     };
 
-    measure();
+    applyScale();
 
     if (typeof ResizeObserver !== 'undefined') {
-      const ro = new ResizeObserver(() => measure());
+      const ro = new ResizeObserver(() => applyScale());
       ro.observe(container);
-      return () => ro.disconnect();
+      const mo = new MutationObserver(() => applyScale());
+      mo.observe(container, { childList: true });
+      return () => {
+        ro.disconnect();
+        mo.disconnect();
+      };
     }
   }, [isVerified]);
 
