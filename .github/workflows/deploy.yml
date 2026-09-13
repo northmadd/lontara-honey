@@ -34,6 +34,8 @@ jobs:
         run: npm run build
         env:
           BASE_PATH: /lontara-honey/
+          VITE_TURNSTILE_SITE_KEY: 0x4AAAAAAEkeAYbLy0BDXtgv
+          VITE_TURNSTILE_VERIFY_URL: https://lontarahoney.com/api/verify-turnstile.php
 
       - name: Upload artifact
         uses: actions/upload-pages-artifact@v3

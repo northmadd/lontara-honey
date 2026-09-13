@@ -43,8 +43,8 @@ const markAsVerified = () => {
 
 const BotVerificationGate: React.FC<BotVerificationGateProps> = ({ children }) => {
   const siteKey = import.meta.env.VITE_TURNSTILE_SITE_KEY;
-  const isLocalDev = import.meta.env.DEV && ['localhost', '127.0.0.1'].includes(window.location.hostname);
-  const [isVerified, setIsVerified] = useState(() => !siteKey || isVerificationStillValid());
+  const verifyUrl = import.meta.env.VITE_TURNSTILE_VERIFY_URL || `${import.meta.env.BASE_URL}api/verify-turnstile.php`;
+  const [isVerified, setIsVerified] = useState(() => isVerificationStillValid());
   const [isChallengePassed, setIsChallengePassed] = useState(false);
   const [verificationLanguage, setVerificationLanguage] = useState<'id' | 'en'>('en');
   const [isChecking, setIsChecking] = useState(false);
@@ -53,12 +53,12 @@ const BotVerificationGate: React.FC<BotVerificationGateProps> = ({ children }) =
   const widgetIdRef = useRef<TurnstileWidgetId | null>(null);
 
   useEffect(() => {
-    if (isLocalDev) {
-      setIsChallengePassed(true);
+    if (!siteKey) {
+      setErrorMessage('Turnstile site key belum dikonfigurasi.');
       return;
     }
 
-    if (!siteKey || isVerified || !widgetContainerRef.current) return;
+    if (isVerified || !widgetContainerRef.current) return;
 
     let isMounted = true;
 
@@ -81,7 +81,7 @@ const BotVerificationGate: React.FC<BotVerificationGateProps> = ({ children }) =
           setErrorMessage('');
 
           try {
-            const response = await fetch('/api/verify-turnstile.php', {
+            const response = await fetch(verifyUrl, {
               method: 'POST',
               headers: {
                 'Content-Type': 'application/json',
@@ -94,7 +94,7 @@ const BotVerificationGate: React.FC<BotVerificationGateProps> = ({ children }) =
             try {
               result = responseText ? JSON.parse(responseText) : {};
             } catch {
-              throw new Error('Server verifikasi tidak mengirim JSON yang valid. Pastikan endpoint PHP tersedia di hosting.');
+              throw new Error('Server verifikasi tidak mengirim JSON yang valid.');
             }
 
             if (!response.ok || !result.success) {
@@ -149,7 +149,7 @@ const BotVerificationGate: React.FC<BotVerificationGateProps> = ({ children }) =
       }
       existingScript?.removeEventListener('load', renderWidget);
     };
-  }, [isLocalDev, isVerified, siteKey]);
+  }, [isVerified, siteKey, verifyUrl]);
 
   if (isVerified) {
     return <>{children}</>;
