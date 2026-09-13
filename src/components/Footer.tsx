@@ -172,6 +172,8 @@ const Footer: React.FC = () => {
           background: transparent !important;
           border: 0;
           outline: 0;
+          mix-blend-mode: screen;
+          isolation: isolate;
         }
 
       `}</style>
