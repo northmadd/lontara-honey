@@ -209,7 +209,7 @@ const BotVerificationGate: React.FC<BotVerificationGateProps> = ({ children }) =
           </p>
 
           <div className="mt-7 w-full overflow-hidden">
-            <div ref={widgetContainerRef} className="w-full [&>div]:mx-auto [&>div]:w-full" />
+            <div ref={widgetContainerRef} data-verification-widget className="w-full [&>div]:mx-auto [&>div]:w-full" />
 
           </div>
 

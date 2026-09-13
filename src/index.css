@@ -441,8 +441,19 @@ body {
   }
 }
 
-.cf-turnstile,
+[data-verification-widget],
+.cf-turnstile {
+  overflow: hidden;
+  width: 100%;
+  max-width: 100%;
+  min-width: 0;
+}
+
+[data-verification-widget] > div,
+[data-verification-widget] iframe,
+.cf-turnstile > div,
 .cf-turnstile iframe {
   width: 100% !important;
   min-width: 0 !important;
+  max-width: 100% !important;
 }
