@@ -7,8 +7,9 @@ const __dirname = path.dirname(fileURLToPath(import.meta.url));
 
 // https://vitejs.dev/config/
 export default defineConfig({
-  // The production site is served from the root of lontarahoney.com.
-  base: "/",
+  // GitHub Pages deploys with BASE_PATH=/lontara-honey/ (see .github/workflows/deploy.yml).
+  // cPanel production builds without BASE_PATH and serve from the root (/).
+  base: process.env.BASE_PATH || "/",
   plugins: [react()],
   resolve: {
     alias: {
