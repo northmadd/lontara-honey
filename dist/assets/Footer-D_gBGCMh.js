@@ -1,4 +1,4 @@
-import{c as n,j as e,l as h,L as r}from"./index-B9oiLlm5.js";import{M as m}from"./map-pin-Bs_TqdVp.js";import{P as x,M as p}from"./phone-7z76Wicy.js";/**
+import{c as n,j as e,l as h,L as r}from"./index-BeOdzzoq.js";import{M as m}from"./map-pin-DnowXtXj.js";import{P as x,M as p}from"./phone-CR35cP2w.js";/**
  * @license lucide-react v0.462.0 - ISC
  *
  * This source code is licensed under the ISC license.
@@ -139,6 +139,13 @@ import{c as n,j as e,l as h,L as r}from"./index-B9oiLlm5.js";import{M as m}from"
           background: transparent !important;
           border: 0;
           outline: 0;
+          border-radius: 14px;
+          box-shadow: 0 8px 22px rgba(64, 36, 10, 0.2), inset 0 0 0 1px rgba(212, 160, 86, 0.3);
+        }
+
+        html.dark .northmad-video {
+          border-radius: 0;
+          box-shadow: none;
           mix-blend-mode: screen;
           isolation: isolate;
         }

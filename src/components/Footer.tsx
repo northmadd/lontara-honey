@@ -172,6 +172,13 @@ const Footer: React.FC = () => {
           background: transparent !important;
           border: 0;
           outline: 0;
+          border-radius: 14px;
+          box-shadow: 0 8px 22px rgba(64, 36, 10, 0.2), inset 0 0 0 1px rgba(212, 160, 86, 0.3);
+        }
+
+        html.dark .northmad-video {
+          border-radius: 0;
+          box-shadow: none;
           mix-blend-mode: screen;
           isolation: isolate;
         }

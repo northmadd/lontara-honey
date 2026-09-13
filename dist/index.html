@@ -88,7 +88,12 @@
         docEl.classList.add('intro-lock');
         try {
           var stored = localStorage.getItem('theme');
-          var theme = stored ? stored : 'dark';
+          if (stored === 'light' && localStorage.getItem('nh-theme-default') !== '1') {
+            localStorage.removeItem('theme');
+            localStorage.setItem('nh-theme-default', '1');
+            stored = null;
+          }
+          var theme = stored === 'dark' || stored === 'light' ? stored : 'dark';
           if (theme === 'dark') docEl.classList.add('dark');
           else docEl.classList.remove('dark');
         } catch (e) {
@@ -150,7 +155,7 @@
         ]
       }
     </script>
-    <script type="module" crossorigin src="/assets/index-B9oiLlm5.js"></script>
+    <script type="module" crossorigin src="/assets/index-BeOdzzoq.js"></script>
     <link rel="stylesheet" crossorigin href="/assets/index-BWE9gpXs.css">
   </head>
 
