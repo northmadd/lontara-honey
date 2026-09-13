@@ -441,7 +441,13 @@ body {
   }
 }
 
-[data-verification-widget],
+[data-verification-widget] {
+  overflow: hidden;
+  width: 100%;
+  max-width: 100%;
+  transition: height 150ms ease;
+}
+
 .cf-turnstile {
   overflow: hidden;
   width: 100%;
@@ -449,9 +455,6 @@ body {
   min-width: 0;
 }
 
-[data-verification-widget] > div,
-[data-verification-widget] iframe,
-.cf-turnstile > div,
 .cf-turnstile iframe {
   width: 100% !important;
   min-width: 0 !important;

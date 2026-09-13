@@ -49,6 +49,7 @@ const BotVerificationGate: React.FC<BotVerificationGateProps> = ({ children }) =
   const [verificationLanguage, setVerificationLanguage] = useState<'id' | 'en'>('en');
   const [isChecking, setIsChecking] = useState(false);
   const [errorMessage, setErrorMessage] = useState('');
+  const [widgetSize, setWidgetSize] = useState<'flexible' | 'compact'>('flexible');
   const widgetContainerRef = useRef<HTMLDivElement | null>(null);
   const widgetIdRef = useRef<TurnstileWidgetId | null>(null);
 
@@ -75,7 +76,7 @@ const BotVerificationGate: React.FC<BotVerificationGateProps> = ({ children }) =
       widgetIdRef.current = window.turnstile.render(widgetContainerRef.current, {
         sitekey: siteKey,
         theme: 'dark',
-        size: 'flexible',
+        size: widgetSize,
         callback: async (token) => {
           setIsChecking(true);
           setErrorMessage('');
@@ -149,7 +150,25 @@ const BotVerificationGate: React.FC<BotVerificationGateProps> = ({ children }) =
       }
       existingScript?.removeEventListener('load', renderWidget);
     };
-  }, [isVerified, siteKey, verifyUrl]);
+  }, [isVerified, siteKey, verifyUrl, widgetSize]);
+
+  useEffect(() => {
+    const container = widgetContainerRef.current;
+    if (!container || isVerified) return;
+
+    const measure = () => {
+      const width = container.clientWidth;
+      setWidgetSize(width > 0 && width < 300 ? 'compact' : 'flexible');
+    };
+
+    measure();
+
+    if (typeof ResizeObserver !== 'undefined') {
+      const ro = new ResizeObserver(() => measure());
+      ro.observe(container);
+      return () => ro.disconnect();
+    }
+  }, [isVerified]);
 
   if (isVerified) {
     return <>{children}</>;
