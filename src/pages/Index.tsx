@@ -1,96 +1,84 @@
-import React, { useState, useRef, useEffect } from 'react';
+import React, { lazy, Suspense, useState, useRef, useEffect, useMemo } from 'react';
 import { LanguageProvider } from '@/contexts/LanguageContext';
 import IntroScreen from '@/components/IntroScreen';
 import Navbar from '@/components/Navbar';
 import HeroSection from '@/components/HeroSection';
-import ProductsSection, { Product } from '@/components/ProductsSection';
-import AboutSection from '@/components/AboutSection';
-import StorySection from '@/components/StorySection';
-import TestimonialsSection from '@/components/TestimonialsSection';
-import ContactSection from '@/components/ContactSection';
-import Footer from '@/components/Footer';
-import WhatsAppButton from '@/components/WhatsAppButton';
-import OrderModal from '@/components/OrderModal';
+import type { Product } from '@/components/ProductsSection';
+import backsound from '@/assets/wle.mp3';
+
+const ProductsSection = lazy(() => import('@/components/ProductsSection'));
+const AboutSection = lazy(() => import('@/components/AboutSection'));
+const StorySection = lazy(() => import('@/components/StorySection'));
+const TestimonialsSection = lazy(() => import('@/components/TestimonialsSection'));
+const ContactSection = lazy(() => import('@/components/ContactSection'));
+const Footer = lazy(() => import('@/components/Footer'));
+const WhatsAppButton = lazy(() => import('@/components/WhatsAppButton'));
+const OrderModal = lazy(() => import('@/components/OrderModal'));
+const InternationalSection = lazy(() => import('@/components/InternationalSection'));
 
 // Import images
-import heroImage from '@/assets/hero-honey.jpg';
-import aboutImage from '@/assets/about-honey.jpg';
-import happyPeopleImage from '@/assets/happy-people.jpg';
-import story1 from '@/assets/story-1.jpg';
-import story2 from '@/assets/story-2.jpg';
-import story3 from '@/assets/story-3.jpg';
-import story4 from '@/assets/story-4.jpg';
-import acacia130g from '@/assets/acacia-400g.jpg';
-import acacia250g from '@/assets/acacia-250g.jpg';
-import acacia485g from '@/assets/acacia-485g.jpg';
-import acacia670g from '@/assets/acacia-670g.jpg';
-import forest350g from '@/assets/forest-350g.jpg';
-import forest400g from '@/assets/forest-400g.jpg';
-import forest485g from '@/assets/forest-485g.jpg';
-import forest670g from '@/assets/forest-670g.jpg';
-import forest7kg from '@/assets/forest-7kg.png';
-import stingless200g from '@/assets/stingless-335g.jpg';
-import stingless350g from '@/assets/stingless-400g.jpg';
-import stingless500g from '@/assets/stingless-485g.jpg';
+import heroImage from '@/assets/hero-honey.webp';
+import aboutImage from '@/assets/about-honey.webp';
+import happyPeopleImage from '@/assets/happy-people.webp';
+import story1 from '@/assets/story-1.webp';
+import story2 from '@/assets/story-2.webp';
+import story3 from '@/assets/story-3.webp';
+import story4 from '@/assets/story-4.webp';
+import acacia140g from '@/assets/acacia honey 140g  50k.webp';
+import acacia350g from '@/assets/acacia honey 350g 130k.webp';
+import acacia670g from '@/assets/acacia honey 670g 250k.webp';
+import forest350g from '@/assets/forest honey 350g 180k.webp';
+import forest670g from '@/assets/forest honey 670g 350k.webp';
+import stingless350g from '@/assets/stingless be honey 350g 180k.webp';
+import stingless670g from '@/assets/stingless be honey 670g 400k.webp';
 
 const products: Product[] = [
   {
-    id: '1',
+    id: 'acacia-140g',
     name: {
-      id: 'Madu Akasia 250g',
-      en: 'Acacia Honey 250g'
+      id: 'Madu Akasia 140g',
+      en: 'Acacia Honey 140g'
     },
-    price: 100000,
-    weight: '250g',
-    image: acacia250g,
-    type: 'glass' as const,
+    price: 50000,
+    weight: '140g',
+    image: acacia140g,
+    type: 'plastic' as const,
   },
   {
-    id: '2',
+    id: 'acacia-350g',
+    name: {
+      id: 'Madu Akasia 350g',
+      en: 'Acacia Honey 350g'
+    },
+    price: 130000,
+    weight: '350g',
+    image: acacia350g,
+    type: 'plastic' as const,
+  },
+  {
+    id: 'forest-350g',
     name: {
       id: 'Madu Hutan 350g',
       en: 'Forest Honey 350g'
     },
-    price: 130000,
+    price: 180000,
     weight: '350g',
     image: forest350g,
-    type: 'glass' as const,
+    type: 'plastic' as const,
   },
   {
-    id: '3',
+    id: 'stingless-350g',
     name: {
-      id: 'Madu Lebah Tanpa Sengat 335g',
-      en: 'Stingless Bee Honey 335g'
-    },
-    price: 200000,
-    weight: '335g',
-    image: stingless200g,
-    type: 'glass' as const,
-  },
-  {
-    id: '4',
-    name: {
-      id: 'Madu Akasia 400g',
-      en: 'Acacia Honey 400g'
-    },
-    price: 200000,
-    weight: '400g',
-    image: acacia130g,
-    type: 'glass' as const,
-  },
-  {
-    id: '5',
-    name: {
-      id: 'Madu Akasia 485g',
-      en: 'Acacia Honey 485g'
+      id: 'Madu Lebah Tanpa Sengat 350g',
+      en: 'Stingless Bee Honey 350g'
     },
     price: 180000,
-    weight: '485g',
-    image: acacia485g,
-    type: 'glass' as const,
+    weight: '350g',
+    image: stingless350g,
+    type: 'plastic' as const,
   },
   {
-    id: '6',
+    id: 'acacia-670g',
     name: {
       id: 'Madu Akasia 670g',
       en: 'Acacia Honey 670g'
@@ -101,40 +89,7 @@ const products: Product[] = [
     type: 'glass' as const,
   },
   {
-    id: '7',
-    name: {
-      id: 'Madu Hutan 400g',
-      en: 'Forest Honey 400g'
-    },
-    price: 300000,
-    weight: '400g',
-    image: forest400g,
-    type: 'glass' as const,
-  },
-  {
-    id: '8',
-    name: {
-      id: 'Madu Hutan 485g',
-      en: 'Forest Honey 485g'
-    },
-    price: 300000,
-    weight: '485g',
-    image: forest485g,
-    type: 'glass' as const,
-  },
-  {
-    id: '9',
-    name: {
-      id: 'Madu Lebah Tanpa Sengat 400g',
-      en: 'Stingless Bee Honey 400g'
-    },
-    price: 350000,
-    weight: '400g',
-    image: stingless350g,
-    type: 'glass' as const,
-  },
-  {
-    id: '10',
+    id: 'forest-670g',
     name: {
       id: 'Madu Hutan 670g',
       en: 'Forest Honey 670g'
@@ -145,25 +100,14 @@ const products: Product[] = [
     type: 'glass' as const,
   },
   {
-    id: '11',
+    id: 'stingless-670g',
     name: {
-      id: 'Madu Lebah Tanpa Sengat 485g',
-      en: 'Stingless Bee Honey 485g'
+      id: 'Madu Lebah Tanpa Sengat 670g',
+      en: 'Stingless Bee Honey 670g'
     },
-    price: 350000,
-    weight: '485g',
-    image: stingless500g,
-    type: 'glass' as const,
-  },
-  {
-    id: '12',
-    name: {
-      id: 'Madu Hutan 7kg',
-      en: 'Forest Honey 7kg'
-    },
-    price: 2000000,
-    weight: '7kg',
-    image: forest7kg,
+    price: 400000,
+    weight: '670g',
+    image: stingless670g,
     type: 'glass' as const,
   },
 ].sort((a, b) => a.price - b.price);
@@ -174,20 +118,25 @@ const IndexContent: React.FC = () => {
   const [showIntro, setShowIntro] = useState(true);
   const [activeSection, setActiveSection] = useState('home');
   const [selectedProduct, setSelectedProduct] = useState<Product | null>(null);
-  
+  const [isBacksoundMuted, setIsBacksoundMuted] = useState(false);
+
+  const backsoundRef = useRef<HTMLAudioElement | null>(null);
+  const hasStartedBacksoundRef = useRef(false);
   const homeRef = useRef<HTMLDivElement>(null);
   const productsRef = useRef<HTMLDivElement>(null);
   const aboutRef = useRef<HTMLDivElement>(null);
   const storyRef = useRef<HTMLDivElement>(null);
+  const internationalRef = useRef<HTMLDivElement>(null);
   const contactRef = useRef<HTMLDivElement>(null);
 
-  const sectionRefs: Record<string, React.RefObject<HTMLDivElement>> = {
+  const sectionRefs: Record<string, React.RefObject<HTMLDivElement>> = useMemo(() => ({
     home: homeRef,
     products: productsRef,
     about: aboutRef,
     story: storyRef,
+    international: internationalRef,
     contact: contactRef,
-  };
+  }), []);
 
   const handleNavigate = (section: string) => {
     const ref = sectionRefs[section];
@@ -199,7 +148,7 @@ const IndexContent: React.FC = () => {
   useEffect(() => {
     const handleScroll = () => {
       const scrollPosition = window.scrollY + 100;
-      
+
       Object.entries(sectionRefs).forEach(([key, ref]) => {
         if (ref.current) {
           const { offsetTop, offsetHeight } = ref.current;
@@ -212,51 +161,153 @@ const IndexContent: React.FC = () => {
 
     window.addEventListener('scroll', handleScroll);
     return () => window.removeEventListener('scroll', handleScroll);
-  }, []);
+  }, [sectionRefs]);
 
-  if (showIntro) {
-    return <IntroScreen onComplete={() => setShowIntro(false)} />;
-  }
+  useEffect(() => {
+    document.documentElement.classList.toggle('intro-lock', showIntro);
+
+    if (backsoundRef.current) {
+      backsoundRef.current.muted = isBacksoundMuted;
+    }
+
+    if (showIntro || hasStartedBacksoundRef.current || !backsoundRef.current) {
+      return () => {
+        document.documentElement.classList.remove('intro-lock');
+      };
+    }
+
+    const removeStartListeners = () => {
+      document.body.removeEventListener('pointerdown', startBacksound);
+      document.body.removeEventListener('touchstart', startBacksound);
+      document.body.removeEventListener('click', startBacksound);
+    };
+
+    const startBacksound = () => {
+      if (!backsoundRef.current || hasStartedBacksoundRef.current) return;
+
+      backsoundRef.current.volume = 1;
+      backsoundRef.current.loop = true;
+      backsoundRef.current
+        .play()
+        .then(() => {
+          hasStartedBacksoundRef.current = true;
+          removeStartListeners();
+        })
+        .catch(() => {
+          // Browser autoplay policy may require a user gesture.
+        });
+    };
+
+    const resumeBacksound = () => {
+      if (
+        !document.hidden &&
+        backsoundRef.current &&
+        backsoundRef.current.paused &&
+        hasStartedBacksoundRef.current &&
+        !backsoundRef.current.muted
+      ) {
+        backsoundRef.current
+          .play()
+          .catch(() => {
+            // Browser autoplay policy may block resuming; user can tap again.
+          });
+      }
+    };
+
+    const handleVisibilityChange = () => {
+      if (document.hidden && backsoundRef.current && !backsoundRef.current.paused) {
+        backsoundRef.current.pause();
+      } else if (!document.hidden) {
+        resumeBacksound();
+      }
+    };
+
+    startBacksound();
+
+    document.body.addEventListener('pointerdown', startBacksound);
+    document.body.addEventListener('touchstart', startBacksound);
+    document.body.addEventListener('click', startBacksound);
+    document.addEventListener('visibilitychange', handleVisibilityChange);
+    window.addEventListener('focus', resumeBacksound);
+
+    return () => {
+      document.documentElement.classList.remove('intro-lock');
+      removeStartListeners();
+      document.removeEventListener('visibilitychange', handleVisibilityChange);
+      window.removeEventListener('focus', resumeBacksound);
+    };
+  }, [showIntro, isBacksoundMuted]);
 
   return (
-    <div className="min-h-screen bg-background">
-      <Navbar onNavigate={handleNavigate} activeSection={activeSection} />
-      
+    <>
+      <audio ref={backsoundRef} preload="auto" src={backsound} loop className="hidden" />
+      {showIntro ? (
+        <IntroScreen onComplete={() => setShowIntro(false)} />
+      ) : (
+        <div className="min-h-screen bg-background notranslate" translate="no">
+          <Navbar onNavigate={handleNavigate} activeSection={activeSection} />
+
       <div ref={homeRef} id="home">
         <HeroSection onNavigate={handleNavigate} heroImage={heroImage} />
       </div>
-      
+
       <div ref={productsRef} id="products">
-        <ProductsSection 
-          products={products} 
-          onOrderProduct={setSelectedProduct}
-        />
+        <Suspense fallback={<div className="min-h-[320px]" />}>
+          <ProductsSection
+            products={products}
+            onOrderProduct={setSelectedProduct}
+          />
+        </Suspense>
       </div>
-      
+
       <div ref={aboutRef} id="about">
-        <AboutSection aboutImage={aboutImage} />
+        <Suspense fallback={<div className="min-h-[320px]" />}>
+          <AboutSection aboutImage={aboutImage} />
+        </Suspense>
       </div>
-      
+
       <div ref={storyRef} id="story">
-        <StorySection storyImages={storyImages} />
+        <Suspense fallback={<div className="min-h-[320px]" />}>
+          <StorySection storyImages={storyImages} />
+        </Suspense>
       </div>
-      
-      <TestimonialsSection happyPeopleImage={happyPeopleImage} />
-      
+
+      <Suspense fallback={<div className="min-h-[320px]" />}>
+        <TestimonialsSection happyPeopleImage={happyPeopleImage} />
+      </Suspense>
+      <div ref={internationalRef}>
+        <Suspense fallback={<div className="min-h-[320px]" />}><InternationalSection /></Suspense>
+      </div>
+
       <div ref={contactRef} id="contact">
-        <ContactSection />
+        <Suspense fallback={<div className="min-h-[320px]" />}><ContactSection /></Suspense>
       </div>
-      
-      <Footer />
-      <WhatsAppButton />
-      
-      {selectedProduct && (
-        <OrderModal 
-          product={selectedProduct} 
-          onClose={() => setSelectedProduct(null)} 
+
+      <Suspense fallback={null}>
+        <Footer />
+        <WhatsAppButton
+          isMuted={isBacksoundMuted}
+          onToggleMute={() => {
+            const nextMuted = !isBacksoundMuted;
+            setIsBacksoundMuted(nextMuted);
+            if (backsoundRef.current) {
+              backsoundRef.current.muted = nextMuted;
+            }
+          }}
         />
+      </Suspense>
+
+      {selectedProduct && (
+        <Suspense fallback={null}>
+          <OrderModal
+            product={selectedProduct}
+            onClose={() => setSelectedProduct(null)}
+          />
+        </Suspense>
       )}
     </div>
+    )}
+    </>
   );
 };
 

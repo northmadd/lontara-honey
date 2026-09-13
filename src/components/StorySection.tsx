@@ -1,7 +1,7 @@
 import React from 'react';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { motion } from 'framer-motion';
-import honeyVisual from '@/assets/honey-visual.png';
+import honeyVisual from '@/assets/honey-visual.webp';
 
 interface StorySectionProps {
   storyImages: string[];
@@ -18,10 +18,10 @@ const StorySection: React.FC<StorySectionProps> = ({ storyImages }) => {
   ];
 
   return (
-    <section className="py-24 bg-gradient-to-tl from-honey-amber/10 via-honey-cream to-honey-light/20 overflow-hidden relative">
+    <section className="py-24 bg-gradient-to-tl from-muted via-background to-honey-light overflow-hidden relative">
       {/* Decorative Honey Visual */}
       <div className="absolute right-10 top-40 opacity-10 pointer-events-none hidden lg:block">
-        <img src={honeyVisual} alt="" className="w-72 h-72 object-contain" />
+        <img src={honeyVisual} alt="" loading="lazy" decoding="async" className="w-72 h-72 object-contain" />
       </div>
       <div className="container mx-auto px-4 md:px-6 relative z-10">
         {/* Header */}
@@ -86,6 +86,8 @@ const StorySection: React.FC<StorySectionProps> = ({ storyImages }) => {
                     <img
                       src={chapter.image}
                       alt={t(chapter.titleKey)}
+                      loading="lazy"
+                      decoding="async"
                       className="w-full h-48 sm:h-56 md:h-64 lg:h-80 object-cover"
                     />
                     <div className="absolute inset-0 bg-gradient-to-t from-honey-dark/50 to-transparent" />
@@ -108,7 +110,7 @@ const StorySection: React.FC<StorySectionProps> = ({ storyImages }) => {
                   <h3 className="text-2xl md:text-3xl font-serif font-bold text-foreground mb-4">
                     {t(chapter.titleKey)}
                   </h3>
-                  <p className="text-muted-foreground leading-relaxed">
+                  <p className="text-muted-foreground dark:text-white/80 leading-relaxed">
                     {t(chapter.textKey)}
                   </p>
                 </div>

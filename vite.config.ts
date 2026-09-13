@@ -7,7 +7,8 @@ const __dirname = path.dirname(fileURLToPath(import.meta.url));
 
 // https://vitejs.dev/config/
 export default defineConfig({
-  base: "/lontara-honey/",
+  // The production site is served from the root of lontarahoney.com.
+  base: "/",
   plugins: [react()],
   resolve: {
     alias: {

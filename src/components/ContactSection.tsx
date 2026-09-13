@@ -1,14 +1,16 @@
-import React, { useState } from 'react';
+import React, { useRef, useState } from 'react';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { motion } from 'framer-motion';
 import { MapPin, Phone, Mail, Send } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
+import CountryCodeSelect, { getPhonePlaceholder } from '@/components/CountryCodeSelect';
 import { toast } from '@/hooks/use-toast';
-import honeyVisual from '@/assets/honey-visual.png';
+import honeyVisual from '@/assets/honey-visual.webp';
 
 const WHATSAPP_NUMBER = '6282347905543';
+const FORM_COOLDOWN_MS = 15_000;
 
 const openWhatsApp = (message: string) => {
   // Use intent for Android, fallback for others
@@ -21,15 +23,36 @@ const ContactSection: React.FC = () => {
   const { language, t } = useLanguage();
   const [formData, setFormData] = useState({
     name: '',
+    countryCode: '+62',
     phone: '',
     message: '',
+    website: '',
   });
+  const [phoneError, setPhoneError] = useState('');
   const [mapError, setMapError] = useState(false);
+  const lastSubmission = useRef(0);
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
+
+    if (formData.website) return;
+
+    if (!formData.phone.trim()) {
+      setPhoneError(language === 'en' ? 'Phone number is required.' : 'Nomor telepon wajib diisi.');
+      return;
+    }
+
+    if (Date.now() - lastSubmission.current < FORM_COOLDOWN_MS) {
+      toast({
+        title: language === 'en' ? 'Please wait a moment' : 'Mohon tunggu sebentar',
+        description: language === 'en' ? 'You can send another message in a few seconds.' : 'Anda dapat mengirim pesan lagi dalam beberapa detik.',
+      });
+      return;
+    }
+
+    lastSubmission.current = Date.now();
     
-    const message = `Hello Lontara Honey!\n\nName: ${formData.name}\nPhone: ${formData.phone}\n\nMessage:\n${formData.message}`;
+    const message = `Hello Lontara Honey!\n\nName: ${formData.name}\nPhone: ${formData.countryCode} ${formData.phone}\n\nMessage:\n${formData.message}`;
     openWhatsApp(message);
     toast({
       title: 'Redirecting to WhatsApp',
@@ -51,7 +74,7 @@ const ContactSection: React.FC = () => {
     {
       icon: Mail,
       title: 'Email',
-      text: 'kaptenahmad01@gmail.com',
+      text: 'lontarajayanusantara@gmail.com',
     },
   ];
 
@@ -59,12 +82,12 @@ const ContactSection: React.FC = () => {
     <section className="py-24 bg-gradient-to-br from-background via-honey-cream/10 to-honey-light/5 dark:from-background dark:via-background dark:to-background relative overflow-hidden">
       {/* Decorative Honey Visual */}
       <div className="absolute left-0 bottom-10 opacity-10 pointer-events-none hidden md:block">
-        <img src={honeyVisual} alt="" className="w-48 h-48 md:w-64 md:h-64 object-contain" />
+        <img src={honeyVisual} alt="" loading="lazy" decoding="async" className="w-48 h-48 md:w-64 md:h-64 object-contain" />
       </div>
       <div className="container mx-auto px-4 md:px-6 relative z-10">
         <div className="space-y-16">
           {/* Info + Form */}
-          <div className="grid lg:grid-cols-2 gap-12 md:gap-16 items-start">
+          <div className="grid lg:grid-cols-2 gap-12 md:gap-16 items-start lg:items-stretch">
             {/* Left: Heading + Contact Info */}
             <motion.div
               initial={{ opacity: 0, x: -50 }}
@@ -81,7 +104,7 @@ const ContactSection: React.FC = () => {
                 <h2 className="text-4xl md:text-5xl font-serif font-bold text-foreground mt-4">
                   {t('contact.subtitle')}
                 </h2>
-                <p className="mt-4 text-muted-foreground">
+                <p className="mt-4 text-muted-foreground dark:text-white/80">
                   {language === 'en' ? (
                     <>
                       Reach out to us for product information and wholesale inquiries,
@@ -132,13 +155,23 @@ const ContactSection: React.FC = () => {
 
             {/* Contact / Order Form */}
             <motion.div
-              className="honey-card p-8"
+              className="honey-card p-8 h-full"
               initial={{ opacity: 0, x: 50 }}
               whileInView={{ opacity: 1, x: 0 }}
               viewport={{ once: true }}
               transition={{ duration: 0.8 }}
             >
-              <form onSubmit={handleSubmit} className="space-y-6">
+              <form onSubmit={handleSubmit} className="space-y-6 h-full flex flex-col">
+                <div className="absolute -left-[10000px] h-px w-px overflow-hidden" aria-hidden="true">
+                  <label htmlFor="contact-website">Website</label>
+                  <Input
+                    id="contact-website"
+                    tabIndex={-1}
+                    autoComplete="off"
+                    value={formData.website}
+                    onChange={(e) => setFormData({ ...formData, website: e.target.value })}
+                  />
+                </div>
                 <div>
                   <label className="block text-sm font-medium text-foreground mb-2">
                     {t('contact.name')}
@@ -148,20 +181,41 @@ const ContactSection: React.FC = () => {
                     onChange={(e) => setFormData({ ...formData, name: e.target.value })}
                     placeholder={language === 'en' ? 'Your Name..' : 'Nama lengkap..'}
                     required
+                    maxLength={80}
                     className="bg-background"
                   />
                 </div>
                 <div>
                   <label className="block text-sm font-medium text-foreground mb-2">
-                    {t('contact.phone')}
+                    {t('contact.phone')} *
                   </label>
-                  <Input
-                    value={formData.phone}
-                    onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
-                    placeholder={language === 'en' ? '+62 812 3456 7890' : '08xx xxxx xxxx'}
-                    required
-                    className="bg-background"
-                  />
+                  <div className="flex gap-2">
+                    <CountryCodeSelect
+                      value={formData.countryCode}
+                      onChange={(value) => setFormData({ ...formData, countryCode: value })}
+                      ariaLabel={language === 'en' ? 'Country code' : 'Kode negara'}
+                    />
+                    <Input
+                      type="tel"
+                      inputMode="numeric"
+                      value={formData.phone}
+                      onChange={(e) => {
+                        setFormData({ ...formData, phone: e.target.value.replace(/\D/g, '') });
+                        if (phoneError) setPhoneError('');
+                      }}
+                      placeholder={getPhonePlaceholder(formData.countryCode)}
+                      aria-invalid={Boolean(phoneError)}
+                      aria-describedby={phoneError ? 'contact-phone-error' : undefined}
+                      minLength={6}
+                      maxLength={16}
+                      className="bg-background flex-1"
+                    />
+                  </div>
+                  {phoneError && (
+                    <p id="contact-phone-error" className="mt-2 text-sm text-destructive">
+                      {phoneError}
+                    </p>
+                  )}
                 </div>
                 <div>
                   <label className="block text-sm font-medium text-foreground mb-2">
@@ -173,13 +227,14 @@ const ContactSection: React.FC = () => {
                     placeholder={language === 'en' ? 'Your message...' : 'Pesan Anda...'}
                     rows={5}
                     required
+                    maxLength={1000}
                     className="bg-background"
                   />
                 </div>
                 <Button
                   type="submit"
                   size="lg"
-                  className="w-full honey-gradient text-white border-0 hover:opacity-90"
+                  className="w-full honey-gradient text-white border-0 hover:opacity-90 mt-auto"
                 >
                   <Send className="w-5 h-5 mr-2" />
                   {t('contact.send')}
@@ -199,9 +254,9 @@ const ContactSection: React.FC = () => {
             {mapError ? (
               <div className="w-full h-72 md:h-96 flex items-center justify-center bg-muted/20">
                 <div className="text-center p-8">
-                  <MapPin className="w-12 h-12 mx-auto mb-4 text-muted-foreground" />
-                  <p className="text-muted-foreground">Map tidak dapat dimuat</p>
-                  <p className="text-sm text-muted-foreground mt-2">
+                  <MapPin className="w-12 h-12 mx-auto mb-4 text-muted-foreground dark:text-white/80" />
+                  <p className="text-foreground">Map tidak dapat dimuat</p>
+                  <p className="text-sm text-muted-foreground dark:text-white/80 mt-2">
                     Jl. Pangkabinanga, Pangkabinanga, Pallangga, Gowa, Sulawesi Selatan 92161
                   </p>
                 </div>

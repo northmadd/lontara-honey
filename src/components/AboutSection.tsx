@@ -2,6 +2,7 @@ import React from 'react';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { motion } from 'framer-motion';
 import { Award, Leaf, MapPin } from 'lucide-react';
+import beeImage from '@/assets/lebah.webp';
 
 interface AboutSectionProps {
   aboutImage: string;
@@ -32,6 +33,8 @@ const AboutSection: React.FC<AboutSectionProps> = ({ aboutImage }) => {
               <img
                 src={aboutImage}
                 alt="About Lontara Honey"
+                loading="lazy"
+                decoding="async"
                 className="w-full h-[300px] md:h-[400px] lg:h-[500px] object-cover"
               />
             </div>
@@ -43,7 +46,13 @@ const AboutSection: React.FC<AboutSectionProps> = ({ aboutImage }) => {
               animate={{ rotate: [0, 5, -5, 0] }}
               transition={{ duration: 6, repeat: Infinity }}
             >
-              <span className="text-5xl">🐝</span>
+              <img
+                src={beeImage}
+                alt="Lebah"
+                loading="lazy"
+                decoding="async"
+                className="h-24 w-24 object-contain"
+              />
             </motion.div>
           </motion.div>
 
@@ -62,7 +71,7 @@ const AboutSection: React.FC<AboutSectionProps> = ({ aboutImage }) => {
               {t('about.subtitle')}
             </h2>
             
-            <div className="space-y-4 text-muted-foreground leading-relaxed">
+            <div className="space-y-4 text-muted-foreground dark:text-white/80 leading-relaxed">
               <p>{t('about.p1')}</p>
               <p>{t('about.p2')}</p>
               <p>{t('about.p3')}</p>
@@ -85,7 +94,7 @@ const AboutSection: React.FC<AboutSectionProps> = ({ aboutImage }) => {
                   <h3 className="font-semibold text-foreground mb-1">
                     {t(feature.titleKey)}
                   </h3>
-                  <p className="text-sm text-muted-foreground">
+                  <p className="text-sm text-muted-foreground dark:text-white/80">
                     {t(feature.descKey)}
                   </p>
                 </motion.div>

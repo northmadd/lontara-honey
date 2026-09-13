@@ -21,7 +21,7 @@ const TestimonialsSection: React.FC<TestimonialsSectionProps> = ({ happyPeopleIm
     },
     {
       name: 'John Wick',
-      role: language === 'id' ? 'Pengusaha Kuliner' : 'Culinary Entrepreneur',
+      role: 'The Baba Yaga',
       text: language === 'id'
         ? 'Lontara Honey adalah pilihan utama untuk membuat tubuh saya selalu terjaga manfaatnya WOAW!!'
         : 'Lontara Honey is the main choice to keep my body healthy. WOAW!!',
@@ -59,7 +59,7 @@ const TestimonialsSection: React.FC<TestimonialsSectionProps> = ({ happyPeopleIm
           <h2 className="text-4xl md:text-5xl font-serif font-bold text-foreground mt-4">
             {language === 'id' ? 'Pelanggan Bahagia' : 'Happy Customers'}
           </h2>
-          <p className="mt-2 text-muted-foreground max-w-2xl mx-auto">
+          <p className="mt-2 text-muted-foreground dark:text-white/80 max-w-2xl mx-auto">
             {language === 'id' 
               ? 'Bergabung dengan ribuan pelanggan yang telah merasakan keajaiban madu Lontara'
               : 'Join thousands of customers who have experienced the magic of Lontara Honey'}
@@ -78,6 +78,8 @@ const TestimonialsSection: React.FC<TestimonialsSectionProps> = ({ happyPeopleIm
             <img
               src={happyPeopleImage}
               alt="Happy customers enjoying Lontara Honey"
+              loading="lazy"
+              decoding="async"
               className="w-full h-[300px] md:h-[350px] lg:h-[400px] object-cover"
             />
             <div className="absolute inset-0 bg-gradient-to-t from-honey-dark/30 to-transparent" />
@@ -106,7 +108,7 @@ const TestimonialsSection: React.FC<TestimonialsSectionProps> = ({ happyPeopleIm
                 
                 <div>
                   <p className="font-semibold text-foreground">{testimonial.name}</p>
-                  <p className="text-sm text-muted-foreground">{testimonial.role}</p>
+                  <p className="text-sm text-muted-foreground dark:text-white/80">{testimonial.role}</p>
                 </div>
               </motion.div>
             ))}

@@ -1,4 +1,4 @@
-import React, { createContext, useContext, useState, ReactNode } from 'react';
+import React, { createContext, useContext, useEffect, useState, ReactNode } from 'react';
 
 type Language = 'en' | 'id';
 
@@ -16,14 +16,15 @@ const translations: Record<Language, Record<string, string>> = {
     'nav.about': 'About',
     'nav.story': 'Our Story',
     'nav.contact': 'Contact',
-    
+    'nav.international': 'International Order',
+
     // Hero
     'hero.subtitle': 'Pure Sulawesi Honey',
     'hero.title': 'Nature\'s Golden Treasure',
     'hero.description': 'Discover the authentic taste of Sulawesi\'s finest honey, harvested from pristine forests by generations of beekeepers.',
     'hero.cta': 'Explore Products',
     'hero.learn': 'Our Story',
-    
+
     // Products
     'products.title': 'Our Products',
     'products.subtitle': 'Premium Honey Collection',
@@ -36,7 +37,10 @@ const translations: Record<Language, Record<string, string>> = {
     'products.glass.large': 'Glass Bottle - Large',
     'products.order': 'Order Now',
     'products.weight': 'Weight',
-    
+    'products.selection': 'Product Selection',
+    'products.packaging.plastic': 'Plastic Bottle',
+    'products.packaging.glass': 'Glass Bottle',
+
     // About
     'about.title': 'About Lontara Honey',
     'about.subtitle': 'The King of Sulawesi Honey',
@@ -49,7 +53,7 @@ const translations: Record<Language, Record<string, string>> = {
     'about.sustainable.desc': 'Eco-friendly harvesting',
     'about.authentic': 'Authentic',
     'about.authentic.desc': 'Direct from Sulawesi forests',
-    
+
     // Story
     'story.title': 'Our Story',
     'story.subtitle': 'From Raja Madu Sulawesi to Lontara Honey',
@@ -61,7 +65,7 @@ const translations: Record<Language, Record<string, string>> = {
     'story.chapter3.text': 'From this journey, Lontara Honey was born  a new brand that represents a more modern, hygienic, and professional standard. Carrying the spirit of the Lontara script, the brand reflects our roots in Sulawesi while embracing today\'s expectations.',
     'story.chapter4.title': 'Growing with a Clear Vision',
     'story.chapter4.text': 'Today the company continues to grow under the name Lontara Honey, bringing quality honey from Sulawesi to consumers across Indonesia. Our vision is to keep expanding responsibly, while honoring nature and the communities that make this journey possible.',
-    
+
     // Contact
     'contact.title': 'Contact & Order',
     'contact.subtitle': 'We are ready to help you with your honey orders',
@@ -71,7 +75,7 @@ const translations: Record<Language, Record<string, string>> = {
     'contact.send': 'Send Message',
     'contact.whatsapp': 'Chat on WhatsApp',
     'contact.address': 'South Sulawesi, Indonesia',
-    
+
     // Order
     'order.title': 'Complete Your Order',
     'order.product': 'Product',
@@ -84,11 +88,11 @@ const translations: Record<Language, Record<string, string>> = {
     'order.bank': 'Bank Transfer',
     'order.ewallet': 'E-Wallet',
     'order.cod': 'Cash on Delivery',
-    
+
     // Footer
     'footer.tagline': 'Pure honey from the heart of Sulawesi',
     'footer.rights': 'All rights reserved',
-    
+
     // Intro
     'intro.welcome': 'Welcome to',
     'intro.tagline': 'The Golden Treasure of Sulawesi',
@@ -100,14 +104,15 @@ const translations: Record<Language, Record<string, string>> = {
     'nav.about': 'About',
     'nav.story': 'Our Story',
     'nav.contact': 'Contact',
-    
+    'nav.international': 'Pesanan Internasional',
+
     // Hero
     'hero.subtitle': 'Madu Murni Sulawesi',
     'hero.title': 'Harta Emas dari Alam',
     'hero.description': 'Temukan cita rasa autentik madu terbaik Sulawesi, dipanen dari hutan perawan oleh para peternak lebah turun-temurun.',
     'hero.cta': 'Lihat Produk',
     'hero.learn': 'Cerita Kami',
-    
+
     // Products
     'products.title': 'Produk Kami',
     'products.subtitle': 'Koleksi Madu Premium',
@@ -120,7 +125,10 @@ const translations: Record<Language, Record<string, string>> = {
     'products.glass.large': 'Botol Kaca - Besar',
     'products.order': 'Pesan Sekarang',
     'products.weight': 'Berat',
-    
+    'products.selection': 'Pilihan Produk',
+    'products.packaging.plastic': 'Botol Plastik',
+    'products.packaging.glass': 'Botol Kaca',
+
     // About
     'about.title': 'Tentang Lontara Honey',
     'about.subtitle': 'Raja Madu Sulawesi',
@@ -133,7 +141,7 @@ const translations: Record<Language, Record<string, string>> = {
     'about.sustainable.desc': 'Pemanenan ramah lingkungan',
     'about.authentic': 'Autentik',
     'about.authentic.desc': 'Langsung dari hutan Sulawesi',
-    
+
     // Story
     'story.title': 'Perjalanan Kami',
     'story.subtitle': 'Dari Raja Madu Sulawesi ke Lontara Honey',
@@ -145,7 +153,7 @@ const translations: Record<Language, Record<string, string>> = {
     'story.chapter3.text': 'Dari perjalanan tersebut lahirlah Lontara Honey  sebuah brand baru yang merepresentasikan standar yang lebih modern, higienis, dan profesional. Membawa semangat aksara Lontara, brand ini mencerminkan akar kami di Sulawesi sekaligus menjawab harapan masa kini.',
     'story.chapter4.title': 'Tumbuh dengan Visi Jelas',
     'story.chapter4.text': 'Kini perusahaan terus tumbuh dengan nama Lontara Honey, menghadirkan madu berkualitas dari Sulawesi kepada konsumen di seluruh Indonesia. Visi kami adalah berkembang secara bertanggung jawab, sambil menghormati alam dan komunitas yang mendukung perjalanan ini.',
-    
+
     // Contact
     'contact.title': 'Kontak & Pemesanan',
     'contact.subtitle': 'Kami siap membantu kebutuhan madu Anda',
@@ -155,7 +163,7 @@ const translations: Record<Language, Record<string, string>> = {
     'contact.send': 'Kirim Pesan',
     'contact.whatsapp': 'Chat di WhatsApp',
     'contact.address': 'Sulawesi Selatan, Indonesia',
-    
+
     // Order
     'order.title': 'Selesaikan Pesanan Anda',
     'order.product': 'Produk',
@@ -168,11 +176,11 @@ const translations: Record<Language, Record<string, string>> = {
     'order.bank': 'Transfer Bank',
     'order.ewallet': 'E-Wallet',
     'order.cod': 'Bayar di Tempat',
-    
+
     // Footer
     'footer.tagline': 'Madu murni dari jantung Sulawesi',
     'footer.rights': 'Hak cipta dilindungi',
-    
+
     // Intro
     'intro.welcome': 'Selamat datang di',
     'intro.tagline': 'Harta Emas Sulawesi',
@@ -181,8 +189,35 @@ const translations: Record<Language, Record<string, string>> = {
 
 const LanguageContext = createContext<LanguageContextType | undefined>(undefined);
 
+const getInitialLanguage = (): Language => {
+  if (typeof window === 'undefined') return 'en';
+  try {
+    const stored = localStorage.getItem('language');
+    if (stored === 'en' || stored === 'id') return stored;
+    const browserLang = navigator.language?.toLowerCase() ?? 'en';
+    if (browserLang.startsWith('id')) return 'id';
+  } catch (e) {}
+  return 'en';
+};
+
 export const LanguageProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
-  const [language, setLanguage] = useState<Language>('en');
+  const [language, setLanguageState] = useState<Language>(getInitialLanguage);
+
+  const setLanguage = (lang: Language) => {
+    setLanguageState(lang);
+    try {
+      localStorage.setItem('language', lang);
+    } catch (e) {}
+  };
+
+  useEffect(() => {
+    document.documentElement.lang = language;
+    document.documentElement.setAttribute('translate', 'no');
+    document.documentElement.classList.add('notranslate');
+    try {
+      localStorage.setItem('language', language);
+    } catch (e) {}
+  }, [language]);
 
   const t = (key: string): string => {
     return translations[language][key] || key;
