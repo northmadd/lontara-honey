@@ -70,6 +70,8 @@ const Footer: React.FC = () => {
         }
 
         .northmad-name {
+          display: none;
+          position: relative;
           margin-top: 7px;
           font-size: 19px;
           font-weight: 900;
@@ -172,15 +174,19 @@ const Footer: React.FC = () => {
           background: transparent !important;
           border: 0;
           outline: 0;
-          border-radius: 14px;
-          box-shadow: 0 8px 22px rgba(64, 36, 10, 0.2), inset 0 0 0 1px rgba(212, 160, 86, 0.3);
         }
 
         html.dark .northmad-video {
-          border-radius: 0;
-          box-shadow: none;
           mix-blend-mode: screen;
           isolation: isolate;
+        }
+
+        html:not(.dark) .northmad-video {
+          display: none;
+        }
+
+        html:not(.dark) .northmad-name {
+          display: block;
         }
 
       `}</style>
@@ -390,6 +396,9 @@ const Footer: React.FC = () => {
           >
             <span className="northmad-line" data-text="WEBSITE BY">
               WEBSITE BY
+            </span>
+            <span className="northmad-name" data-text="NORTHMAD">
+              NORTHMAD
             </span>
             <video
               autoPlay
