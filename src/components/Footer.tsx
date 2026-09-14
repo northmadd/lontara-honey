@@ -70,8 +70,6 @@ const Footer: React.FC = () => {
         }
 
         .northmad-name {
-          display: none;
-          position: relative;
           margin-top: 7px;
           font-size: 19px;
           font-weight: 900;
@@ -182,15 +180,24 @@ const Footer: React.FC = () => {
         }
 
         html:not(.dark) .northmad-video {
-          display: none;
-        }
-
-        html:not(.dark) .northmad-name {
-          display: block;
+          filter: url(#northmad-key);
         }
 
       `}</style>
       <footer className="bg-background text-foreground border-t border-border dark:from-[#1a120d] dark:bg-gradient-to-br dark:via-[#2a1c0f]/80 dark:to-[#3c2414]/60 dark:text-white pt-8 pb-0 md:pt-16 md:pb-0 relative overflow-hidden">
+      <svg width="0" height="0" style={{ position: 'absolute' }} aria-hidden="true" focusable="false">
+        <defs>
+          <filter id="northmad-key" colorInterpolationFilters="sRGB">
+            <feColorMatrix
+              in="SourceGraphic"
+              type="matrix"
+              values="1 0 0 0 0  0 1 0 0 0  0 0 1 0 0  0.2126 0.7152 0.0722 0 0"
+              result="keyAlpha"
+            />
+            <feComposite in="SourceGraphic" in2="keyAlpha" operator="in" />
+          </filter>
+        </defs>
+      </svg>
       {/* Large Honey Image — HANYA untuk desktop >=1250px (4 kolom layout, floating kanan bawah) */}
       <div className="absolute bottom-48 right-3 hidden w-full pointer-events-none z-0 min-[1250px]:block">
         <div className="container mx-auto px-4 md:px-6">
@@ -396,9 +403,6 @@ const Footer: React.FC = () => {
           >
             <span className="northmad-line" data-text="WEBSITE BY">
               WEBSITE BY
-            </span>
-            <span className="northmad-name" data-text="NORTHMAD">
-              NORTHMAD
             </span>
             <video
               autoPlay
