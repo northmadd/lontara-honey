@@ -4,7 +4,6 @@ import logoLontara from '@/assets/logo-lontara.webp';
 import honeyFooter from '@/assets/honey-footer.webp';
 import sceneVideoMp4 from '@/assets/scene.mp4';
 import sceneVideoWebm from '@/assets/scene.webm';
-import { Link } from 'react-router-dom';
 import { useLanguage } from '@/contexts/LanguageContext';
 
 const NorthmadVideo: React.FC = () => (
@@ -196,6 +195,8 @@ const SafariNorthmadVideo: React.FC = () => {
     </span>
   );
 };
+
+const routerBasename = import.meta.env.BASE_URL.replace(/\/$/, "");
 
 const Footer: React.FC = () => {
   const { t } = useLanguage();
@@ -520,13 +521,18 @@ const Footer: React.FC = () => {
                 <div className="mt-2 h-0.5 w-12 bg-honey-gold/60 dark:bg-honey-gold/50" />
               </div>
               <ul className="space-y-2 text-sm md:text-[0.85rem] text-foreground">
-                <li><Link to="/legal/faq" className="transition-colors hover:text-honey-gold dark:hover:text-[#D4A347]">{t('footer.faqs')}</Link></li>
+                <li><a href={`${routerBasename}/legal/faq`} target="_blank" rel="noopener noreferrer" className="transition-colors hover:text-honey-gold dark:hover:text-[#D4A347]">{t('footer.faqs')}</a></li>
                 <li onClick={() => alert(t('footer.blog.comingSoon'))} className="cursor-pointer transition-colors hover:text-honey-gold dark:hover:text-[#D4A347]">{t('footer.blog')}</li>
                 <li onClick={() => openWhatsApp(t('footer.wa.booking'))} className="cursor-pointer transition-colors hover:text-honey-gold dark:hover:text-[#D4A347]">{t('footer.booking')}</li>
-                <li><Link to="/legal/privacy" className="transition-colors hover:text-honey-gold dark:hover:text-[#D4A347]">{t('footer.privacy')}</Link></li>
-                <li><Link to="/legal/terms" className="transition-colors hover:text-honey-gold dark:hover:text-[#D4A347]">{t('footer.terms')}</Link></li>
-                <li><Link to="/legal/shipping" className="transition-colors hover:text-honey-gold dark:hover:text-[#D4A347]">{t('footer.shipping')}</Link></li>
-                <li><Link to="/legal/refund" className="transition-colors hover:text-honey-gold dark:hover:text-[#D4A347]">{t('footer.refund')}</Link></li>
+                {/* Quick link legal buka di tab baru: tab asal (intro/home) tetap
+                    utuh, dan back di tab yang hanya punya satu halaman (tab baru
+                    hasil target=_blank) secara native menutup tab itu di browser
+                    tanpa perlu JavaScript — sesuai permintaan: masuk tab baru,
+                    back menghapus tab. */}
+                <li><a href={`${routerBasename}/legal/privacy`} target="_blank" rel="noopener noreferrer" className="transition-colors hover:text-honey-gold dark:hover:text-[#D4A347]">{t('footer.privacy')}</a></li>
+                <li><a href={`${routerBasename}/legal/terms`} target="_blank" rel="noopener noreferrer" className="transition-colors hover:text-honey-gold dark:hover:text-[#D4A347]">{t('footer.terms')}</a></li>
+                <li><a href={`${routerBasename}/legal/shipping`} target="_blank" rel="noopener noreferrer" className="transition-colors hover:text-honey-gold dark:hover:text-[#D4A347]">{t('footer.shipping')}</a></li>
+                <li><a href={`${routerBasename}/legal/refund`} target="_blank" rel="noopener noreferrer" className="transition-colors hover:text-honey-gold dark:hover:text-[#D4A347]">{t('footer.refund')}</a></li>
               </ul>
             </div>
 
