@@ -17,6 +17,12 @@ const NorthmadVideo: React.FC = () => {
     const ctx = canvas?.getContext('2d', { willReadFrequently: true });
     if (!video || !canvas || !ctx) return;
 
+    // Canvas kerja resolusi kecil: menyingkirkan grain/noise kompresi secara
+    // spasial saat di-upscale, sehingga tidak muncul artefak "pasir" di light mode.
+    const work = document.createElement('canvas');
+    const workCtx = work.getContext('2d', { willReadFrequently: true });
+    if (!workCtx) return;
+
     let raf = 0;
     let playing = false;
     let visible = false;
@@ -36,20 +42,30 @@ const NorthmadVideo: React.FC = () => {
     const renderFrame = () => {
       if (failed || !video.videoWidth) return;
       ensureSize();
-      ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
+      const wScale = 160 / video.videoWidth;
+      const ww = Math.max(24, Math.round(video.videoWidth * wScale));
+      const wh = Math.max(24, Math.round(video.videoHeight * wScale));
+      if (work.width !== ww) {
+        work.width = ww;
+        work.height = wh;
+      }
+      workCtx.drawImage(video, 0, 0, ww, wh);
       try {
-        const img = ctx.getImageData(0, 0, canvas.width, canvas.height);
+        const img = workCtx.getImageData(0, 0, ww, wh);
         const data = img.data;
         for (let i = 0; i < data.length; i += 4) {
           const r = data[i];
           const g = data[i + 1];
           const b = data[i + 2];
           const luma = 0.2126 * r + 0.7152 * g + 0.0722 * b;
-          // Buang latar gelap termasuk grain/noise kompresi pada luma rendah-ke-sedang
-          // (ramp sempit 50..68) sehingga tidak muncul artefak "pasir" di light mode.
-          data[i + 3] = luma <= 50 ? 0 : luma >= 68 ? 255 : Math.round(((luma - 50) / 18) * 255);
+          // Buang latar gelap termasuk grain/noise kompresi (ramp 45..75).
+          data[i + 3] = luma <= 45 ? 0 : luma >= 75 ? 255 : Math.round(((luma - 45) / 30) * 255);
         }
-        ctx.putImageData(img, 0, 0);
+        workCtx.putImageData(img, 0, 0);
+        ctx.imageSmoothingEnabled = true;
+        ctx.imageSmoothingQuality = 'high';
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+        ctx.drawImage(work, 0, 0, canvas.width, canvas.height);
         if (canvas.style.opacity !== '1') canvas.style.opacity = '1';
       } catch (e) {
         failed = true;
