@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect, useRef } from 'react';
 import { Instagram, PlayCircle, Youtube, MapPin, Phone, Mail } from 'lucide-react';
 import logoLontara from '@/assets/logo-lontara.webp';
 import honeyFooter from '@/assets/honey-footer.webp';
@@ -21,6 +21,64 @@ const NorthmadVideo: React.FC = () => (
     <source src={sceneVideoMp4} type="video/mp4" />
   </video>
 );
+
+const IS_SAFARI =
+  typeof navigator !== 'undefined' &&
+  /^((?!chrome|android|crios|fxios|edg|opr|samsung).)*safari/i.test(navigator.userAgent);
+
+const SafariNorthmadVideo: React.FC = () => {
+  const videoRef = useRef<HTMLVideoElement | null>(null);
+
+  useEffect(() => {
+    const video = videoRef.current;
+    if (!video) return;
+
+    const tryPlay = () => {
+      const p = video.play();
+      if (p) p.catch(() => {});
+    };
+
+    tryPlay();
+    video.addEventListener('loadeddata', tryPlay);
+    video.addEventListener('canplay', tryPlay);
+
+    const onInteraction = () => {
+      tryPlay();
+      document.removeEventListener('pointerdown', onInteraction);
+      document.removeEventListener('keydown', onInteraction);
+      document.removeEventListener('touchstart', onInteraction);
+    };
+
+    document.addEventListener('pointerdown', onInteraction);
+    document.addEventListener('keydown', onInteraction);
+    document.addEventListener('touchstart', onInteraction);
+
+    return () => {
+      document.removeEventListener('pointerdown', onInteraction);
+      document.removeEventListener('keydown', onInteraction);
+      document.removeEventListener('touchstart', onInteraction);
+      video.removeEventListener('loadeddata', tryPlay);
+      video.removeEventListener('canplay', tryPlay);
+    };
+  }, []);
+
+  return (
+    <video
+      ref={videoRef}
+      autoPlay
+      loop
+      muted
+      playsInline
+      preload="auto"
+      className="safari-northmad-video select-none pointer-events-none"
+      aria-label="Northmad"
+      tabIndex={-1}
+    >
+      <source src={sceneVideoMp4} type="video/mp4" />
+      <source src={sceneVideoWebm} type="video/webm" />
+    </video>
+  );
+};
 
 const Footer: React.FC = () => {
   const { t } = useLanguage();
@@ -183,6 +241,16 @@ const Footer: React.FC = () => {
         }
 
         .northmad-video {
+          display: block;
+          width: 200px;
+          height: auto;
+          margin: -40px auto -14px;
+          background: transparent !important;
+          border: 0;
+          outline: 0;
+        }
+
+        .safari-northmad-video {
           display: block;
           width: 200px;
           height: auto;
@@ -401,7 +469,7 @@ const Footer: React.FC = () => {
             <span className="northmad-line" data-text={t('footer.websiteBy')}>
               {t('footer.websiteBy')}
             </span>
-            <NorthmadVideo />
+            {IS_SAFARI ? <SafariNorthmadVideo /> : <NorthmadVideo />}
           </a>
         </div>
       </div>
