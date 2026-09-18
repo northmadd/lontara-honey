@@ -91,6 +91,7 @@ const NorthmadVideo: React.FC = () => {
 
     video.addEventListener('play', onPlay);
     video.addEventListener('pause', onPause);
+    video.addEventListener('loadeddata', renderFrame);
 
     const p = video.play();
     if (p) p.catch(() => {});
@@ -100,11 +101,12 @@ const NorthmadVideo: React.FC = () => {
       observer?.disconnect();
       video.removeEventListener('play', onPlay);
       video.removeEventListener('pause', onPause);
+      video.removeEventListener('loadeddata', renderFrame);
     };
   }, []);
 
   return (
-    <>
+    <span className="northmad-badge">
       <video
         ref={videoRef}
         autoPlay
@@ -123,7 +125,7 @@ const NorthmadVideo: React.FC = () => {
         className="northmad-video-canvas select-none pointer-events-none"
         aria-hidden="true"
       />
-    </>
+    </span>
   );
 };
 
@@ -285,12 +287,17 @@ const Footer: React.FC = () => {
           }
         }
 
-        .northmad-video {
+        .northmad-badge {
           position: relative;
           display: block;
           width: 200px;
-          height: auto;
           margin: -40px auto -14px;
+        }
+
+        .northmad-video {
+          display: block;
+          width: 100%;
+          height: auto;
           background: transparent !important;
           border: 0;
           outline: 0;
