@@ -1,4 +1,4 @@
-import React, { lazy, Suspense, useState, useRef, useEffect, useMemo } from 'react';
+import React, { lazy, Suspense, useState, useRef, useEffect, useLayoutEffect, useMemo } from 'react';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { useTheme } from 'next-themes';
 import IntroScreen from '@/components/IntroScreen';
@@ -129,6 +129,7 @@ const IndexContent: React.FC = () => {
 
   const backsoundRef = useRef<HTMLAudioElement | null>(null);
   const hasStartedBacksoundRef = useRef(false);
+  const lastScrollPosRef = useRef(0);
   const homeRef = useRef<HTMLDivElement>(null);
   const productsRef = useRef<HTMLDivElement>(null);
   const aboutRef = useRef<HTMLDivElement>(null);
@@ -154,6 +155,7 @@ const IndexContent: React.FC = () => {
 
   useEffect(() => {
     const handleScroll = () => {
+      lastScrollPosRef.current = window.scrollY;
       const scrollPosition = window.scrollY + 100;
 
       Object.entries(sectionRefs).forEach(([key, ref]) => {
@@ -169,6 +171,12 @@ const IndexContent: React.FC = () => {
     window.addEventListener('scroll', handleScroll);
     return () => window.removeEventListener('scroll', handleScroll);
   }, [sectionRefs]);
+
+  // Restore the exact scroll position after the sections remount so
+  // toggling language or theme never moves the page.
+  useLayoutEffect(() => {
+    window.scrollTo(0, lastScrollPosRef.current);
+  }, [animationKey]);
 
   useEffect(() => {
     document.documentElement.classList.toggle('intro-lock', showIntro);
@@ -283,7 +291,7 @@ const IndexContent: React.FC = () => {
       <Suspense fallback={<div className="min-h-[320px]" />}>
         <TestimonialsSection happyPeopleImage={happyPeopleImage} />
       </Suspense>
-      <div ref={internationalRef}>
+      <div ref={internationalRef} id="international">
         <Suspense fallback={<div className="min-h-[320px]" />}><InternationalSection /></Suspense>
       </div>
 

@@ -440,6 +440,7 @@ const Footer: React.FC = () => {
                 <li onClick={() => scrollToSection('products')} className="cursor-pointer transition-colors hover:text-honey-gold dark:hover:text-[#D4A347]">{t('nav.products')}</li>
                 <li onClick={() => scrollToSection('about')} className="cursor-pointer transition-colors hover:text-honey-gold dark:hover:text-[#D4A347]">{t('nav.about')}</li>
                 <li onClick={() => scrollToSection('story')} className="cursor-pointer transition-colors hover:text-honey-gold dark:hover:text-[#D4A347]">{t('nav.story')}</li>
+                <li onClick={() => scrollToSection('international')} className="cursor-pointer transition-colors hover:text-honey-gold dark:hover:text-[#D4A347]">{t('nav.international')}</li>
                 <li onClick={() => scrollToSection('contact')} className="cursor-pointer transition-colors hover:text-honey-gold dark:hover:text-[#D4A347]">{t('nav.contact')}</li>
               </ul>
             </div>

@@ -20,7 +20,7 @@ const openWhatsApp = (message: string) => {
 };
 
 const ContactSection: React.FC = () => {
-  const { t } = useLanguage();
+  const { t, language } = useLanguage();
   const [formData, setFormData] = useState({
     name: '',
     countryCode: '+62',
@@ -254,7 +254,7 @@ const ContactSection: React.FC = () => {
             ) : (
               <iframe
                 title={t('contact.map.title')}
-                src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3973.305487183139!2d119.4524519!3d-5.2146092!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x2dbee227ff58c4ad%3A0x5ea49915d8676ea5!2sRaja%20Madu%20Sulawesi!5e0!3m2!1sid!2sid!4v1765591742735!5m2!1sid!2sid"
+                src={`https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3973.305487183139!2d119.4524519!3d-5.2146092!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x2dbee227ff58c4ad%3A0x5ea49915d8676ea5!2sRaja%20Madu%20Sulawesi!5e0!2m3!1sid!2sid&hl=${language}`}
                 width="100%"
                 height="450"
                 style={{ border: 0 }}

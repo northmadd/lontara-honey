@@ -317,11 +317,11 @@ const translations: Record<Language, Record<string, string>> = {
   },
   id: {
     // Navigation
-    'nav.home': 'Home',
-    'nav.products': 'Products',
-    'nav.about': 'About',
-    'nav.story': 'Our Story',
-    'nav.contact': 'Contact',
+    'nav.home': 'Beranda',
+    'nav.products': 'Produk',
+    'nav.about': 'Tentang Kami',
+    'nav.story': 'Cerita Kami',
+    'nav.contact': 'Kontak',
     'nav.international': 'Pesanan Internasional',
 
     // Navbar controls
@@ -625,25 +625,13 @@ const translations: Record<Language, Record<string, string>> = {
 
 const LanguageContext = createContext<LanguageContextType | undefined>(undefined);
 
-const getInitialLanguage = (): Language => {
-  if (typeof window === 'undefined') return 'en';
-  try {
-    const stored = localStorage.getItem('language');
-    if (stored === 'en' || stored === 'id') return stored;
-    const browserLang = navigator.language?.toLowerCase() ?? 'en';
-    if (browserLang.startsWith('id')) return 'id';
-  } catch (e) { /* localStorage may be unavailable */ }
-  return 'en';
-};
+const getInitialLanguage = (): Language => 'en';
 
 export const LanguageProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
   const [language, setLanguageState] = useState<Language>(getInitialLanguage);
 
   const setLanguage = (lang: Language) => {
     setLanguageState(lang);
-    try {
-      localStorage.setItem('language', lang);
-    } catch (e) { /* localStorage may be unavailable */ }
   };
 
   useEffect(() => {
@@ -651,9 +639,6 @@ export const LanguageProvider: React.FC<{ children: ReactNode }> = ({ children }
     document.documentElement.setAttribute('translate', 'no');
     document.documentElement.classList.add('notranslate');
     document.title = translations[language]['seo.title'];
-    try {
-      localStorage.setItem('language', language);
-    } catch (e) { /* localStorage may be unavailable */ }
   }, [language]);
 
   const t = (key: string): string => {

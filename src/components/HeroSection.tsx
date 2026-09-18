@@ -51,7 +51,7 @@ const HeroSection: React.FC<HeroSectionProps> = ({ onNavigate, heroImage }) => {
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.8 }}
           >
-            <span className="inline-flex items-center gap-2 px-4 py-2 rounded-full border border-primary/15 bg-primary/8 text-honey-amber text-sm font-semibold uppercase tracking-[0.18em] mb-2">
+            <span className="inline-flex items-center gap-2 px-4 py-2 rounded-full border border-primary/15 bg-primary/8 text-honey-amber font-serif italic text-base md:text-lg mb-2">
               <span className="w-2 h-2 rounded-full bg-primary animate-pulse" />
               <span>{t('hero.subtitle')}</span>
             </span>

@@ -87,29 +87,14 @@
         var docEl = document.documentElement;
         docEl.classList.add('intro-lock');
         try {
-          var stored = localStorage.getItem('theme');
-          if (stored === 'light' && localStorage.getItem('nh-theme-default') !== '1') {
-            localStorage.removeItem('theme');
-            localStorage.setItem('nh-theme-default', '1');
-            stored = null;
-          }
-          var theme = stored === 'dark' || stored === 'light' ? stored : 'dark';
-          if (theme === 'dark') docEl.classList.add('dark');
-          else docEl.classList.remove('dark');
-        } catch (e) {
-          docEl.classList.add('dark');
-        }
+          localStorage.removeItem('theme');
+          localStorage.removeItem('nh-theme-default');
+          localStorage.removeItem('language');
+        } catch (e) {}
+        docEl.classList.add('dark');
         try {
-          var lang = localStorage.getItem('language');
-          if (!lang) {
-            try {
-              lang = (navigator.language || '').toLowerCase().indexOf('id') === 0 ? 'id' : 'en';
-            } catch (e2) { lang = 'en'; }
-          }
-          docEl.lang = lang;
-        } catch (e) {
           docEl.lang = 'en';
-        }
+        } catch (e) {}
         try {
           var raf = window.requestAnimationFrame || function (cb) { return setTimeout(cb, 16); };
           raf(function () {
