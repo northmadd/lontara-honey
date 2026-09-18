@@ -1,5 +1,6 @@
 import React, { lazy, Suspense, useState, useRef, useEffect, useMemo } from 'react';
-import { LanguageProvider } from '@/contexts/LanguageContext';
+import { useLanguage } from '@/contexts/LanguageContext';
+import { useTheme } from 'next-themes';
 import IntroScreen from '@/components/IntroScreen';
 import Navbar from '@/components/Navbar';
 import HeroSection from '@/components/HeroSection';
@@ -119,6 +120,12 @@ const IndexContent: React.FC = () => {
   const [activeSection, setActiveSection] = useState('home');
   const [selectedProduct, setSelectedProduct] = useState<Product | null>(null);
   const [isBacksoundMuted, setIsBacksoundMuted] = useState(false);
+
+  const { language } = useLanguage();
+  const { resolvedTheme } = useTheme();
+  // Changes when the user switches language (en/id) or theme (light/dark).
+  // Remounting the sections makes every JS/Framer animation replay.
+  const animationKey = `${language}-${resolvedTheme ?? 'dark'}`;
 
   const backsoundRef = useRef<HTMLAudioElement | null>(null);
   const hasStartedBacksoundRef = useRef(false);
@@ -247,6 +254,7 @@ const IndexContent: React.FC = () => {
         <div className="min-h-screen bg-background notranslate" translate="no">
           <Navbar onNavigate={handleNavigate} activeSection={activeSection} />
 
+          <div key={animationKey}>
       <div ref={homeRef} id="home">
         <HeroSection onNavigate={handleNavigate} heroImage={heroImage} />
       </div>
@@ -305,6 +313,7 @@ const IndexContent: React.FC = () => {
           />
         </Suspense>
       )}
+          </div>
     </div>
     )}
     </>
@@ -312,11 +321,7 @@ const IndexContent: React.FC = () => {
 };
 
 const Index: React.FC = () => {
-  return (
-    <LanguageProvider>
-      <IndexContent />
-    </LanguageProvider>
-  );
+  return <IndexContent />;
 };
 
 export default Index;

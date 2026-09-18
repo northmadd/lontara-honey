@@ -93,7 +93,7 @@ const StorySection: React.FC<StorySectionProps> = ({ storyImages }) => {
                     <div className="absolute inset-0 bg-gradient-to-t from-honey-dark/50 to-transparent" />
                     <div className="absolute bottom-4 left-4">
                       <span className="px-3 py-1 rounded-full bg-honey-gold/90 text-sm font-medium text-honey-dark">
-                        Chapter {index + 1}
+                        {t('story.chapter')} {index + 1}
                       </span>
                     </div>
                   </div>

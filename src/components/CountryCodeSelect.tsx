@@ -1,37 +1,38 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { Check, ChevronDown } from 'lucide-react';
+import { useLanguage } from '@/contexts/LanguageContext';
 
 const countries = [
-  { code: '+62', flag: 'id', name: 'Indonesia' },
-  { code: '+60', flag: 'my', name: 'Malaysia' },
-  { code: '+65', flag: 'sg', name: 'Singapore' },
-  { code: '+66', flag: 'th', name: 'Thailand' },
-  { code: '+63', flag: 'ph', name: 'Philippines' },
-  { code: '+84', flag: 'vn', name: 'Vietnam' },
-  { code: '+673', flag: 'bn', name: 'Brunei' },
-  { code: '+855', flag: 'kh', name: 'Cambodia' },
-  { code: '+856', flag: 'la', name: 'Laos' },
-  { code: '+95', flag: 'mm', name: 'Myanmar' },
-  { code: '+61', flag: 'au', name: 'Australia' },
-  { code: '+81', flag: 'jp', name: 'Japan' },
-  { code: '+82', flag: 'kr', name: 'South Korea' },
-  { code: '+86', flag: 'cn', name: 'China' },
-  { code: '+852', flag: 'hk', name: 'Hong Kong' },
-  { code: '+853', flag: 'mo', name: 'Macau' },
-  { code: '+886', flag: 'tw', name: 'Taiwan' },
-  { code: '+91', flag: 'in', name: 'India' },
-  { code: '+92', flag: 'pk', name: 'Pakistan' },
-  { code: '+880', flag: 'bd', name: 'Bangladesh' },
-  { code: '+64', flag: 'nz', name: 'New Zealand' },
-  { code: '+974', flag: 'qa', name: 'Qatar' },
-  { code: '+966', flag: 'sa', name: 'Saudi Arabia' },
-  { code: '+971', flag: 'ae', name: 'United Arab Emirates' },
-  { code: '+49', flag: 'de', name: 'Germany' },
-  { code: '+33', flag: 'fr', name: 'France' },
-  { code: '+39', flag: 'it', name: 'Italy' },
-  { code: '+31', flag: 'nl', name: 'Netherlands' },
-  { code: '+44', flag: 'gb', name: 'United Kingdom' },
-  { code: '+1', flag: 'us', name: 'United States' },
+  { code: '+62', flag: 'id', nameKey: 'country.indonesia' },
+  { code: '+60', flag: 'my', nameKey: 'country.malaysia' },
+  { code: '+65', flag: 'sg', nameKey: 'country.singapore' },
+  { code: '+66', flag: 'th', nameKey: 'country.thailand' },
+  { code: '+63', flag: 'ph', nameKey: 'country.philippines' },
+  { code: '+84', flag: 'vn', nameKey: 'country.vietnam' },
+  { code: '+673', flag: 'bn', nameKey: 'country.brunei' },
+  { code: '+855', flag: 'kh', nameKey: 'country.cambodia' },
+  { code: '+856', flag: 'la', nameKey: 'country.laos' },
+  { code: '+95', flag: 'mm', nameKey: 'country.myanmar' },
+  { code: '+61', flag: 'au', nameKey: 'country.australia' },
+  { code: '+81', flag: 'jp', nameKey: 'country.japan' },
+  { code: '+82', flag: 'kr', nameKey: 'country.southKorea' },
+  { code: '+86', flag: 'cn', nameKey: 'country.china' },
+  { code: '+852', flag: 'hk', nameKey: 'country.hongKong' },
+  { code: '+853', flag: 'mo', nameKey: 'country.macau' },
+  { code: '+886', flag: 'tw', nameKey: 'country.taiwan' },
+  { code: '+91', flag: 'in', nameKey: 'country.india' },
+  { code: '+92', flag: 'pk', nameKey: 'country.pakistan' },
+  { code: '+880', flag: 'bd', nameKey: 'country.bangladesh' },
+  { code: '+64', flag: 'nz', nameKey: 'country.newZealand' },
+  { code: '+974', flag: 'qa', nameKey: 'country.qatar' },
+  { code: '+966', flag: 'sa', nameKey: 'country.saudiArabia' },
+  { code: '+971', flag: 'ae', nameKey: 'country.uae' },
+  { code: '+49', flag: 'de', nameKey: 'country.germany' },
+  { code: '+33', flag: 'fr', nameKey: 'country.france' },
+  { code: '+39', flag: 'it', nameKey: 'country.italy' },
+  { code: '+31', flag: 'nl', nameKey: 'country.netherlands' },
+  { code: '+44', flag: 'gb', nameKey: 'country.uk' },
+  { code: '+1', flag: 'us', nameKey: 'country.us' },
 ];
 
 const phonePlaceholders: Record<string, string> = {
@@ -77,6 +78,7 @@ interface CountryCodeSelectProps {
 }
 
 const CountryCodeSelect: React.FC<CountryCodeSelectProps> = ({ value, onChange, ariaLabel }) => {
+  const { t } = useLanguage();
   const [isOpen, setIsOpen] = useState(false);
   const containerRef = useRef<HTMLDivElement>(null);
   const selectedCountry = countries.find((country) => country.code === value) ?? countries[0];
@@ -142,7 +144,7 @@ const CountryCodeSelect: React.FC<CountryCodeSelectProps> = ({ value, onChange, 
                 alt=""
                 className="h-4 w-5 rounded-[2px] object-cover"
               />
-              <span className="flex-1">{country.name} {country.code}</span>
+              <span className="flex-1">{t(country.nameKey)} {country.code}</span>
               {country.code === value && <Check className="h-4 w-4 text-primary" />}
             </button>
           ))}

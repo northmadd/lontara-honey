@@ -1,6 +1,7 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { Globe } from 'lucide-react';
 import logo from '@/assets/logo-lontara.webp';
+import { useLanguage } from '@/contexts/LanguageContext';
 
 const TURNSTILE_SCRIPT_SRC = 'https://challenges.cloudflare.com/turnstile/v0/api.js?render=explicit';
 
@@ -44,9 +45,9 @@ const markAsVerified = () => {
 const BotVerificationGate: React.FC<BotVerificationGateProps> = ({ children }) => {
   const siteKey = import.meta.env.VITE_TURNSTILE_SITE_KEY;
   const verifyUrl = import.meta.env.VITE_TURNSTILE_VERIFY_URL || `${import.meta.env.BASE_URL}api/verify-turnstile.php`;
+  const { language, setLanguage, t } = useLanguage();
   const [isVerified, setIsVerified] = useState(() => isVerificationStillValid());
   const [isChallengePassed, setIsChallengePassed] = useState(false);
-  const [verificationLanguage, setVerificationLanguage] = useState<'id' | 'en'>('en');
   const [isChecking, setIsChecking] = useState(false);
   const [errorMessage, setErrorMessage] = useState('');
   const widgetContainerRef = useRef<HTMLDivElement | null>(null);
@@ -54,7 +55,7 @@ const BotVerificationGate: React.FC<BotVerificationGateProps> = ({ children }) =
 
   useEffect(() => {
     if (!siteKey) {
-      setErrorMessage('Turnstile site key belum dikonfigurasi.');
+      setErrorMessage(t('verify.siteKeyMissing'));
       return;
     }
 
@@ -94,16 +95,16 @@ const BotVerificationGate: React.FC<BotVerificationGateProps> = ({ children }) =
             try {
               result = responseText ? JSON.parse(responseText) : {};
             } catch {
-              throw new Error('Server verifikasi tidak mengirim JSON yang valid.');
+              throw new Error(t('verify.invalidJson'));
             }
 
             if (!response.ok || !result.success) {
-              throw new Error(result.message || 'Verifikasi gagal. Coba lagi.');
+              throw new Error(result.message || t('verify.failed'));
             }
 
             setIsChallengePassed(true);
           } catch (error) {
-            setErrorMessage(error instanceof Error ? error.message : 'Verifikasi gagal. Coba lagi.');
+            setErrorMessage(error instanceof Error ? error.message : t('verify.failed'));
             if (widgetIdRef.current) {
               window.turnstile?.reset(widgetIdRef.current);
             }
@@ -112,10 +113,10 @@ const BotVerificationGate: React.FC<BotVerificationGateProps> = ({ children }) =
           }
         },
         'error-callback': () => {
-          setErrorMessage('Widget verifikasi gagal dimuat. Coba refresh halaman.');
+          setErrorMessage(t('verify.widgetFailed'));
         },
         'expired-callback': () => {
-          setErrorMessage('Verifikasi kedaluwarsa. Silakan centang ulang.');
+          setErrorMessage(t('verify.expired'));
           if (widgetIdRef.current) {
             window.turnstile?.reset(widgetIdRef.current);
           }
@@ -136,7 +137,7 @@ const BotVerificationGate: React.FC<BotVerificationGateProps> = ({ children }) =
       script.defer = true;
       script.addEventListener('load', renderWidget, { once: true });
       script.addEventListener('error', () => {
-        setErrorMessage('Script verifikasi gagal dimuat. Periksa koneksi internet lalu refresh halaman.');
+        setErrorMessage(t('verify.scriptFailed'));
       });
       document.head.appendChild(script);
     }
@@ -149,7 +150,7 @@ const BotVerificationGate: React.FC<BotVerificationGateProps> = ({ children }) =
       }
       existingScript?.removeEventListener('load', renderWidget);
     };
-  }, [isVerified, siteKey, verifyUrl]);
+  }, [isVerified, siteKey, verifyUrl, language]); // eslint-disable-line react-hooks/exhaustive-deps
 
   useEffect(() => {
     const container = widgetContainerRef.current;
@@ -187,23 +188,6 @@ const BotVerificationGate: React.FC<BotVerificationGateProps> = ({ children }) =
     return <>{children}</>;
   }
 
-  const copy = {
-    id: {
-      eyebrow: 'Verifikasi Akses',
-      title: ['Pastikan kamu', 'bukan robot'],
-      description: 'Kata Mr Sumbul / Northmad Sigma, verifikasi terlebih dahulu sebelum masuk ke website Lontara Honey.',
-      checking: 'Memeriksa verifikasi...',
-      enter: 'Masuk ke Website',
-    },
-    en: {
-      eyebrow: 'Access Verification',
-      title: ['Make sure', 'you are not a robot'],
-      description: 'Mr Sumbul / Northmad Sigma says, verify first before entering the Lontara Honey website.',
-      checking: 'Checking verification...',
-      enter: 'Enter Website',
-    },
-  }[verificationLanguage];
-
   return (
     <main className="min-h-screen overflow-hidden bg-[radial-gradient(circle_at_top,#5b3208_0%,#1f1307_42%,#070503_100%)] flex items-center justify-center px-4 py-10 notranslate" translate="no">
       <section className="relative w-full max-w-md overflow-hidden rounded-3xl bg-stone-950/85 p-8 text-center shadow-2xl shadow-black/50 backdrop-blur">
@@ -214,30 +198,27 @@ const BotVerificationGate: React.FC<BotVerificationGateProps> = ({ children }) =
         <div className="relative">
           <button
             type="button"
-            onClick={() => setVerificationLanguage(verificationLanguage === 'en' ? 'id' : 'en')}
+            onClick={() => setLanguage(language === 'en' ? 'id' : 'en')}
             className="absolute right-0 top-0 flex items-center gap-1.5 rounded-full bg-secondary/50 px-2.5 py-1.5 text-sm font-medium text-white transition-colors hover:bg-secondary sm:gap-2 sm:px-3 sm:py-2"
           >
             <Globe className="h-4 w-4" />
-            {verificationLanguage.toUpperCase()}
+            {language.toUpperCase()}
           </button>
 
           <img
             src={logo}
-            alt="Lontara Honey"
+            alt={t('verify.logoAlt')}
             className="mx-auto mb-6 h-28 w-28 rounded-full object-contain p-1 shadow-lg shadow-amber-950/60"
           />
-          <p className="text-sm font-semibold uppercase tracking-[0.3em] text-white">{copy.eyebrow}</p>
+          <p className="text-sm font-semibold uppercase tracking-[0.3em] text-white">{t('verify.eyebrow')}</p>
           <div className="mx-auto mt-3 h-px w-24 bg-gradient-to-r from-transparent via-amber-400 to-transparent" />
           <h1 className="mt-4 text-3xl font-bold text-amber-50">
-            {copy.title.map((line, i) => (
-              <React.Fragment key={i}>
-                {line}
-                {i < copy.title.length - 1 && <br />}
-              </React.Fragment>
-            ))}
+            {t('verify.title1')}
+            <br />
+            {t('verify.title2')}
           </h1>
           <p className="mt-4 text-sm leading-6 text-white/75">
-            {copy.description}
+            {t('verify.description')}
           </p>
 
           <div className="mt-7 w-full overflow-hidden">
@@ -254,12 +235,12 @@ const BotVerificationGate: React.FC<BotVerificationGateProps> = ({ children }) =
               }}
               className="mt-4 w-full rounded-full bg-gradient-to-r from-amber-600/80 to-yellow-500/70 px-7 py-3 text-base font-bold text-white shadow-lg shadow-amber-950/40 transition hover:scale-105 hover:from-amber-500/80 hover:to-yellow-400/80 focus:outline-none focus:ring-2 focus:ring-amber-200 focus:ring-offset-2 focus:ring-offset-stone-950"
             >
-              {copy.enter}
+              {t('verify.enter')}
             </button>
           )}
 
           {isChecking && (
-            <p className="mt-4 text-sm font-medium text-amber-300">{copy.checking}</p>
+            <p className="mt-4 text-sm font-medium text-amber-300">{t('verify.checking')}</p>
           )}
 
           {errorMessage && (

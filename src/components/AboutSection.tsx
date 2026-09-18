@@ -32,7 +32,7 @@ const AboutSection: React.FC<AboutSectionProps> = ({ aboutImage }) => {
             <div className="relative z-10 rounded-3xl overflow-hidden shadow-2xl">
               <img
                 src={aboutImage}
-                alt="About Lontara Honey"
+                alt={t('about.imageAlt')}
                 loading="lazy"
                 decoding="async"
                 className="w-full h-[300px] md:h-[400px] lg:h-[500px] object-cover"
@@ -48,7 +48,7 @@ const AboutSection: React.FC<AboutSectionProps> = ({ aboutImage }) => {
             >
               <img
                 src={beeImage}
-                alt="Lebah"
+                alt={t('about.beeAlt')}
                 loading="lazy"
                 decoding="async"
                 className="h-24 w-24 object-contain"

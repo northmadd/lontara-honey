@@ -114,7 +114,7 @@ const Navbar: React.FC<NavbarProps> = ({ onNavigate, activeSection }) => {
                   setTheme(theme === 'dark' ? 'light' : 'dark')
                 }
                 className="hidden min-[1080px]:inline-flex items-center justify-center w-10 h-10 rounded-full bg-secondary/50 hover:bg-secondary transition-colors"
-                aria-label="Toggle theme"
+                aria-label={t('nav.theme.toggle')}
               >
                 {theme === 'dark' ? (
                   <Sun className="w-5 h-5" />
@@ -129,7 +129,7 @@ const Navbar: React.FC<NavbarProps> = ({ onNavigate, activeSection }) => {
                 onClick={() =>
                   setIsMobileMenuOpen(!isMobileMenuOpen)
                 }
-                aria-label="Toggle mobile menu"
+                aria-label={t('nav.mobileMenu.toggle')}
               >
                 {isMobileMenuOpen ? (
                   <X className="w-6 h-6" />
@@ -213,8 +213,8 @@ const Navbar: React.FC<NavbarProps> = ({ onNavigate, activeSection }) => {
                 >
                   <span className="text-lg font-medium">
                     {theme === 'dark'
-                      ? 'Dark Mode'
-                      : 'Light Mode'}
+                      ? t('nav.mode.dark')
+                      : t('nav.mode.light')}
                   </span>
 
                   {/* Theme Toggle */}
@@ -225,7 +225,7 @@ const Navbar: React.FC<NavbarProps> = ({ onNavigate, activeSection }) => {
                         theme === 'dark' ? 'light' : 'dark'
                       )
                     }
-                    aria-label="Toggle theme"
+                    aria-label={t('nav.theme.toggle')}
                     className="relative h-11 w-[132px] shrink-0 rounded-full border border-border/70 bg-secondary/70 overflow-hidden"
                   >
                     {/* Sliding Circle */}

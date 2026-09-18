@@ -8,33 +8,12 @@ interface TestimonialsSectionProps {
 }
 
 const TestimonialsSection: React.FC<TestimonialsSectionProps> = ({ happyPeopleImage }) => {
-  const { language } = useLanguage();
+  const { t } = useLanguage();
 
   const testimonials = [
-    {
-      name: 'Ammar Abdullah',
-      role: language === 'id' ? 'Desainer Profesional' : 'Professional Designer',
-      text: language === 'id' 
-        ? 'Madu terbaik yang pernah saya coba! Rasanya autentik dan kualitasnya luar biasa.'
-        : 'The best honey I\'ve ever tasted! Authentic flavor and exceptional quality.',
-      rating: 5,
-    },
-    {
-      name: 'John Wick',
-      role: 'The Baba Yaga',
-      text: language === 'id'
-        ? 'Lontara Honey adalah pilihan utama untuk membuat tubuh saya selalu terjaga manfaatnya WOAW!!'
-        : 'Lontara Honey is the main choice to keep my body healthy. WOAW!!',
-      rating: 5,
-    },
-    {
-      name: 'Hj. Ariani',
-      role: language === 'id' ? 'Pendiri Bisnis' : 'Business Founder',
-      text: language === 'id'
-        ? 'Keluarga saya sangat menyukai madu ini! Anak-anak sekarang lebih suka madu daripada gula.'
-        : 'My family very loves this honey! Kids now prefer honey over sugar.',
-      rating: 5,
-    },
+    { name: 'Ammar Abdullah', roleKey: 'testimonials.1.role', textKey: 'testimonials.1.text', rating: 5 },
+    { name: 'John Wick', roleKey: 'testimonials.2.role', textKey: 'testimonials.2.text', rating: 5 },
+    { name: 'Hj. Ariani', roleKey: 'testimonials.3.role', textKey: 'testimonials.3.text', rating: 5 },
   ];
 
   return (
@@ -53,16 +32,14 @@ const TestimonialsSection: React.FC<TestimonialsSectionProps> = ({ happyPeopleIm
           transition={{ duration: 0.6 }}
         >
           <span className="text-primary font-medium uppercase tracking-wider text-sm">
-            {language === 'id' ? 'Testimoni' : 'Testimonials'}
+            {t('testimonials.eyebrow')}
           </span>
           <div className="mx-auto mt-3 h-px w-24 bg-honey-gold/70" />
           <h2 className="text-4xl md:text-5xl font-serif font-bold text-foreground mt-4">
-            {language === 'id' ? 'Pelanggan Bahagia' : 'Happy Customers'}
+            {t('testimonials.title')}
           </h2>
           <p className="mt-2 text-muted-foreground dark:text-white/80 max-w-2xl mx-auto">
-            {language === 'id' 
-              ? 'Bergabung dengan ribuan pelanggan yang telah merasakan keajaiban madu Lontara'
-              : 'Join thousands of customers who have experienced the magic of Lontara Honey'}
+            {t('testimonials.subtitle')}
           </p>
         </motion.div>
 
@@ -77,7 +54,7 @@ const TestimonialsSection: React.FC<TestimonialsSectionProps> = ({ happyPeopleIm
           >
             <img
               src={happyPeopleImage}
-              alt="Happy customers enjoying Lontara Honey"
+              alt={t('testimonials.imageAlt')}
               loading="lazy"
               decoding="async"
               className="w-full h-[300px] md:h-[350px] lg:h-[400px] object-cover"
@@ -104,11 +81,11 @@ const TestimonialsSection: React.FC<TestimonialsSectionProps> = ({ happyPeopleIm
                   ))}
                 </div>
                 
-                <p className="text-foreground mb-4 italic">"{testimonial.text}"</p>
+                <p className="text-foreground mb-4 italic">"{t(testimonial.textKey)}"</p>
                 
                 <div>
                   <p className="font-semibold text-foreground">{testimonial.name}</p>
-                  <p className="text-sm text-muted-foreground dark:text-white/80">{testimonial.role}</p>
+                  <p className="text-sm text-muted-foreground dark:text-white/80">{t(testimonial.roleKey)}</p>
                 </div>
               </motion.div>
             ))}

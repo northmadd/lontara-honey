@@ -5,6 +5,7 @@ import honeyFooter from '@/assets/honey-footer.webp';
 import sceneVideoMp4 from '@/assets/scene.mp4';
 import sceneVideoWebm from '@/assets/scene.webm';
 import { Link } from 'react-router-dom';
+import { useLanguage } from '@/contexts/LanguageContext';
 
 const NorthmadVideo: React.FC = () => {
   const videoRef = useRef<HTMLVideoElement | null>(null);
@@ -130,6 +131,8 @@ const NorthmadVideo: React.FC = () => {
 };
 
 const Footer: React.FC = () => {
+  const { t } = useLanguage();
+
   const scrollToSection = (sectionId: string) => {
     const element = document.getElementById(sectionId);
     if (element) {
@@ -146,7 +149,7 @@ const Footer: React.FC = () => {
   const contactItems = [
     {
       icon: MapPin,
-      label: 'South Sulawesi, Indonesia',
+      label: t('contact.address'),
       href: 'https://www.google.com/maps/search/?api=1&query=South+Sulawesi+Indonesia',
     },
     {
@@ -162,9 +165,9 @@ const Footer: React.FC = () => {
   ];
 
   const socialLinks = [
-    { icon: Instagram, href: 'https://instagram.com/maduhutanlontara', label: 'Instagram' },
-    { icon: PlayCircle, href: 'https://tiktok.com/@maduhutanlontara', label: 'TikTok' },
-    { icon: Youtube, href: 'https://youtube.com/@rajamadusulawesi7380', label: 'YouTube' },
+    { icon: Instagram, href: 'https://instagram.com/maduhutanlontara', label: t('footer.social.instagram') },
+    { icon: PlayCircle, href: 'https://tiktok.com/@maduhutanlontara', label: t('footer.social.tiktok') },
+    { icon: Youtube, href: 'https://youtube.com/@rajamadusulawesi7380', label: t('footer.social.youtube') },
   ];
 
   return (
@@ -335,7 +338,7 @@ const Footer: React.FC = () => {
           <div className="relative h-64 w-64 ml-4">
             <img
               src={honeyFooter}
-              alt="Lontara Honey"
+              alt={t('footer.honeyAlt')}
               className="w-full h-full object-contain drop-shadow-lg rounded-2xl shadow-amber-200/30"
               loading="lazy"
               decoding="async"
@@ -357,7 +360,7 @@ const Footer: React.FC = () => {
             <div className="flex items-start gap-3">
               <img
                 src={logoLontara}
-                alt="Lontara Honey logo"
+                alt={t('footer.logoAlt')}
                 loading="lazy"
                 decoding="async"
                 className="h-16 w-16 object-contain"
@@ -367,7 +370,7 @@ const Footer: React.FC = () => {
                   LONTARA <span className="text-honey-gold dark:text-honey-gold">HONEY</span>
                 </h3>
                 <p className="mt-1 text-sm font-medium text-foreground/90 dark:text-white italic font-serif leading-snug">
-                  Pure honey from the heart of<br/>Sulawesi
+                  {t('footer.tagline1')}<br/>{t('footer.tagline2')}
                 </p>
               </div>
             </div>
@@ -377,7 +380,7 @@ const Footer: React.FC = () => {
               <div className="h-48 w-48 sm:h-56 sm:w-56 md:h-72 md:w-72">
                 <img
                   src={honeyFooter}
-                  alt="Lontara Honey"
+                  alt={t('footer.honeyAlt')}
                   className="w-full h-full object-contain drop-shadow-[0_12px_32px_hsl(35_100%_50%/0.25)]"
                   loading="lazy"
                   decoding="async"
@@ -428,16 +431,16 @@ const Footer: React.FC = () => {
             <div>
               <div className="mb-4">
                 <h4 className="text-xs font-semibold tracking-[0.3em] uppercase text-honey-gold dark:text-honey-gold">
-                  Navigation
+                  {t('footer.navigation')}
                 </h4>
                 <div className="mt-2 h-0.5 w-12 bg-honey-gold/60 dark:bg-honey-gold/50" />
               </div>
               <ul className="space-y-2 text-sm md:text-[0.85rem] text-foreground">
-                <li onClick={() => scrollToSection('home')} className="cursor-pointer transition-colors hover:text-honey-gold dark:hover:text-[#D4A347]">Home</li>
-                <li onClick={() => scrollToSection('products')} className="cursor-pointer transition-colors hover:text-honey-gold dark:hover:text-[#D4A347]">Products</li>
-                <li onClick={() => scrollToSection('about')} className="cursor-pointer transition-colors hover:text-honey-gold dark:hover:text-[#D4A347]">About</li>
-                <li onClick={() => scrollToSection('story')} className="cursor-pointer transition-colors hover:text-honey-gold dark:hover:text-[#D4A347]">Our Story</li>
-                <li onClick={() => scrollToSection('contact')} className="cursor-pointer transition-colors hover:text-honey-gold dark:hover:text-[#D4A347]">Contact</li>
+                <li onClick={() => scrollToSection('home')} className="cursor-pointer transition-colors hover:text-honey-gold dark:hover:text-[#D4A347]">{t('nav.home')}</li>
+                <li onClick={() => scrollToSection('products')} className="cursor-pointer transition-colors hover:text-honey-gold dark:hover:text-[#D4A347]">{t('nav.products')}</li>
+                <li onClick={() => scrollToSection('about')} className="cursor-pointer transition-colors hover:text-honey-gold dark:hover:text-[#D4A347]">{t('nav.about')}</li>
+                <li onClick={() => scrollToSection('story')} className="cursor-pointer transition-colors hover:text-honey-gold dark:hover:text-[#D4A347]">{t('nav.story')}</li>
+                <li onClick={() => scrollToSection('contact')} className="cursor-pointer transition-colors hover:text-honey-gold dark:hover:text-[#D4A347]">{t('nav.contact')}</li>
               </ul>
             </div>
 
@@ -445,18 +448,18 @@ const Footer: React.FC = () => {
             <div>
               <div className="mb-4">
                 <h4 className="text-xs font-semibold tracking-[0.3em] uppercase text-honey-gold dark:text-honey-gold">
-                  Quick Link
+                  {t('footer.quickLink')}
                 </h4>
                 <div className="mt-2 h-0.5 w-12 bg-honey-gold/60 dark:bg-honey-gold/50" />
               </div>
               <ul className="space-y-2 text-sm md:text-[0.85rem] text-foreground">
-                <li><Link to="/legal/faq" className="transition-colors hover:text-honey-gold dark:hover:text-[#D4A347]">FAQs</Link></li>
-                <li onClick={() => alert('Blog coming soon!')} className="cursor-pointer transition-colors hover:text-honey-gold dark:hover:text-[#D4A347]">Blog</li>
-                <li onClick={() => openWhatsApp('I would like to book Lontara Honey products')} className="cursor-pointer transition-colors hover:text-honey-gold dark:hover:text-[#D4A347]">Booking</li>
-                <li><Link to="/legal/privacy" className="transition-colors hover:text-honey-gold dark:hover:text-[#D4A347]">Privacy Policy</Link></li>
-                <li><Link to="/legal/terms" className="transition-colors hover:text-honey-gold dark:hover:text-[#D4A347]">Terms & Conditions</Link></li>
-                <li><Link to="/legal/shipping" className="transition-colors hover:text-honey-gold dark:hover:text-[#D4A347]">Shipping Policy</Link></li>
-                <li><Link to="/legal/refund" className="transition-colors hover:text-honey-gold dark:hover:text-[#D4A347]">Refund Policy</Link></li>
+                <li><Link to="/legal/faq" className="transition-colors hover:text-honey-gold dark:hover:text-[#D4A347]">{t('footer.faqs')}</Link></li>
+                <li onClick={() => alert(t('footer.blog.comingSoon'))} className="cursor-pointer transition-colors hover:text-honey-gold dark:hover:text-[#D4A347]">{t('footer.blog')}</li>
+                <li onClick={() => openWhatsApp(t('footer.wa.booking'))} className="cursor-pointer transition-colors hover:text-honey-gold dark:hover:text-[#D4A347]">{t('footer.booking')}</li>
+                <li><Link to="/legal/privacy" className="transition-colors hover:text-honey-gold dark:hover:text-[#D4A347]">{t('footer.privacy')}</Link></li>
+                <li><Link to="/legal/terms" className="transition-colors hover:text-honey-gold dark:hover:text-[#D4A347]">{t('footer.terms')}</Link></li>
+                <li><Link to="/legal/shipping" className="transition-colors hover:text-honey-gold dark:hover:text-[#D4A347]">{t('footer.shipping')}</Link></li>
+                <li><Link to="/legal/refund" className="transition-colors hover:text-honey-gold dark:hover:text-[#D4A347]">{t('footer.refund')}</Link></li>
               </ul>
             </div>
 
@@ -464,15 +467,15 @@ const Footer: React.FC = () => {
             <div>
               <div className="mb-4">
                 <h4 className="text-xs font-semibold tracking-[0.3em] uppercase text-honey-gold dark:text-honey-gold">
-                  Services
+                  {t('footer.services')}
                 </h4>
                 <div className="mt-2 h-0.5 w-12 bg-honey-gold/60 dark:bg-honey-gold/50" />
               </div>
               <ul className="space-y-2 text-sm md:text-[0.85rem] text-foreground">
-                <li onClick={() => scrollToSection('products')} className="cursor-pointer transition-colors hover:text-honey-gold dark:hover:text-[#D4A347]">Premium Honey Supply</li>
-                <li onClick={() => openWhatsApp('I am interested in wholesale Lontara Honey products')} className="cursor-pointer transition-colors hover:text-honey-gold dark:hover:text-[#D4A347]">Wholesale</li>
-                <li onClick={() => scrollToSection('products')} className="cursor-pointer transition-colors hover:text-honey-gold dark:hover:text-[#D4A347]">Retail</li>
-                <li onClick={() => scrollToSection('contact')} className="cursor-pointer transition-colors hover:text-honey-gold dark:hover:text-[#D4A347]">Support</li>
+                <li onClick={() => scrollToSection('products')} className="cursor-pointer transition-colors hover:text-honey-gold dark:hover:text-[#D4A347]">{t('footer.premiumSupply')}</li>
+                <li onClick={() => openWhatsApp(t('footer.wa.wholesale'))} className="cursor-pointer transition-colors hover:text-honey-gold dark:hover:text-[#D4A347]">{t('footer.wholesale')}</li>
+                <li onClick={() => scrollToSection('products')} className="cursor-pointer transition-colors hover:text-honey-gold dark:hover:text-[#D4A347]">{t('footer.retail')}</li>
+                <li onClick={() => scrollToSection('contact')} className="cursor-pointer transition-colors hover:text-honey-gold dark:hover:text-[#D4A347]">{t('footer.support')}</li>
               </ul>
             </div>
           </div>
@@ -523,17 +526,17 @@ const Footer: React.FC = () => {
         {/* Bottom: separator + copyright */}
         <div className="mt-4 border-t border-honey-gold/30 pt-2 text-center md:mt-6 md:pt-4 dark:border-yellow-300/30">
           <p className="text-xs md:text-sm text-muted-foreground dark:text-white/80">
-            © 2026 Lontara Honey. All Rights Reserved.
+            {t('footer.copyright')}
           </p>
           <a
             href="https://www.instagram.com/northmadd/"
             target="_blank"
             rel="noopener noreferrer"
-            aria-label="Northmad Instagram"
+            aria-label={t('footer.northmadAria')}
             className="northmad-credit block transition-opacity duration-300 hover:opacity-80"
           >
-            <span className="northmad-line" data-text="WEBSITE BY">
-              WEBSITE BY
+            <span className="northmad-line" data-text={t('footer.websiteBy')}>
+              {t('footer.websiteBy')}
             </span>
             <NorthmadVideo />
           </a>

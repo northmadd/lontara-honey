@@ -1,6 +1,7 @@
 import React from 'react';
 import { motion } from 'framer-motion';
 import { MessageCircle, Volume2, VolumeX } from 'lucide-react';
+import { useLanguage } from '@/contexts/LanguageContext';
 
 const WHATSAPP_NUMBER = '6282347905543';
 
@@ -10,8 +11,10 @@ interface WhatsAppButtonProps {
 }
 
 const WhatsAppButton: React.FC<WhatsAppButtonProps> = ({ isMuted, onToggleMute }) => {
+  const { t } = useLanguage();
+
   const handleClick = () => {
-    const message = 'Hello! I\'m interested in Lontara Honey products.';
+    const message = t('whatsapp.message');
     const encodedMessage = encodeURIComponent(message);
     const webUrl = `https://api.whatsapp.com/send?phone=${WHATSAPP_NUMBER}&text=${encodedMessage}`;
     window.open(webUrl, '_blank');
@@ -22,7 +25,7 @@ const WhatsAppButton: React.FC<WhatsAppButtonProps> = ({ isMuted, onToggleMute }
       <motion.button
         type="button"
         onClick={onToggleMute}
-        aria-label={isMuted ? 'Unmute backsound' : 'Mute backsound'}
+        aria-label={isMuted ? t('whatsapp.unmute.aria') : t('whatsapp.mute.aria')}
         className="w-14 h-14 rounded-full bg-card text-foreground border border-border shadow-lg flex items-center justify-center hover:bg-muted transition-colors"
         initial={{ scale: 0, opacity: 0 }}
         animate={{ scale: 1, opacity: 1 }}
@@ -36,6 +39,7 @@ const WhatsAppButton: React.FC<WhatsAppButtonProps> = ({ isMuted, onToggleMute }
       <motion.button
         type="button"
         onClick={handleClick}
+        aria-label={t('whatsapp.chat.aria')}
         className="relative w-14 h-14 rounded-full bg-green-500 text-white shadow-lg flex items-center justify-center hover:bg-green-600 transition-colors"
         initial={{ scale: 0, opacity: 0 }}
         animate={{ scale: 1, opacity: 1 }}

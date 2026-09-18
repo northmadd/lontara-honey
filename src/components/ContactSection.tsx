@@ -20,7 +20,7 @@ const openWhatsApp = (message: string) => {
 };
 
 const ContactSection: React.FC = () => {
-  const { language, t } = useLanguage();
+  const { t } = useLanguage();
   const [formData, setFormData] = useState({
     name: '',
     countryCode: '+62',
@@ -38,14 +38,14 @@ const ContactSection: React.FC = () => {
     if (formData.website) return;
 
     if (!formData.phone.trim()) {
-      setPhoneError(language === 'en' ? 'Phone number is required.' : 'Nomor telepon wajib diisi.');
+      setPhoneError(t('contact.phoneRequired'));
       return;
     }
 
     if (Date.now() - lastSubmission.current < FORM_COOLDOWN_MS) {
       toast({
-        title: language === 'en' ? 'Please wait a moment' : 'Mohon tunggu sebentar',
-        description: language === 'en' ? 'You can send another message in a few seconds.' : 'Anda dapat mengirim pesan lagi dalam beberapa detik.',
+        title: t('contact.toast.wait.title'),
+        description: t('contact.toast.wait.desc'),
       });
       return;
     }
@@ -55,25 +55,25 @@ const ContactSection: React.FC = () => {
     const message = `Hello Lontara Honey!\n\nName: ${formData.name}\nPhone: ${formData.countryCode} ${formData.phone}\n\nMessage:\n${formData.message}`;
     openWhatsApp(message);
     toast({
-      title: 'Redirecting to WhatsApp',
-      description: 'Your message is ready to send!',
+      title: t('contact.toast.redirect.title'),
+      description: t('contact.toast.redirect.desc'),
     });
   };
 
   const contactInfo = [
     {
       icon: MapPin,
-      title: language === 'en' ? 'Address' : 'Alamat',
+      title: t('contact.info.address'),
       text: t('contact.address'),
     },
     {
       icon: Phone,
-      title: 'Phone / WhatsApp',
+      title: t('contact.info.phone'),
       text: '+62 823-4790-5543',
     },
     {
       icon: Mail,
-      title: 'Email',
+      title: t('contact.info.email'),
       text: 'lontarajayanusantara@gmail.com',
     },
   ];
@@ -105,15 +105,9 @@ const ContactSection: React.FC = () => {
                   {t('contact.subtitle')}
                 </h2>
                 <p className="mt-4 text-muted-foreground dark:text-white/80">
-                  {language === 'en' ? (
-                    <>
-                      Reach out to us for product information and wholesale inquiries,
-                      <br className="hidden sm:block" />
-                      or direct orders of Lontara Honey.
-                    </>
-                  ) : (
-                    'Hubungi kami untuk informasi produk, pemesanan langsung, atau kerja sama distribusi Lontara Honey.'
-                  )}
+                  {t('contact.paragraph1')}
+                  <br className="hidden sm:block" />
+                  {t('contact.paragraph2')}
                 </p>
               </div>
 
@@ -141,11 +135,7 @@ const ContactSection: React.FC = () => {
                 size="lg"
                 className="honey-gradient text-white border-0 hover:opacity-90"
                 onClick={() =>
-                  openWhatsApp(
-                    language === 'en'
-                      ? "Hello Lontara Honey! I would like to place an order or ask about your products."
-                      : 'Halo Lontara Honey! Saya ingin memesan atau menanyakan informasi seputar produk.'
-                  )
+                  openWhatsApp(t('contact.wa.message'))
                 }
               >
                 <Phone className="w-5 h-5 mr-2" />
@@ -179,7 +169,7 @@ const ContactSection: React.FC = () => {
                   <Input
                     value={formData.name}
                     onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-                    placeholder={language === 'en' ? 'Your Name..' : 'Nama lengkap..'}
+                    placeholder={t('contact.namePlaceholder')}
                     required
                     maxLength={80}
                     className="bg-background"
@@ -193,7 +183,7 @@ const ContactSection: React.FC = () => {
                     <CountryCodeSelect
                       value={formData.countryCode}
                       onChange={(value) => setFormData({ ...formData, countryCode: value })}
-                      ariaLabel={language === 'en' ? 'Country code' : 'Kode negara'}
+                      ariaLabel={t('contact.countryCode.aria')}
                     />
                     <Input
                       type="tel"
@@ -224,7 +214,7 @@ const ContactSection: React.FC = () => {
                   <Textarea
                     value={formData.message}
                     onChange={(e) => setFormData({ ...formData, message: e.target.value })}
-                    placeholder={language === 'en' ? 'Your message...' : 'Pesan Anda...'}
+                    placeholder={t('contact.messagePlaceholder')}
                     rows={5}
                     required
                     maxLength={1000}
@@ -255,15 +245,15 @@ const ContactSection: React.FC = () => {
               <div className="w-full h-72 md:h-96 flex items-center justify-center bg-muted/20">
                 <div className="text-center p-8">
                   <MapPin className="w-12 h-12 mx-auto mb-4 text-muted-foreground dark:text-white/80" />
-                  <p className="text-foreground">Map tidak dapat dimuat</p>
+                  <p className="text-foreground">{t('contact.map.error.title')}</p>
                   <p className="text-sm text-muted-foreground dark:text-white/80 mt-2">
-                    Jl. Pangkabinanga, Pangkabinanga, Pallangga, Gowa, Sulawesi Selatan 92161
+                    {t('contact.map.error.address')}
                   </p>
                 </div>
               </div>
             ) : (
               <iframe
-                title="Lontara Honey Location"
+                title={t('contact.map.title')}
                 src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3973.305487183139!2d119.4524519!3d-5.2146092!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x2dbee227ff58c4ad%3A0x5ea49915d8676ea5!2sRaja%20Madu%20Sulawesi!5e0!3m2!1sid!2sid!4v1765591742735!5m2!1sid!2sid"
                 width="100%"
                 height="450"

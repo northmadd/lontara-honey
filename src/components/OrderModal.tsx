@@ -65,7 +65,7 @@ const OrderModal: React.FC<OrderModalProps> = ({ product, onClose }) => {
     if (formData.website) return;
 
     if (!formData.phone.trim()) {
-      setPhoneError(language === 'en' ? 'Phone number is required.' : 'Nomor telepon wajib diisi.');
+      setPhoneError(t('order.phoneRequired'));
       return;
     }
 
@@ -74,16 +74,16 @@ const OrderModal: React.FC<OrderModalProps> = ({ product, onClose }) => {
     
     const paymentLabel = paymentMethods.find(p => p.id === formData.payment)?.label || formData.payment;
     
-    const message = `🍯 *NEW ORDER - LONTARA HONEY*\n\n` +
-      `*Product:* ${language === 'en' ? product.name.en : product.name.id}\n` +
-      `*Weight:* ${product.weight}\n` +
-      `*Price:* ${formatPrice(product.price)}\n\n` +
-      `*Customer Details:*\n` +
-      `Name: ${formData.name}\n` +
-      `Phone: ${formData.countryCode} ${formData.phone}\n` +
-      `Payment: ${paymentLabel}\n` +
-      `${formData.notes ? `Notes: ${formData.notes}` : ''}\n\n` +
-      `Thank you for ordering Lontara Honey! 🐝`;
+    const message = `${t('order.wa.title')}` +
+      `${t('order.wa.product')} ${language === 'en' ? product.name.en : product.name.id}\n` +
+      `${t('order.wa.weight')} ${product.weight}\n` +
+      `${t('order.wa.price')} ${formatPrice(product.price)}\n\n` +
+      `${t('order.wa.customer')}\n` +
+      `${t('order.wa.name')} ${formData.name}\n` +
+      `${t('order.wa.phone')} ${formData.countryCode} ${formData.phone}\n` +
+      `${t('order.wa.payment')} ${paymentLabel}\n` +
+      `${formData.notes ? `${t('order.wa.notes')} ${formData.notes}` : ''}\n\n` +
+      `${t('order.wa.thanks')}`;
 
     openWhatsApp(message);
     onClose();
@@ -166,7 +166,7 @@ const OrderModal: React.FC<OrderModalProps> = ({ product, onClose }) => {
               <Input
                 value={formData.name}
                 onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-                placeholder="Your Name.."
+                placeholder={t('order.namePlaceholder')}
                 required
                 maxLength={80}
               />
@@ -180,7 +180,7 @@ const OrderModal: React.FC<OrderModalProps> = ({ product, onClose }) => {
                 <CountryCodeSelect
                   value={formData.countryCode}
                   onChange={(value) => setFormData({ ...formData, countryCode: value })}
-                  ariaLabel={language === 'en' ? 'Country code' : 'Kode negara'}
+                  ariaLabel={t('order.countryCode.aria')}
                 />
                 <Input
                   type="tel"
@@ -212,7 +212,7 @@ const OrderModal: React.FC<OrderModalProps> = ({ product, onClose }) => {
               <Textarea
                 value={formData.notes}
                 onChange={(e) => setFormData({ ...formData, notes: e.target.value })}
-                placeholder="Any special requests..."
+                placeholder={t('order.notesPlaceholder')}
                 rows={3}
                 maxLength={500}
               />
@@ -246,17 +246,17 @@ const OrderModal: React.FC<OrderModalProps> = ({ product, onClose }) => {
                       {method.label}
                     </span>
                     {method.available === false && (
-                      <span className="mt-1 block text-[10px] font-medium uppercase tracking-wide text-muted-foreground dark:text-white/80">Coming soon</span>
+                      <span className="mt-1 block text-[10px] font-medium uppercase tracking-wide text-muted-foreground dark:text-white/80">{t('order.comingSoon')}</span>
                     )}
                   </button>
                 ))}
               </div>
               {formData.payment === 'bank' && (
                 <div className="mt-4 rounded-xl border border-primary/30 bg-primary/5 p-4 text-sm text-foreground">
-                  <p className="font-semibold">Bank Mandiri</p>
-                  <p className="mt-1">Account number: <span className="font-medium">152-00-1864520-6</span></p>
-                  <p>Account holder: Ariani</p>
-                  <p className="mt-2 text-xs text-muted-foreground dark:text-white/80">Please confirm your order with our team before making a transfer.</p>
+                  <p className="font-semibold">{t('order.bank.name')}</p>
+                  <p className="mt-1">{t('order.bank.number')} <span className="font-medium">152-00-1864520-6</span></p>
+                  <p>{t('order.bank.holder')} Ariani</p>
+                  <p className="mt-2 text-xs text-muted-foreground dark:text-white/80">{t('order.bank.confirm')}</p>
                 </div>
               )}
             </div>

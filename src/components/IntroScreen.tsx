@@ -1,12 +1,14 @@
 import React, { useEffect, useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import logoLontara from '@/assets/logo-lontara.webp';
+import { useLanguage } from '@/contexts/LanguageContext';
 
 interface IntroScreenProps {
   onComplete: () => void;
 }
 
 const IntroScreen: React.FC<IntroScreenProps> = ({ onComplete }) => {
+  const { t } = useLanguage();
   // Mulai langsung di phase 2 agar tidak ada frame kosong
   const [phase, setPhase] = useState(2);
 
@@ -254,7 +256,7 @@ const IntroScreen: React.FC<IntroScreenProps> = ({ onComplete }) => {
                 delay: 0.5,
               }}
             >
-              The Golden Treasure of Sulawesi
+              {t('intro.tagline')}
             </motion.p>
           </div>
 

@@ -7,6 +7,7 @@ import BotVerificationGate from "./components/BotVerificationGate";
 import Index from "./pages/Index";
 import NotFound from "./pages/NotFound";
 import LegalPage from "./pages/LegalPage";
+import { LanguageProvider } from "@/contexts/LanguageContext";
 
 const queryClient = new QueryClient();
 
@@ -14,6 +15,7 @@ const routerBasename = import.meta.env.BASE_URL.replace(/\/$/, "");
 
 const App = () => (
   <QueryClientProvider client={queryClient}>
+    <LanguageProvider>
     <TooltipProvider>
       <Toaster />
       <Sonner />
@@ -28,6 +30,7 @@ const App = () => (
         </BrowserRouter>
       </BotVerificationGate>
     </TooltipProvider>
+    </LanguageProvider>
   </QueryClientProvider>
 );
 

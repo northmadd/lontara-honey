@@ -10,7 +10,7 @@ interface HeroSectionProps {
 }
 
 const HeroSection: React.FC<HeroSectionProps> = ({ onNavigate, heroImage }) => {
-  const { t, language } = useLanguage();
+  const { t } = useLanguage();
 
   return (
     <section className="relative min-h-screen flex items-center justify-center overflow-hidden pt-6">
@@ -18,7 +18,7 @@ const HeroSection: React.FC<HeroSectionProps> = ({ onNavigate, heroImage }) => {
       <div className="absolute inset-0">
         <img
           src={heroImage}
-          alt="Honey background"
+          alt={t('hero.imageAlt')}
           fetchPriority="high"
           loading="eager"
           decoding="sync"
@@ -47,7 +47,7 @@ const HeroSection: React.FC<HeroSectionProps> = ({ onNavigate, heroImage }) => {
         <div className="max-w-3xl">
           <motion.div
             className="mt-4 md:mt-6"
-            initial={false}
+            initial={{ opacity: 0, y: 24 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.8 }}
           >
@@ -59,57 +59,33 @@ const HeroSection: React.FC<HeroSectionProps> = ({ onNavigate, heroImage }) => {
 
           <motion.h1
             className="text-4xl sm:text-5xl md:text-6xl lg:text-7xl font-serif font-bold text-foreground mb-6 leading-tight"
-            initial={false}
+            initial={{ opacity: 0, y: 24 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.8, delay: 0.2 }}
           >
-            {language === 'id' ? (
-              <>
-                <span>
-                  Harta <span className="honey-text-gradient">Emas</span>
-                </span>
-                <br />
-                <span>dari Alam</span>
-              </>
-            ) : (
-              <>
-                <span>
-                  Nature's <span className="honey-text-gradient">Golden</span>
-                </span>
-                <br />
-                <span>Treasure</span>
-              </>
-            )}
+            <span>
+              {t('hero.title.a')} <span className="honey-text-gradient">{t('hero.title.b')}</span>
+            </span>
+            <br />
+            <span>{t('hero.title.c')}</span>
           </motion.h1>
 
           <motion.p
             className="text-base md:text-lg lg:text-xl text-muted-foreground dark:text-white/80 mb-8 max-w-lg leading-relaxed"
-            initial={false}
+            initial={{ opacity: 0, y: 24 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.8, delay: 0.4 }}
           >
-            {language === 'en' ? (
-              <>
-                Pure honey from Sulawesi's wild forests,
-                <br className="hidden sm:block" />
-                harvested with care by local beekeepers
-                <br className="hidden sm:block" />
-                and bottled fresh for your table.
-              </>
-            ) : (
-              <>
-                Madu murni dari hutan liar Sulawesi,
-                <br className="hidden sm:block" />
-                dipanen penuh hati oleh peternak lokal
-                <br className="hidden sm:block" />
-                dan dikemas segar untuk meja Anda.
-              </>
-            )}
+            {t('hero.paragraph1')}
+            <br className="hidden sm:block" />
+            {t('hero.paragraph2')}
+            <br className="hidden sm:block" />
+            {t('hero.paragraph3')}
           </motion.p>
 
           <motion.div
             className="flex flex-col sm:flex-wrap sm:flex-row gap-4"
-            initial={false}
+            initial={{ opacity: 0, y: 24 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.8, delay: 0.6 }}
           >
@@ -135,14 +111,14 @@ const HeroSection: React.FC<HeroSectionProps> = ({ onNavigate, heroImage }) => {
           {/* Stats */}
           <motion.div
             className="mt-10 md:mt-16 grid grid-cols-3 gap-4 sm:gap-8 max-w-md"
-            initial={false}
-            animate={{ opacity: 1 }}
+            initial={{ opacity: 0, y: 24 }}
+            animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.8, delay: 0.8 }}
           >
             {[
-              { value: '100%', label: 'Pure Honey' },
-              { value: '10+', label: 'Years' },
-              { value: '5000+', label: 'Customers' },
+              { value: '100%', label: t('hero.stats.pure') },
+              { value: '10+', label: t('hero.stats.years') },
+              { value: '5000+', label: t('hero.stats.customers') },
             ].map((stat, i) => (
               <div key={i} className="text-center">
                 <div className="text-2xl md:text-3xl font-serif font-bold text-foreground">{stat.value}</div>
@@ -156,7 +132,6 @@ const HeroSection: React.FC<HeroSectionProps> = ({ onNavigate, heroImage }) => {
       {/* Scroll indicator */}
       <motion.div
         className="absolute bottom-8 left-1/2 transform -translate-x-1/2"
-        initial={false}
         animate={{ opacity: 1, y: [0, 10, 0] }}
         transition={{ duration: 2, repeat: Infinity, delay: 1 }}
       >
