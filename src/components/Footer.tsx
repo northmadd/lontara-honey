@@ -24,7 +24,7 @@ const NorthmadVideo: React.FC = () => {
 
     const ensureSize = () => {
       if (!video.videoWidth) return;
-      const scale = Math.min(1, 400 / video.videoWidth);
+      const scale = Math.min(1, 300 / video.videoWidth);
       const w = Math.round(video.videoWidth * scale);
       const h = Math.round(video.videoHeight * scale);
       if (canvas.width !== w || canvas.height !== h) {
@@ -48,6 +48,7 @@ const NorthmadVideo: React.FC = () => {
           data[i + 3] = luma < 18 ? 0 : Math.min(255, luma * 1.4);
         }
         ctx.putImageData(img, 0, 0);
+        if (canvas.style.opacity !== '1') canvas.style.opacity = '1';
       } catch (e) {
         failed = true;
       }
@@ -90,9 +91,17 @@ const NorthmadVideo: React.FC = () => {
     if (observer) observer.observe(canvas);
     else visible = true;
 
+    canvas.style.opacity = '0';
+
+    const onLoadedMetadata = () => {
+      ensureSize();
+      renderFrame();
+    };
+
     video.addEventListener('play', onPlay);
     video.addEventListener('pause', onPause);
     video.addEventListener('loadeddata', renderFrame);
+    video.addEventListener('loadedmetadata', onLoadedMetadata);
 
     const p = video.play();
     if (p) p.catch(() => {});
@@ -103,6 +112,7 @@ const NorthmadVideo: React.FC = () => {
       video.removeEventListener('play', onPlay);
       video.removeEventListener('pause', onPause);
       video.removeEventListener('loadeddata', renderFrame);
+      video.removeEventListener('loadedmetadata', onLoadedMetadata);
     };
   }, []);
 
@@ -325,9 +335,11 @@ const Footer: React.FC = () => {
         html:not(.dark) .northmad-video-canvas {
           display: block;
           position: absolute;
-          inset: 0;
+          top: 0;
+          left: 0;
           width: 100%;
-          height: 100%;
+          height: auto;
+          transition: opacity 0.4s ease;
         }
 
       `}</style>
