@@ -115,8 +115,18 @@ const products: Product[] = [
 
 const storyImages = [story1, story2, story3, story4];
 
+// Intro cukup sekali per sesi SPA (level modul, bukan hook): balik dari quick
+// link legal di footer tidak memutar ulang, tapi refresh/reload penuh tetap
+// memutar seperti pertama kali masuk.
+const introPlayedOnceRef = { current: false };
 const IndexContent: React.FC = () => {
-  const [showIntro, setShowIntro] = useState(true);
+  // Intro sekali per sesi SPA: balik dari quick link legal di footer tidak
+  // memutar ulang, tapi refresh penuh (reload) tetap memutar seperti dulu.
+  const [showIntro, setShowIntro] = useState(() => {
+    if (introPlayedOnceRef.current) return false;
+    introPlayedOnceRef.current = true;
+    return true;
+  });
   const [activeSection, setActiveSection] = useState('home');
   const [selectedProduct, setSelectedProduct] = useState<Product | null>(null);
   const [isBacksoundMuted, setIsBacksoundMuted] = useState(false);
