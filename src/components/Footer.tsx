@@ -1,10 +1,131 @@
-import React from 'react';
+import React, { useEffect, useRef } from 'react';
 import { Instagram, PlayCircle, Youtube, MapPin, Phone, Mail } from 'lucide-react';
 import logoLontara from '@/assets/logo-lontara.webp';
 import honeyFooter from '@/assets/honey-footer.webp';
 import sceneVideoMp4 from '@/assets/scene.mp4';
 import sceneVideoWebm from '@/assets/scene.webm';
 import { Link } from 'react-router-dom';
+
+const NorthmadVideo: React.FC = () => {
+  const videoRef = useRef<HTMLVideoElement | null>(null);
+  const canvasRef = useRef<HTMLCanvasElement | null>(null);
+
+  useEffect(() => {
+    const video = videoRef.current;
+    const canvas = canvasRef.current;
+    const ctx = canvas?.getContext('2d', { willReadFrequently: true });
+    if (!video || !canvas || !ctx) return;
+
+    let raf = 0;
+    let playing = false;
+    let visible = false;
+    let failed = false;
+
+    const ensureSize = () => {
+      if (!video.videoWidth) return;
+      const scale = Math.min(1, 400 / video.videoWidth);
+      const w = Math.round(video.videoWidth * scale);
+      const h = Math.round(video.videoHeight * scale);
+      if (canvas.width !== w || canvas.height !== h) {
+        canvas.width = w;
+        canvas.height = h;
+      }
+    };
+
+    const renderFrame = () => {
+      if (failed || !video.videoWidth) return;
+      ensureSize();
+      ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
+      try {
+        const img = ctx.getImageData(0, 0, canvas.width, canvas.height);
+        const data = img.data;
+        for (let i = 0; i < data.length; i += 4) {
+          const r = data[i];
+          const g = data[i + 1];
+          const b = data[i + 2];
+          const luma = 0.2126 * r + 0.7152 * g + 0.0722 * b;
+          data[i + 3] = luma < 18 ? 0 : Math.min(255, luma * 1.4);
+        }
+        ctx.putImageData(img, 0, 0);
+      } catch (e) {
+        failed = true;
+      }
+    };
+
+    const loop = () => {
+      raf = 0;
+      renderFrame();
+      if (playing && visible && !failed) raf = requestAnimationFrame(loop);
+    };
+
+    const sync = () => {
+      if (playing && visible && !failed) {
+        if (!raf) raf = requestAnimationFrame(loop);
+      } else if (raf) {
+        cancelAnimationFrame(raf);
+        raf = 0;
+      }
+    };
+
+    const onPlay = () => {
+      playing = true;
+      sync();
+    };
+    const onPause = () => {
+      playing = false;
+      sync();
+    };
+
+    const observer =
+      typeof IntersectionObserver !== 'undefined'
+        ? new IntersectionObserver((entries) => {
+            entries.forEach((entry) => {
+              visible = entry.isIntersecting;
+              sync();
+            });
+          }, { rootMargin: '100px' })
+        : null;
+
+    if (observer) observer.observe(canvas);
+    else visible = true;
+
+    video.addEventListener('play', onPlay);
+    video.addEventListener('pause', onPause);
+
+    const p = video.play();
+    if (p) p.catch(() => {});
+
+    return () => {
+      if (raf) cancelAnimationFrame(raf);
+      observer?.disconnect();
+      video.removeEventListener('play', onPlay);
+      video.removeEventListener('pause', onPause);
+    };
+  }, []);
+
+  return (
+    <>
+      <video
+        ref={videoRef}
+        autoPlay
+        loop
+        muted
+        playsInline
+        className="northmad-video select-none pointer-events-none"
+        aria-label="Northmad"
+        tabIndex={-1}
+      >
+        <source src={sceneVideoWebm} type="video/webm" />
+        <source src={sceneVideoMp4} type="video/mp4" />
+      </video>
+      <canvas
+        ref={canvasRef}
+        className="northmad-video-canvas select-none pointer-events-none"
+        aria-hidden="true"
+      />
+    </>
+  );
+};
 
 const Footer: React.FC = () => {
   const scrollToSection = (sectionId: string) => {
@@ -165,10 +286,18 @@ const Footer: React.FC = () => {
         }
 
         .northmad-video {
+          position: relative;
           display: block;
           width: 200px;
           height: auto;
           margin: -40px auto -14px;
+          background: transparent !important;
+          border: 0;
+          outline: 0;
+        }
+
+        .northmad-video-canvas {
+          display: none;
           background: transparent !important;
           border: 0;
           outline: 0;
@@ -180,24 +309,19 @@ const Footer: React.FC = () => {
         }
 
         html:not(.dark) .northmad-video {
-          filter: url(#northmad-key);
+          opacity: 0;
+        }
+
+        html:not(.dark) .northmad-video-canvas {
+          display: block;
+          position: absolute;
+          inset: 0;
+          width: 100%;
+          height: 100%;
         }
 
       `}</style>
       <footer className="bg-background text-foreground border-t border-border dark:from-[#1a120d] dark:bg-gradient-to-br dark:via-[#2a1c0f]/80 dark:to-[#3c2414]/60 dark:text-white pt-8 pb-0 md:pt-16 md:pb-0 relative overflow-hidden">
-      <svg width="0" height="0" style={{ position: 'absolute' }} aria-hidden="true" focusable="false">
-        <defs>
-          <filter id="northmad-key" colorInterpolationFilters="sRGB">
-            <feColorMatrix
-              in="SourceGraphic"
-              type="matrix"
-              values="1 0 0 0 0  0 1 0 0 0  0 0 1 0 0  0.2126 0.7152 0.0722 0 0"
-              result="keyAlpha"
-            />
-            <feComposite in="SourceGraphic" in2="keyAlpha" operator="in" />
-          </filter>
-        </defs>
-      </svg>
       {/* Large Honey Image — HANYA untuk desktop >=1250px (4 kolom layout, floating kanan bawah) */}
       <div className="absolute bottom-48 right-3 hidden w-full pointer-events-none z-0 min-[1250px]:block">
         <div className="container mx-auto px-4 md:px-6">
@@ -404,17 +528,7 @@ const Footer: React.FC = () => {
             <span className="northmad-line" data-text="WEBSITE BY">
               WEBSITE BY
             </span>
-            <video
-              autoPlay
-              loop
-              muted
-              playsInline
-              className="northmad-video select-none pointer-events-none"
-              aria-label="Northmad"
-            >
-              <source src={sceneVideoWebm} type="video/webm" />
-              <source src={sceneVideoMp4} type="video/mp4" />
-            </video>
+            <NorthmadVideo />
           </a>
         </div>
       </div>
