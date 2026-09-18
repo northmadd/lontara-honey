@@ -28,19 +28,125 @@ const IS_SAFARI =
 
 const SafariNorthmadVideo: React.FC = () => {
   const videoRef = useRef<HTMLVideoElement | null>(null);
+  const canvasRef = useRef<HTMLCanvasElement | null>(null);
 
   useEffect(() => {
     const video = videoRef.current;
-    if (!video) return;
+    const canvas = canvasRef.current;
+    const ctx = canvas?.getContext('2d', { willReadFrequently: true });
+    if (!video || !canvas || !ctx) return;
+
+    // Frame diproses di resolusi kecil lalu di-upscale halus agar grain/noise
+    // kompresi ter-rata-ratakan secara spasial (mencegah artefak "pasir").
+    const work = document.createElement('canvas');
+    const workCtx = work.getContext('2d', { willReadFrequently: true });
+    if (!workCtx) return;
+
+    let raf = 0;
+    let playing = false;
+    let visible = false;
+    let failed = false;
+
+    const ensureSize = () => {
+      if (!video.videoWidth) return;
+      const scale = Math.min(1, 300 / video.videoWidth);
+      const w = Math.round(video.videoWidth * scale);
+      const h = Math.round(video.videoHeight * scale);
+      if (canvas.width !== w || canvas.height !== h) {
+        canvas.width = w;
+        canvas.height = h;
+      }
+    };
+
+    const renderFrame = () => {
+      if (failed || !video.videoWidth) return;
+      ensureSize();
+      const wScale = 160 / video.videoWidth;
+      const ww = Math.max(24, Math.round(video.videoWidth * wScale));
+      const wh = Math.max(24, Math.round(video.videoHeight * wScale));
+      if (work.width !== ww) {
+        work.width = ww;
+        work.height = wh;
+      }
+      workCtx.drawImage(video, 0, 0, ww, wh);
+      try {
+        const img = workCtx.getImageData(0, 0, ww, wh);
+        const data = img.data;
+        for (let i = 0; i < data.length; i += 4) {
+          const r = data[i];
+          const g = data[i + 1];
+          const b = data[i + 2];
+          const luma = 0.2126 * r + 0.7152 * g + 0.0722 * b;
+          // Buang latar gelap dengan ramp bersih (45..100): hanya emas yang tampil.
+          data[i + 3] = luma <= 45 ? 0 : luma >= 100 ? 255 : Math.round(((luma - 45) / 55) * 255);
+        }
+        workCtx.putImageData(img, 0, 0);
+        ctx.imageSmoothingEnabled = true;
+        ctx.imageSmoothingQuality = 'high';
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+        ctx.drawImage(work, 0, 0, canvas.width, canvas.height);
+        if (canvas.style.opacity !== '1') canvas.style.opacity = '1';
+      } catch (e) {
+        failed = true;
+      }
+    };
+
+    const loop = () => {
+      raf = 0;
+      renderFrame();
+      if (playing && visible && !failed) raf = requestAnimationFrame(loop);
+    };
+
+    const sync = () => {
+      if (playing && visible && !failed) {
+        if (!raf) raf = requestAnimationFrame(loop);
+      } else if (raf) {
+        cancelAnimationFrame(raf);
+        raf = 0;
+      }
+    };
 
     const tryPlay = () => {
       const p = video.play();
       if (p) p.catch(() => {});
     };
 
-    tryPlay();
-    video.addEventListener('loadeddata', tryPlay);
+    const onPlay = () => {
+      playing = true;
+      sync();
+    };
+    const onPause = () => {
+      playing = false;
+      sync();
+    };
+
+    const observer =
+      typeof IntersectionObserver !== 'undefined'
+        ? new IntersectionObserver((entries) => {
+            entries.forEach((entry) => {
+              visible = entry.isIntersecting;
+              sync();
+            });
+          }, { rootMargin: '100px' })
+        : null;
+
+    if (observer) observer.observe(canvas);
+    else visible = true;
+
+    canvas.style.opacity = '0';
+
+    const onLoadedMetadata = () => {
+      ensureSize();
+      renderFrame();
+    };
+
+    video.addEventListener('play', onPlay);
+    video.addEventListener('pause', onPause);
+    video.addEventListener('loadeddata', renderFrame);
+    video.addEventListener('loadedmetadata', onLoadedMetadata);
     video.addEventListener('canplay', tryPlay);
+
+    tryPlay();
 
     const onInteraction = () => {
       tryPlay();
@@ -54,29 +160,40 @@ const SafariNorthmadVideo: React.FC = () => {
     document.addEventListener('touchstart', onInteraction);
 
     return () => {
+      if (raf) cancelAnimationFrame(raf);
+      observer?.disconnect();
       document.removeEventListener('pointerdown', onInteraction);
       document.removeEventListener('keydown', onInteraction);
       document.removeEventListener('touchstart', onInteraction);
-      video.removeEventListener('loadeddata', tryPlay);
+      video.removeEventListener('play', onPlay);
+      video.removeEventListener('pause', onPause);
+      video.removeEventListener('loadeddata', renderFrame);
+      video.removeEventListener('loadedmetadata', onLoadedMetadata);
       video.removeEventListener('canplay', tryPlay);
     };
   }, []);
 
   return (
-    <video
-      ref={videoRef}
-      autoPlay
-      loop
-      muted
-      playsInline
-      preload="auto"
-      className="safari-northmad-video select-none pointer-events-none"
-      aria-label="Northmad"
-      tabIndex={-1}
-    >
-      <source src={sceneVideoMp4} type="video/mp4" />
-      <source src={sceneVideoWebm} type="video/webm" />
-    </video>
+    <span className="safari-northmad-badge">
+      <video
+        ref={videoRef}
+        autoPlay
+        loop
+        muted
+        playsInline
+        preload="auto"
+        className="safari-northmad-video-source select-none pointer-events-none"
+        tabIndex={-1}
+      >
+        <source src={sceneVideoMp4} type="video/mp4" />
+        <source src={sceneVideoWebm} type="video/webm" />
+      </video>
+      <canvas
+        ref={canvasRef}
+        className="safari-northmad-video select-none pointer-events-none"
+        aria-hidden="true"
+      />
+    </span>
   );
 };
 
@@ -250,11 +367,30 @@ const Footer: React.FC = () => {
           outline: 0;
         }
 
-        .safari-northmad-video {
+        .safari-northmad-badge {
+          position: relative;
           display: block;
           width: 200px;
-          height: auto;
           margin: -40px auto -14px;
+        }
+
+        .safari-northmad-video {
+          display: block;
+          width: 100%;
+          height: auto;
+          background: transparent !important;
+          border: 0;
+          outline: 0;
+        }
+
+        .safari-northmad-video-source {
+          position: absolute;
+          top: 0;
+          left: 0;
+          width: 200px;
+          height: auto;
+          opacity: 0;
+          pointer-events: none;
           background: transparent !important;
           border: 0;
           outline: 0;
