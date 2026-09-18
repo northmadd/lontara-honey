@@ -1,4 +1,4 @@
-import React, { useEffect, useRef } from 'react';
+import React from 'react';
 import { Instagram, PlayCircle, Youtube, MapPin, Phone, Mail } from 'lucide-react';
 import logoLontara from '@/assets/logo-lontara.webp';
 import honeyFooter from '@/assets/honey-footer.webp';
@@ -8,136 +8,10 @@ import { Link } from 'react-router-dom';
 import { useLanguage } from '@/contexts/LanguageContext';
 
 const NorthmadVideo: React.FC = () => {
-  const videoRef = useRef<HTMLVideoElement | null>(null);
-  const canvasRef = useRef<HTMLCanvasElement | null>(null);
-
-  useEffect(() => {
-    const video = videoRef.current;
-    const canvas = canvasRef.current;
-    const ctx = canvas?.getContext('2d', { willReadFrequently: true });
-    if (!video || !canvas || !ctx) return;
-
-    // Canvas kerja resolusi kecil: menyingkirkan grain/noise kompresi secara
-    // spasial saat di-upscale, sehingga tidak muncul artefak "pasir" di light mode.
-    const work = document.createElement('canvas');
-    const workCtx = work.getContext('2d', { willReadFrequently: true });
-    if (!workCtx) return;
-
-    let raf = 0;
-    let playing = false;
-    let visible = false;
-    let failed = false;
-
-    const ensureSize = () => {
-      if (!video.videoWidth) return;
-      const scale = Math.min(1, 300 / video.videoWidth);
-      const w = Math.round(video.videoWidth * scale);
-      const h = Math.round(video.videoHeight * scale);
-      if (canvas.width !== w || canvas.height !== h) {
-        canvas.width = w;
-        canvas.height = h;
-      }
-    };
-
-    const renderFrame = () => {
-      if (failed || !video.videoWidth) return;
-      ensureSize();
-      const wScale = 160 / video.videoWidth;
-      const ww = Math.max(24, Math.round(video.videoWidth * wScale));
-      const wh = Math.max(24, Math.round(video.videoHeight * wScale));
-      if (work.width !== ww) {
-        work.width = ww;
-        work.height = wh;
-      }
-      workCtx.drawImage(video, 0, 0, ww, wh);
-      try {
-        const img = workCtx.getImageData(0, 0, ww, wh);
-        const data = img.data;
-        for (let i = 0; i < data.length; i += 4) {
-          const r = data[i];
-          const g = data[i + 1];
-          const b = data[i + 2];
-          const luma = 0.2126 * r + 0.7152 * g + 0.0722 * b;
-          // Buang latar gelap termasuk grain/noise kompresi (ramp 45..75).
-          data[i + 3] = luma <= 45 ? 0 : luma >= 75 ? 255 : Math.round(((luma - 45) / 30) * 255);
-        }
-        workCtx.putImageData(img, 0, 0);
-        ctx.imageSmoothingEnabled = true;
-        ctx.imageSmoothingQuality = 'high';
-        ctx.clearRect(0, 0, canvas.width, canvas.height);
-        ctx.drawImage(work, 0, 0, canvas.width, canvas.height);
-        if (canvas.style.opacity !== '1') canvas.style.opacity = '1';
-      } catch (e) {
-        failed = true;
-      }
-    };
-
-    const loop = () => {
-      raf = 0;
-      renderFrame();
-      if (playing && visible && !failed) raf = requestAnimationFrame(loop);
-    };
-
-    const sync = () => {
-      if (playing && visible && !failed) {
-        if (!raf) raf = requestAnimationFrame(loop);
-      } else if (raf) {
-        cancelAnimationFrame(raf);
-        raf = 0;
-      }
-    };
-
-    const onPlay = () => {
-      playing = true;
-      sync();
-    };
-    const onPause = () => {
-      playing = false;
-      sync();
-    };
-
-    const observer =
-      typeof IntersectionObserver !== 'undefined'
-        ? new IntersectionObserver((entries) => {
-            entries.forEach((entry) => {
-              visible = entry.isIntersecting;
-              sync();
-            });
-          }, { rootMargin: '100px' })
-        : null;
-
-    if (observer) observer.observe(canvas);
-    else visible = true;
-
-    canvas.style.opacity = '0';
-
-    const onLoadedMetadata = () => {
-      ensureSize();
-      renderFrame();
-    };
-
-    video.addEventListener('play', onPlay);
-    video.addEventListener('pause', onPause);
-    video.addEventListener('loadeddata', renderFrame);
-    video.addEventListener('loadedmetadata', onLoadedMetadata);
-
-    const p = video.play();
-    if (p) p.catch(() => {});
-
-    return () => {
-      if (raf) cancelAnimationFrame(raf);
-      observer?.disconnect();
-      video.removeEventListener('play', onPlay);
-      video.removeEventListener('pause', onPause);
-      video.removeEventListener('loadeddata', renderFrame);
-      video.removeEventListener('loadedmetadata', onLoadedMetadata);
-    };
-  }, []);
-
   return (
     <span className="northmad-badge">
+      <span className="northmad-backdrop" aria-hidden="true" />
       <video
-        ref={videoRef}
         autoPlay
         loop
         muted
@@ -149,11 +23,6 @@ const NorthmadVideo: React.FC = () => {
         <source src={sceneVideoWebm} type="video/webm" />
         <source src={sceneVideoMp4} type="video/mp4" />
       </video>
-      <canvas
-        ref={canvasRef}
-        className="northmad-video-canvas select-none pointer-events-none"
-        aria-hidden="true"
-      />
     </span>
   );
 };
@@ -325,6 +194,10 @@ const Footer: React.FC = () => {
           margin: -40px auto -14px;
         }
 
+        .northmad-backdrop {
+          display: none;
+        }
+
         .northmad-video {
           display: block;
           width: 100%;
@@ -332,32 +205,33 @@ const Footer: React.FC = () => {
           background: transparent !important;
           border: 0;
           outline: 0;
-        }
-
-        .northmad-video-canvas {
-          display: none;
-          background: transparent !important;
-          border: 0;
-          outline: 0;
+          mix-blend-mode: screen;
         }
 
         html.dark .northmad-video {
-          mix-blend-mode: screen;
           isolation: isolate;
         }
 
         html:not(.dark) .northmad-video {
-          opacity: 0;
+          opacity: 1;
         }
 
-        html:not(.dark) .northmad-video-canvas {
+        html:not(.dark) .northmad-backdrop {
           display: block;
           position: absolute;
           top: 0;
           left: 0;
           width: 100%;
-          height: auto;
-          transition: opacity 0.4s ease;
+          height: 100%;
+          border-radius: 32px;
+          pointer-events: none;
+          background: radial-gradient(
+            ellipse 75% 78% at 50% 52%,
+            rgba(23, 12, 4, 0.5) 0%,
+            rgba(23, 12, 4, 0.32) 46%,
+            rgba(23, 12, 4, 0.13) 68%,
+            rgba(23, 12, 4, 0) 82%
+          );
         }
 
       `}</style>
