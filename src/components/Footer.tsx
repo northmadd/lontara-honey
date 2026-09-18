@@ -45,9 +45,9 @@ const NorthmadVideo: React.FC = () => {
           const g = data[i + 1];
           const b = data[i + 2];
           const luma = 0.2126 * r + 0.7152 * g + 0.0722 * b;
-          // Buang background gelap dengan transisi halus (tanpa bekas/tepi kasar),
-          // lalu tampilkan warna asli video secara penuh (tanpa dibuat pucat).
-          data[i + 3] = luma <= 18 ? 0 : luma >= 70 ? 255 : Math.round(((luma - 18) / 52) * 255);
+          // Buang latar gelap termasuk grain/noise kompresi pada luma rendah-ke-sedang
+          // (ramp sempit 50..68) sehingga tidak muncul artefak "pasir" di light mode.
+          data[i + 3] = luma <= 50 ? 0 : luma >= 68 ? 255 : Math.round(((luma - 50) / 18) * 255);
         }
         ctx.putImageData(img, 0, 0);
         if (canvas.style.opacity !== '1') canvas.style.opacity = '1';
