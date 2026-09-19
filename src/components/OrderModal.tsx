@@ -295,6 +295,8 @@ const OrderModal: React.FC<OrderModalProps> = ({ product, onClose }) => {
                   findingLabel={t('order.map.finding')}
                   errorLabel={t('order.map.error')}
                   hintLabel={t('order.map.hint')}
+                  storeAddress={t('order.storeAddress')}
+                  storeLabel={t('order.storeButton')}
                 />
               )}
               {showMap && (

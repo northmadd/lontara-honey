@@ -1,7 +1,7 @@
 import React, { useEffect, useRef, useState } from 'react';
 import L from 'leaflet';
 import 'leaflet/dist/leaflet.css';
-import { Search, Loader2, MapPin } from 'lucide-react';
+import { Search, Loader2, MapPin, Store } from 'lucide-react';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 
@@ -115,6 +115,8 @@ interface LocationPickerProps {
   findingLabel: string;
   errorLabel: string;
   hintLabel: string;
+  storeAddress: string;
+  storeLabel: string;
 }
 
 const LocationPicker: React.FC<LocationPickerProps> = ({
@@ -127,6 +129,8 @@ const LocationPicker: React.FC<LocationPickerProps> = ({
   findingLabel,
   errorLabel,
   hintLabel,
+  storeAddress,
+  storeLabel,
 }) => {
   const containerRef = useRef<HTMLDivElement>(null);
   const mapRef = useRef<L.Map | null>(null);
@@ -255,6 +259,19 @@ const LocationPicker: React.FC<LocationPickerProps> = ({
     onSelectAddress(item.display_name, lat, lng);
   };
 
+  const selectStore = () => {
+    if (!mapRef.current) return;
+    const lat = DEFAULT_CENTER[0];
+    const lng = DEFAULT_CENTER[1];
+    mapRef.current.setView(DEFAULT_CENTER, 16);
+    setQuery(storeAddress);
+    setResults([]);
+    setSuggestions([]);
+    setError('');
+    placeMarker(lat, lng);
+    onSelectAddress(storeAddress, lat, lng);
+  };
+
   return (
     <div className="mt-4 rounded-xl border border-primary/30 bg-primary/5 p-4">
       <p className="mb-3 flex items-center gap-2 text-sm font-semibold text-foreground">
@@ -287,6 +304,20 @@ const LocationPicker: React.FC<LocationPickerProps> = ({
           {searchLabel}
         </Button>
       </div>
+
+      {storeAddress && (
+        <Button
+          type="button"
+          variant="outline"
+          size="sm"
+          onClick={selectStore}
+          disabled={isSearching || isFinding}
+          className="mt-2 w-full justify-start gap-2 border-primary/40 text-primary hover:bg-primary/10"
+        >
+          <Store className="w-4 h-4" />
+          {storeLabel}
+        </Button>
+      )}
 
       {isSearching && (
         <p className="mt-2 text-xs text-muted-foreground dark:text-white/80">{searchingLabel}</p>
