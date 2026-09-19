@@ -19,16 +19,17 @@ const App = () => (
     <TooltipProvider>
       <Toaster />
       <Sonner />
-      <BotVerificationGate>
-        <BrowserRouter basename={routerBasename} future={{ v7_startTransition: true, v7_relativeSplatPath: true }}>
-          <Routes>
-            <Route path="/" element={<Index />} />
-            <Route path="/legal/:page" element={<LegalPage />} />
-            {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
-            <Route path="*" element={<NotFound />} />
-          </Routes>
-        </BrowserRouter>
-      </BotVerificationGate>
+      <BrowserRouter basename={routerBasename} future={{ v7_startTransition: true, v7_relativeSplatPath: true }}>
+        <Routes>
+          {/* Gate verifikasi bot HANYA untuk halaman utama (intro). Halaman
+              quick link legal (tab baru) & 404 dibuka TANPA gate — permintaan:
+              "gausah ada verif bot kalau mau ke quick link". */}
+          <Route path="/" element={<BotVerificationGate><Index /></BotVerificationGate>} />
+          <Route path="/legal/:page" element={<LegalPage />} />
+          {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
+          <Route path="*" element={<NotFound />} />
+        </Routes>
+      </BrowserRouter>
     </TooltipProvider>
     </LanguageProvider>
   </QueryClientProvider>
