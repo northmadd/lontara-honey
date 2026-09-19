@@ -8,6 +8,7 @@ import { Textarea } from '@/components/ui/textarea';
 import { Checkbox } from '@/components/ui/checkbox';
 import CountryCodeSelect, { getPhonePlaceholder } from '@/components/CountryCodeSelect';
 import { Product } from './ProductsSection';
+import LocationPicker from './LocationPicker';
 import qrisImage from '@/assets/qris.webp';
 
 const WHATSAPP_NUMBER = '6282347905543';
@@ -37,6 +38,7 @@ const OrderModal: React.FC<OrderModalProps> = ({ product, onClose }) => {
     website: '',
   });
   const [phoneError, setPhoneError] = useState('');
+  const [showMap, setShowMap] = useState(false);
   const [qrisExpired, setQrisExpired] = useState(false);
   const [qrisConfirmed, setQrisConfirmed] = useState(false);
   const [qrisProofError, setQrisProofError] = useState('');
@@ -95,13 +97,6 @@ const OrderModal: React.FC<OrderModalProps> = ({ product, onClose }) => {
     { id: 'qris', label: 'QRIS', icon: Wallet },
     { id: 'cod', label: t('order.cod'), icon: Truck },
   ];
-
-  const openGoogleMaps = () => {
-    const query = encodeURIComponent(
-      formData.address.trim() || t('contact.map.error.address'),
-    );
-    window.open(`https://www.google.com/maps/search/?api=1&query=${query}`, '_blank');
-  };
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -278,17 +273,35 @@ const OrderModal: React.FC<OrderModalProps> = ({ product, onClose }) => {
                   type="button"
                   variant="outline"
                   size="icon"
-                  onClick={openGoogleMaps}
+                  onClick={() => setShowMap((prev) => !prev)}
                   title={t('order.addressMaps')}
                   aria-label={t('order.addressMaps')}
-                  className="shrink-0"
+                  aria-pressed={showMap}
+                  className={showMap ? 'shrink-0 border-primary text-primary' : 'shrink-0'}
                 >
                   <MapPin className="w-4 h-4" />
                 </Button>
               </div>
-              <p className="mt-1 text-xs text-muted-foreground dark:text-white/80">
-                {t('order.addressMapsHint')}
-              </p>
+              {showMap && (
+                <LocationPicker
+                  address={formData.address}
+                  onSelectAddress={(address) =>
+                    setFormData((prev) => ({ ...prev, address }))
+                  }
+                  title={t('order.map.title')}
+                  searchPlaceholder={t('order.map.searchPlaceholder')}
+                  searchLabel={t('order.map.search')}
+                  searchingLabel={t('order.map.searching')}
+                  findingLabel={t('order.map.finding')}
+                  errorLabel={t('order.map.error')}
+                  hintLabel={t('order.map.hint')}
+                />
+              )}
+              {showMap && (
+                <p className="mt-1 text-xs text-muted-foreground dark:text-white/80">
+                  {t('order.addressMapsHint')}
+                </p>
+              )}
             </div>
 
             <div>

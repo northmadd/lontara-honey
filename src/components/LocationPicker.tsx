@@ -1,0 +1,232 @@
+import React, { useEffect, useRef, useState } from 'react';
+import L from 'leaflet';
+import 'leaflet/dist/leaflet.css';
+import { Search, Loader2, MapPin } from 'lucide-react';
+import { Input } from '@/components/ui/input';
+import { Button } from '@/components/ui/button';
+
+const NOMINATIM_URL = 'https://nominatim.openstreetmap.org';
+const NOMINATIM_EMAIL = 'lontarajayanusantara@gmail.com';
+const DEFAULT_CENTER: L.LatLngTuple = [-5.2146092, 119.4524519];
+
+interface NominatimResult {
+  place_id: number;
+  lat: string;
+  lon: string;
+  display_name: string;
+}
+
+interface LocationPickerProps {
+  address: string;
+  onSelectAddress: (address: string, lat: number, lng: number) => void;
+  title: string;
+  searchPlaceholder: string;
+  searchLabel: string;
+  searchingLabel: string;
+  findingLabel: string;
+  errorLabel: string;
+  hintLabel: string;
+}
+
+const createPinIcon = () =>
+  L.divIcon({
+    className: '',
+    html:
+      '<div style="width:32px;height:32px;transform:translate(-50%,-100%);">' +
+      '<svg width="32" height="32" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">' +
+      '<path d="M20 10c0 6-8 12-8 12S4 16 4 10a8 8 0 1 1 16 0Z" fill="#d97706" stroke="#78350f" stroke-width="1.5"/>' +
+      '<circle cx="12" cy="10" r="3" fill="#fff"/>' +
+      '</svg></div>',
+    iconSize: [32, 32],
+    iconAnchor: [16, 32],
+  });
+
+const LocationPicker: React.FC<LocationPickerProps> = ({
+  address,
+  onSelectAddress,
+  title,
+  searchPlaceholder,
+  searchLabel,
+  searchingLabel,
+  findingLabel,
+  errorLabel,
+  hintLabel,
+}) => {
+  const containerRef = useRef<HTMLDivElement>(null);
+  const mapRef = useRef<L.Map | null>(null);
+  const markerRef = useRef<L.Marker | null>(null);
+  const controllerRef = useRef<AbortController | null>(null);
+  const [query, setQuery] = useState('');
+  const [results, setResults] = useState<NominatimResult[]>([]);
+  const [isSearching, setIsSearching] = useState(false);
+  const [isFinding, setIsFinding] = useState(false);
+  const [error, setError] = useState('');
+
+  useEffect(() => {
+    if (!containerRef.current || mapRef.current) return;
+
+    const map = L.map(containerRef.current, {
+      center: DEFAULT_CENTER,
+      zoom: 12,
+      scrollWheelZoom: false,
+    });
+    mapRef.current = map;
+
+    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+      attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors',
+      maxZoom: 19,
+    }).addTo(map);
+
+    map.on('click', (e: L.LeafletMouseEvent) => {
+      const { lat, lng } = e.latlng;
+      placeMarker(lat, lng);
+      reverseGeocode(lat, lng);
+    });
+
+    return () => {
+      controllerRef.current?.abort();
+      map.remove();
+      mapRef.current = null;
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  useEffect(() => {
+    if (!address.trim()) {
+      markerRef.current?.remove();
+      markerRef.current = null;
+    }
+  }, [address]);
+
+  const placeMarker = (lat: number, lng: number) => {
+    if (!mapRef.current) return;
+    if (!markerRef.current) {
+      markerRef.current = L.marker([lat, lng], { icon: createPinIcon() }).addTo(mapRef.current);
+    } else {
+      markerRef.current.setLatLng([lat, lng]);
+    }
+  };
+
+  const reverseGeocode = async (lat: number, lng: number) => {
+    controllerRef.current?.abort();
+    const controller = new AbortController();
+    controllerRef.current = controller;
+    setIsFinding(true);
+    setError('');
+    try {
+      const res = await fetch(
+        `${NOMINATIM_URL}/reverse?format=jsonv2&lat=${lat}&lon=${lng}&zoom=18&email=${NOMINATIM_EMAIL}`,
+        { signal: controller.signal },
+      );
+      if (!res.ok) throw new Error('bad status');
+      const data = await res.json();
+      if (data?.display_name) {
+        onSelectAddress(data.display_name, lat, lng);
+      } else {
+        onSelectAddress('', lat, lng);
+      }
+    } catch (err) {
+      if ((err as Error).name !== 'AbortError') setError(errorLabel);
+    } finally {
+      setIsFinding(false);
+    }
+  };
+
+  const handleSearch = async (e?: React.FormEvent) => {
+    e?.preventDefault();
+    const q = query.trim();
+    if (!q) return;
+    controllerRef.current?.abort();
+    setIsSearching(true);
+    setError('');
+    setResults([]);
+    try {
+      const res = await fetch(
+        `${NOMINATIM_URL}/search?format=jsonv2&q=${encodeURIComponent(q)}&limit=5&addressdetails=1&email=${NOMINATIM_EMAIL}`,
+      );
+      if (!res.ok) throw new Error('bad status');
+      const data = await res.json();
+      const list = Array.isArray(data) ? (data as NominatimResult[]) : [];
+      setResults(list);
+      if (list.length === 0) setError(errorLabel);
+    } catch {
+      setError(errorLabel);
+    } finally {
+      setIsSearching(false);
+    }
+  };
+
+  const selectResult = (item: NominatimResult) => {
+    const lat = Number(item.lat);
+    const lng = Number(item.lon);
+    mapRef.current?.setView([lat, lng], 16);
+    setQuery(item.display_name);
+    setResults([]);
+    placeMarker(lat, lng);
+    onSelectAddress(item.display_name, lat, lng);
+  };
+
+  return (
+    <div className="mt-4 rounded-xl border border-primary/30 bg-primary/5 p-4">
+      <p className="mb-3 flex items-center gap-2 text-sm font-semibold text-foreground">
+        <MapPin className="w-4 h-4 text-primary" />
+        {title}
+      </p>
+
+      <form
+        onSubmit={handleSearch}
+        className="flex gap-2"
+      >
+        <Input
+          value={query}
+          onChange={(e) => setQuery(e.target.value)}
+          placeholder={searchPlaceholder}
+          className="flex-1 bg-background"
+          aria-label={searchPlaceholder}
+        />
+        <Button type="submit" disabled={isSearching} className="shrink-0">
+          {isSearching ? <Loader2 className="w-4 h-4 animate-spin" /> : <Search className="w-4 h-4" />}
+          {searchLabel}
+        </Button>
+      </form>
+
+      {isSearching && (
+        <p className="mt-2 text-xs text-muted-foreground dark:text-white/80">{searchingLabel}</p>
+      )}
+
+      {results.length > 0 && (
+        <ul className="mt-2 rounded-lg border border-border bg-card overflow-hidden divide-y divide-border">
+          {results.map((item) => (
+            <li key={item.place_id}>
+              <button
+                type="button"
+                onClick={() => selectResult(item)}
+                className="w-full px-3 py-2 text-left text-xs text-foreground hover:bg-muted transition-colors"
+              >
+                {item.display_name}
+              </button>
+            </li>
+          ))}
+        </ul>
+      )}
+
+      {error && <p className="mt-2 text-xs text-destructive">{error}</p>}
+
+      <div className="relative z-0 mt-3 h-52 w-full overflow-hidden rounded-lg">
+        {isFinding && (
+          <div className="pointer-events-none absolute inset-x-0 top-2 z-[500] flex justify-center">
+            <span className="inline-flex items-center gap-1.5 rounded-full bg-background/95 px-3 py-1 text-xs font-medium text-foreground shadow">
+              <Loader2 className="w-3.5 h-3.5 animate-spin text-primary" />
+              {findingLabel}
+            </span>
+          </div>
+        )}
+        <div ref={containerRef} className="h-full w-full" />
+      </div>
+
+      <p className="mt-2 text-xs text-muted-foreground dark:text-white/80">{hintLabel}</p>
+    </div>
+  );
+};
+
+export default LocationPicker;
