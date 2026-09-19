@@ -31,7 +31,7 @@ const normalize = (item: unknown): PlaceResult => {
 
 const fetchProviders = async (url: string, signal?: AbortSignal): Promise<unknown[]> => {
   const res = await fetch(url, { signal });
-  if (!res.ok) throw new Error('bad status');
+  if (!res.ok) throw new Error(`bad status ${res.status}`);
   const data = await res.json();
   if (Array.isArray(data)) return data;
   if (data?.error) throw new Error('provider error');
@@ -39,28 +39,57 @@ const fetchProviders = async (url: string, signal?: AbortSignal): Promise<unknow
   return [];
 };
 
-const searchPlaces = async (q: string): Promise<PlaceResult[]> => {
-  const url = USE_LOCATIONIQ
-    ? `${LOCATIONIQ_URL}/search?key=${LOCATIONIQ_TOKEN}&q=${encodeURIComponent(q)}&format=json&addressdetails=0&limit=6`
-    : `${NOMINATIM_URL}/search?format=jsonv2&q=${encodeURIComponent(q)}&limit=5&addressdetails=1&email=${NOMINATIM_EMAIL}`;
+const nominatimSearch = async (q: string): Promise<PlaceResult[]> => {
+  const url = `${NOMINATIM_URL}/search?format=jsonv2&q=${encodeURIComponent(q)}&limit=5&addressdetails=1&email=${NOMINATIM_EMAIL}`;
+  return (await fetchProviders(url)).map(normalize);
+};
+
+const nominatimReverse = async (lat: number, lng: number): Promise<PlaceResult> => {
+  const url = `${NOMINATIM_URL}/reverse?format=jsonv2&lat=${lat}&lon=${lng}&zoom=18&email=${NOMINATIM_EMAIL}`;
   const data = await fetchProviders(url);
-  return data.map(normalize);
+  if (data.length === 0) throw new Error('not found');
+  return normalize(data[0]);
+};
+
+const locationIqSearch = async (q: string): Promise<PlaceResult[]> => {
+  const url = `${LOCATIONIQ_URL}/search?key=${LOCATIONIQ_TOKEN}&q=${encodeURIComponent(q)}&format=json&addressdetails=0&limit=6`;
+  return (await fetchProviders(url)).map(normalize);
+};
+
+const locationIqReverse = async (lat: number, lng: number): Promise<PlaceResult> => {
+  const url = `${LOCATIONIQ_URL}/reverse?key=${LOCATIONIQ_TOKEN}&lat=${lat}&lon=${lng}&format=json`;
+  const data = await fetchProviders(url);
+  if (data.length === 0) throw new Error('not found');
+  return normalize(data[0]);
+};
+
+const searchPlaces = async (q: string): Promise<PlaceResult[]> => {
+  try {
+    if (USE_LOCATIONIQ) return await locationIqSearch(q);
+  } catch (err) {
+    console.warn('[LocationPicker] LocationIQ tidak tersedia, fallback ke Nominatim:', err);
+  }
+  return nominatimSearch(q);
+};
+
+const reversePlace = async (lat: number, lng: number): Promise<PlaceResult> => {
+  try {
+    if (USE_LOCATIONIQ) return await locationIqReverse(lat, lng);
+  } catch (err) {
+    console.warn('[LocationPicker] reverse LocationIQ tidak tersedia, fallback ke Nominatim:', err);
+  }
+  return nominatimReverse(lat, lng);
 };
 
 const suggestPlaces = async (q: string): Promise<PlaceResult[]> => {
   if (!USE_LOCATIONIQ) return [];
-  const url = `${LOCATIONIQ_URL}/autocomplete?key=${LOCATIONIQ_TOKEN}&q=${encodeURIComponent(q)}&limit=6&tag=place:city,place:town,place:village,address&dedupe=1`;
-  const data = await fetchProviders(url);
-  return data.map(normalize);
-};
-
-const reversePlace = async (lat: number, lng: number): Promise<PlaceResult> => {
-  const url = USE_LOCATIONIQ
-    ? `${LOCATIONIQ_URL}/reverse?key=${LOCATIONIQ_TOKEN}&lat=${lat}&lon=${lng}&format=json`
-    : `${NOMINATIM_URL}/reverse?format=jsonv2&lat=${lat}&lon=${lng}&zoom=18&email=${NOMINATIM_EMAIL}`;
-  const data = await fetchProviders(url);
-  if (data.length === 0) throw new Error('not found');
-  return normalize(data[0]);
+  try {
+    const url = `${LOCATIONIQ_URL}/autocomplete?key=${LOCATIONIQ_TOKEN}&q=${encodeURIComponent(q)}&limit=6&tag=place:city,place:town,place:village,address&dedupe=1`;
+    return (await fetchProviders(url)).map(normalize);
+  } catch (err) {
+    console.warn('[LocationPicker] LocationIQ autocomplete tidak tersedia:', err);
+    return [];
+  }
 };
 
 const createPinIcon = () =>
