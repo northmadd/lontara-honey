@@ -1,5 +1,5 @@
-import { Link, useParams } from 'react-router-dom';
-import { Globe } from 'lucide-react';
+import { useParams } from 'react-router-dom';
+import { ArrowLeft, Globe } from 'lucide-react';
 import { useLanguage } from '@/contexts/LanguageContext';
 
 const pages: Record<string, { titleKey: string; sections: { headingKey: string; textKey: string }[] }> = {
