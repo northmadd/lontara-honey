@@ -7,6 +7,7 @@ import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { Checkbox } from '@/components/ui/checkbox';
 import CountryCodeSelect, { getPhonePlaceholder } from '@/components/CountryCodeSelect';
+import GoogleMapPicker from './GoogleMapPicker';
 import { Product } from './ProductsSection';
 import qrisImage from '@/assets/qris.webp';
 
@@ -16,6 +17,7 @@ const QRIS_EXPIRY_MS = 10 * 60 * 1000;
 const STORE_LAT = -5.2146092;
 const STORE_LNG = 119.4524519;
 const STORE_ADDRESS = 'Jl. Pangkabinanga, Pangkabinanga, Pallangga, Gowa, Sulawesi Selatan 92161';
+const USE_GOOGLE_JS = Boolean((import.meta.env.VITE_GOOGLE_MAPS_API_KEY as string | undefined)?.trim());
 
 const openWhatsApp = (message: string) => {
   const encodedMessage = encodeURIComponent(message);
@@ -310,7 +312,18 @@ const OrderModal: React.FC<OrderModalProps> = ({ product, onClose }) => {
                   <MapPin className="w-4 h-4" />
                 </Button>
               </div>
-              {showMap && (
+              {showMap && USE_GOOGLE_JS && (
+                <GoogleMapPicker
+                  address={formData.address}
+                  onSelectAddress={(address) =>
+                    setFormData((prev) => ({ ...prev, address }))
+                  }
+                  language={language}
+                  searchPlaceholder={t('order.map.searchPlaceholder')}
+                  findingLabel={t('order.map.finding')}
+                />
+              )}
+              {showMap && !USE_GOOGLE_JS && (
                 <div className="mt-3 overflow-hidden rounded-lg border border-border">
                   <iframe
                     title={t('order.map.title')}
@@ -349,7 +362,7 @@ const OrderModal: React.FC<OrderModalProps> = ({ product, onClose }) => {
               )}
               {showMap && (
                 <p className="mt-2 text-xs text-muted-foreground dark:text-white/80">
-                  {t('order.map.hint')}
+                  {USE_GOOGLE_JS ? t('order.map.hintJs') : t('order.map.hint')}
                 </p>
               )}
             </div>
