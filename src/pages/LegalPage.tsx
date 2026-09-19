@@ -38,8 +38,25 @@ const LegalPage = () => {
   const content = pages[page];
   if (!content) return <main className="min-h-screen p-10">{t('legal.notFound')}</main>;
   return <main className="min-h-screen bg-background py-16 text-foreground"><article className="container mx-auto max-w-3xl px-5">
-    <div className="flex items-center justify-between">
-      <Link to="/" className="text-sm text-primary hover:underline">{t('legal.back')}</Link>
+      <div className="flex items-center justify-between">
+        {/* Quick link legal dibuka di TAB BARU (target=_blank). Tombol back
+            menutup tab ini (window.close — diizinkan browser karena tab ini
+            baru & hanya punya 1 halaman), sehingga pengguna kembali ke tab
+            utama / tab sebelumnya. Fallback navigasi kalau close gagal. */}
+        <button
+          type="button"
+          onClick={() => {
+            window.close();
+            // window.close() hanya mengizinkan tab yang dibuka oleh script/user
+            // dengan tepat satu halaman (quick link = tab baru target=_blank).
+            // Fallback JS jarang dipakai: pindah ke tab utama jika gak tertutup.
+            setTimeout(() => { window.location.href = routerBasename; }, 150);
+          }}
+          className="text-sm text-primary hover:underline"
+        >
+          <ArrowLeft className="mr-1.5 inline h-4 w-4 align-[-2px]" />
+          {t('legal.back')}
+        </button>
       <button
         type="button"
         onClick={() => setLanguage(language === 'en' ? 'id' : 'en')}
