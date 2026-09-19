@@ -1,7 +1,7 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { motion, AnimatePresence } from 'framer-motion';
-import { X, CreditCard, Wallet, Truck, MapPin, Clock, Copy, Check, ExternalLink } from 'lucide-react';
+import { X, CreditCard, Wallet, Truck, MapPin, Clock, Copy, Check, ExternalLink, Upload, Trash2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
@@ -16,6 +16,10 @@ const QRIS_EXPIRY_MS = 10 * 60 * 1000;
 const STORE_LAT = -5.2146092;
 const STORE_LNG = 119.4524519;
 const STORE_ADDRESS = 'Jl. Pangkabinanga, Pangkabinanga, Pallangga, Gowa, Sulawesi Selatan 92161';
+const CLOUDINARY_CLOUD_NAME = import.meta.env.VITE_CLOUDINARY_CLOUD_NAME ?? '';
+const CLOUDINARY_UPLOAD_PRESET = import.meta.env.VITE_CLOUDINARY_UPLOAD_PRESET ?? '';
+const PROOF_UPLOAD_FOLDER = 'bukti-transfer';
+const PROOF_MAX_SIZE_MB = 5;
 
 const openWhatsApp = (message: string) => {
   const encodedMessage = encodeURIComponent(message);
@@ -42,20 +46,31 @@ const OrderModal: React.FC<OrderModalProps> = ({ product, onClose }) => {
   const [phoneError, setPhoneError] = useState('');
   const [showMap, setShowMap] = useState(false);
   const [qrisExpired, setQrisExpired] = useState(false);
+  const [qrisAgreed, setQrisAgreed] = useState(false);
   const [qrisConfirmed, setQrisConfirmed] = useState(false);
   const [qrisProofError, setQrisProofError] = useState('');
   const [secondsLeft, setSecondsLeft] = useState(QRIS_EXPIRY_MS / 1000);
   const [copied, setCopied] = useState(false);
+  const [proofFile, setProofFile] = useState<File | null>(null);
+  const [proofPreview, setProofPreview] = useState('');
+  const [sending, setSending] = useState(false);
+  const proofPreviewRef = useRef('');
   const lastSubmission = useRef(0);
 
-  // QRIS session: 10 minutes, then reset the payment data.
+  // QRIS session: 10 minutes after agreeing, then reset the payment data.
   useEffect(() => {
-    if (formData.payment !== 'qris') return;
+    if (formData.payment !== 'qris' || !qrisAgreed) return;
 
     const expiresAt = Date.now() + QRIS_EXPIRY_MS;
     setQrisExpired(false);
     setQrisConfirmed(false);
     setQrisProofError('');
+    setProofFile(null);
+    setProofPreview((prev) => {
+      if (prev) URL.revokeObjectURL(prev);
+      proofPreviewRef.current = '';
+      return '';
+    });
     setSecondsLeft(QRIS_EXPIRY_MS / 1000);
 
     const interval = window.setInterval(() => {
@@ -64,18 +79,34 @@ const OrderModal: React.FC<OrderModalProps> = ({ product, onClose }) => {
       if (remaining <= 0) {
         window.clearInterval(interval);
         setQrisExpired(true);
+        setQrisAgreed(false);
+        setProofFile(null);
+        setProofPreview((prev) => {
+          if (prev) URL.revokeObjectURL(prev);
+          proofPreviewRef.current = '';
+          return '';
+        });
         setFormData((prev) => ({ ...prev, payment: 'bank' }));
       }
     }, 1000);
 
     return () => window.clearInterval(interval);
-  }, [formData.payment]);
+  }, [formData.payment, qrisAgreed]);
 
   useEffect(() => {
     const previousOverflow = document.body.style.overflow;
     document.body.style.overflow = 'hidden';
     return () => {
       document.body.style.overflow = previousOverflow;
+    };
+  }, []);
+
+  useEffect(() => {
+    return () => {
+      if (proofPreviewRef.current) {
+        URL.revokeObjectURL(proofPreviewRef.current);
+        proofPreviewRef.current = '';
+      }
     };
   }, []);
 
@@ -126,7 +157,51 @@ const OrderModal: React.FC<OrderModalProps> = ({ product, onClose }) => {
     );
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleProofSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0] ?? null;
+    e.target.value = '';
+    if (!file) return;
+    if (!file.type.startsWith('image/')) {
+      setQrisProofError(t('order.qris.proof.invalid'));
+      return;
+    }
+    if (file.size > PROOF_MAX_SIZE_MB * 1024 * 1024) {
+      setQrisProofError(t('order.qris.proof.tooLarge'));
+      return;
+    }
+    setQrisProofError('');
+    setProofFile(file);
+    if (proofPreviewRef.current) URL.revokeObjectURL(proofPreviewRef.current);
+    proofPreviewRef.current = URL.createObjectURL(file);
+    setProofPreview(proofPreviewRef.current);
+  };
+
+  const removeProof = () => {
+    if (proofPreviewRef.current) URL.revokeObjectURL(proofPreviewRef.current);
+    proofPreviewRef.current = '';
+    setProofPreview('');
+    setProofFile(null);
+  };
+
+  const uploadProof = async (): Promise<string> => {
+    if (!proofFile) throw new Error('no-file');
+    if (!CLOUDINARY_CLOUD_NAME || !CLOUDINARY_UPLOAD_PRESET) throw new Error('no-config');
+    const body = new FormData();
+    body.append('file', proofFile);
+    body.append('upload_preset', CLOUDINARY_UPLOAD_PRESET);
+    body.append('folder', PROOF_UPLOAD_FOLDER);
+    body.append('context', `customer=${formData.name};order=${language === 'en' ? product.name.en : product.name.id}`);
+    const res = await fetch(
+      `https://api.cloudinary.com/v1_1/${CLOUDINARY_CLOUD_NAME}/image/upload`,
+      { method: 'POST', body },
+    );
+    if (!res.ok) throw new Error('upload-failed');
+    const data = (await res.json()) as { secure_url?: string };
+    if (!data.secure_url) throw new Error('no-url');
+    return data.secure_url;
+  };
+
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
     if (formData.website) return;
@@ -138,8 +213,16 @@ const OrderModal: React.FC<OrderModalProps> = ({ product, onClose }) => {
 
     if (formData.payment === 'qris') {
       if (qrisExpired) return;
+      if (!qrisAgreed) {
+        setQrisProofError(t('order.qris.rules.required'));
+        return;
+      }
       if (!qrisConfirmed) {
         setQrisProofError(t('order.qris.proofRequired'));
+        return;
+      }
+      if (!proofFile) {
+        setQrisProofError(t('order.qris.proof.required'));
         return;
       }
     }
@@ -149,7 +232,7 @@ const OrderModal: React.FC<OrderModalProps> = ({ product, onClose }) => {
 
     const paymentLabel = paymentMethods.find(p => p.id === formData.payment)?.label || formData.payment;
 
-    const message =
+    const buildMessage = (proofUrl: string) =>
       `${t('order.wa.title')}` +
       `${t('order.wa.product')} ${language === 'en' ? product.name.en : product.name.id}\n` +
       `${t('order.wa.weight')} ${product.weight}\n` +
@@ -159,11 +242,29 @@ const OrderModal: React.FC<OrderModalProps> = ({ product, onClose }) => {
       `${t('order.wa.phone')} ${formData.countryCode} ${formData.phone}\n` +
       `${formData.address ? `${t('order.wa.address')} ${formData.address}\n` : ''}` +
       `${t('order.wa.payment')} ${paymentLabel}\n` +
-      `${formData.payment === 'qris' ? `${t('order.wa.qris.note')}\n` : ''}` +
+      `${formData.payment === 'qris' ? `${t('order.wa.qris.note')} ${proofUrl || t('order.wa.qris.manual')}\n` : ''}` +
       `${formData.notes ? `${t('order.wa.notes')} ${formData.notes}\n` : ''}\n` +
       `${t('order.wa.thanks')}`;
 
-    openWhatsApp(message);
+    if (formData.payment === 'qris') {
+      setSending(true);
+      try {
+        let proofUrl = '';
+        if (CLOUDINARY_CLOUD_NAME && CLOUDINARY_UPLOAD_PRESET) {
+          proofUrl = await uploadProof();
+        }
+        openWhatsApp(buildMessage(proofUrl));
+        onClose();
+      } catch {
+        lastSubmission.current = 0;
+        setQrisProofError(t('order.qris.proof.uploadFailed'));
+      } finally {
+        setSending(false);
+      }
+      return;
+    }
+
+    openWhatsApp(buildMessage(''));
     onClose();
   };
 
@@ -406,62 +507,158 @@ const OrderModal: React.FC<OrderModalProps> = ({ product, onClose }) => {
 
               {formData.payment === 'qris' && !qrisExpired && (
                 <div className="mt-4 rounded-xl border border-primary/30 bg-primary/5 p-5 text-center">
-                  <div className="inline-flex items-center gap-2 rounded-full bg-primary/10 px-3 py-1 text-sm font-semibold text-primary mb-4">
-                    <Clock className="w-4 h-4" />
-                    <span>{t('order.qris.expires')}</span>
-                    <span className="tabular-nums">{formatCountdown(secondsLeft)}</span>
-                  </div>
+                  {qrisAgreed ? (
+                    <>
+                      <div className="inline-flex items-center gap-2 rounded-full bg-primary/10 px-3 py-1 text-sm font-semibold text-primary mb-4">
+                        <Clock className="w-4 h-4" />
+                        <span>{t('order.qris.expires')}</span>
+                        <span className="tabular-nums">{formatCountdown(secondsLeft)}</span>
+                      </div>
 
-                  <div className="mx-auto w-52 md:w-64 rounded-2xl bg-white p-4">
-                    <img
-                      src={qrisImage}
-                      alt="QRIS"
-                      decoding="async"
-                      className="w-full h-auto"
-                    />
-                  </div>
+                      <div className="mx-auto w-52 md:w-64 rounded-2xl bg-white p-4">
+                        <img
+                          src={qrisImage}
+                          alt="QRIS"
+                          decoding="async"
+                          className="w-full h-auto"
+                        />
+                      </div>
 
-                  <p className="mt-4 text-sm text-foreground">{t('order.qris.scan')}</p>
+                      <p className="mt-4 text-sm text-foreground">{t('order.qris.scan')}</p>
 
-                  <div className="mt-3 rounded-lg border border-amber-400/40 bg-amber-50 p-3 text-xs text-amber-900 dark:bg-amber-950/40 dark:text-amber-200 text-left">
-                    {t('order.qris.proofReminder')}
-                  </div>
+                      <div className="mt-3 rounded-xl border border-border bg-card p-4 text-left">
+                        <p className="text-sm font-semibold text-foreground">{t('order.qris.proof.label')}</p>
+                        <p className="mt-1 text-xs text-muted-foreground dark:text-white/80">{t('order.qris.proof.hint')}</p>
 
-                  <div
-                    role="checkbox"
-                    aria-checked={qrisConfirmed}
-                    tabIndex={0}
-                    onClick={(e) => {
-                      e.preventDefault();
-                      e.stopPropagation();
-                      const next = !qrisConfirmed;
-                      setQrisConfirmed(next);
-                      if (next) setQrisProofError('');
-                    }}
-                    onKeyDown={(e) => {
-                      if (e.key === ' ' || e.key === 'Enter') {
-                        e.preventDefault();
-                        e.stopPropagation();
-                        const next = !qrisConfirmed;
-                        setQrisConfirmed(next);
-                        if (next) setQrisProofError('');
-                      }
-                    }}
-                    className="mt-3 flex items-start gap-3 rounded-xl border border-border bg-card p-3 text-left cursor-pointer select-none"
-                  >
-                    <Checkbox
-                      type="button"
-                      checked={qrisConfirmed}
-                      onCheckedChange={(checked) => {
-                        setQrisConfirmed(Boolean(checked));
-                        if (checked) setQrisProofError('');
-                      }}
-                      className="mt-0.5 pointer-events-none"
-                    />
-                    <span className="text-xs text-foreground">{t('order.qris.confirm')}</span>
-                  </div>
-                  {qrisProofError && (
-                    <p className="mt-2 text-sm text-destructive">{qrisProofError}</p>
+                        {proofPreview ? (
+                          <div className="mt-3">
+                            <div className="overflow-hidden rounded-lg border border-border bg-muted/30">
+                              <img src={proofPreview} alt="Transfer proof" className="max-h-52 w-full object-contain" />
+                            </div>
+                            <div className="mt-2 flex gap-2">
+                              <label className="inline-flex cursor-pointer items-center gap-2 rounded-lg border border-primary/40 bg-primary/5 px-3 py-1.5 text-xs font-medium text-primary transition-colors hover:bg-primary/10">
+                                <Upload className="h-3.5 w-3.5" />
+                                {t('order.qris.proof.replace')}
+                                <input type="file" accept="image/*" className="sr-only" onChange={handleProofSelect} />
+                              </label>
+                              <button
+                                type="button"
+                                onClick={removeProof}
+                                className="inline-flex items-center gap-2 rounded-lg border border-destructive/40 px-3 py-1.5 text-xs font-medium text-destructive transition-colors hover:bg-destructive/10"
+                              >
+                                <Trash2 className="h-3.5 w-3.5" />
+                                {language === 'en' ? 'Remove' : 'Hapus'}
+                              </button>
+                            </div>
+                          </div>
+                        ) : (
+                          <label className="mt-3 flex cursor-pointer items-center justify-center gap-2 rounded-xl border-2 border-dashed border-primary/40 bg-primary/5 px-4 py-5 text-sm font-medium text-primary transition-colors hover:bg-primary/10">
+                            <Upload className="h-5 w-5" />
+                            {t('order.qris.proof.upload')}
+                            <input type="file" accept="image/*" className="sr-only" onChange={handleProofSelect} />
+                          </label>
+                        )}
+                      </div>
+
+                      <div className="mt-3 rounded-lg border border-amber-400/40 bg-amber-50 p-3 text-xs text-amber-900 dark:bg-amber-950/40 dark:text-amber-200 text-left">
+                        {t('order.qris.proofReminder')}
+                      </div>
+
+                      <div
+                        role="checkbox"
+                        aria-checked={qrisConfirmed}
+                        aria-disabled={!proofFile}
+                        tabIndex={0}
+                        onClick={(e) => {
+                          e.preventDefault();
+                          e.stopPropagation();
+                          if (!proofFile) {
+                            setQrisProofError(t('order.qris.proof.required'));
+                            return;
+                          }
+                          const next = !qrisConfirmed;
+                          setQrisConfirmed(next);
+                          if (next) setQrisProofError('');
+                        }}
+                        onKeyDown={(e) => {
+                          if (e.key === ' ' || e.key === 'Enter') {
+                            e.preventDefault();
+                            e.stopPropagation();
+                            if (!proofFile) {
+                              setQrisProofError(t('order.qris.proof.required'));
+                              return;
+                            }
+                            const next = !qrisConfirmed;
+                            setQrisConfirmed(next);
+                            if (next) setQrisProofError('');
+                          }
+                        }}
+                        className={`mt-3 flex items-start gap-3 rounded-xl border border-border bg-card p-3 text-left cursor-pointer select-none ${
+                          !proofFile ? 'opacity-70' : ''
+                        }`}
+                      >
+                        <Checkbox
+                          type="button"
+                          checked={qrisConfirmed}
+                          onCheckedChange={(checked) => {
+                            setQrisConfirmed(Boolean(checked));
+                            if (checked) setQrisProofError('');
+                          }}
+                          className="mt-0.5 pointer-events-none"
+                        />
+                        <span className="text-xs text-foreground">{t('order.qris.confirm')}</span>
+                      </div>
+                      {qrisProofError && (
+                        <p className="mt-2 text-sm text-destructive">{qrisProofError}</p>
+                      )}
+                    </>
+                  ) : (
+                    <div className="rounded-xl border border-border bg-card p-4 text-left">
+                      <p className="text-sm font-semibold text-foreground">{t('order.qris.rules.title')}</p>
+                      <p className="mt-1 text-xs text-muted-foreground dark:text-white/80">{t('order.qris.rules.intro')}</p>
+                      <ul className="mt-3 space-y-2">
+                        <li className="flex items-start gap-2 text-sm text-foreground">
+                          <Check className="mt-0.5 h-4 w-4 shrink-0 text-primary" />
+                          <span>{t('order.qris.rules.rule1')}</span>
+                        </li>
+                        <li className="flex items-start gap-2 text-sm text-foreground">
+                          <Check className="mt-0.5 h-4 w-4 shrink-0 text-primary" />
+                          <span>{t('order.qris.rules.rule2')}</span>
+                        </li>
+                        <li className="flex items-start gap-2 text-sm text-foreground">
+                          <Check className="mt-0.5 h-4 w-4 shrink-0 text-primary" />
+                          <span>{t('order.qris.rules.rule3')}</span>
+                        </li>
+                      </ul>
+                      <div
+                        role="checkbox"
+                        aria-checked={qrisAgreed}
+                        tabIndex={0}
+                        onClick={(e) => {
+                          e.preventDefault();
+                          e.stopPropagation();
+                          setQrisAgreed(true);
+                          setQrisProofError('');
+                        }}
+                        onKeyDown={(e) => {
+                          if (e.key === ' ' || e.key === 'Enter') {
+                            e.preventDefault();
+                            e.stopPropagation();
+                            setQrisAgreed(true);
+                            setQrisProofError('');
+                          }
+                        }}
+                        className="mt-4 flex cursor-pointer items-center gap-3 rounded-xl border border-primary/40 bg-background p-3 text-left select-none transition-colors hover:bg-primary/5"
+                      >
+                        <Checkbox
+                          type="button"
+                          checked={qrisAgreed}
+                          onCheckedChange={() => setQrisAgreed(true)}
+                          className="pointer-events-none"
+                        />
+                        <span className="text-xs font-medium text-foreground">{t('order.qris.rules.agree')}</span>
+                      </div>
+                    </div>
                   )}
                 </div>
               )}
@@ -477,9 +674,10 @@ const OrderModal: React.FC<OrderModalProps> = ({ product, onClose }) => {
             <Button
               type="submit"
               size="lg"
+              disabled={sending}
               className="w-full honey-gradient text-white border-0 hover:opacity-90 py-6 text-lg font-semibold"
             >
-              {t('order.submit')}
+              {sending ? t('order.qris.proof.uploading') : t('order.submit')}
             </Button>
           </form>
         </motion.div>
