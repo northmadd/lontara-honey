@@ -7,7 +7,6 @@ import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { Checkbox } from '@/components/ui/checkbox';
 import CountryCodeSelect, { getPhonePlaceholder } from '@/components/CountryCodeSelect';
-import MapPicker, { MapPlace } from '@/components/MapPicker';
 import { Product } from './ProductsSection';
 import qrisImage from '@/assets/qris.webp';
 
@@ -17,6 +16,14 @@ const QRIS_EXPIRY_MS = 10 * 60 * 1000;
 const STORE_LAT = -5.2146092;
 const STORE_LNG = 119.4524519;
 const STORE_ADDRESS = 'Jl. Pangkabinanga, Pangkabinanga, Pallangga, Gowa, Sulawesi Selatan 92161';
+
+interface MapPlace {
+  placeId: string;
+  lat: number;
+  lon: number;
+  display_name: string;
+}
+
 const STORE_PLACE: MapPlace = {
   placeId: 'store',
   lat: STORE_LAT,
@@ -143,6 +150,10 @@ const OrderModal: React.FC<OrderModalProps> = ({ product, onClose }) => {
     { id: 'qris', label: 'QRIS', icon: Wallet },
     { id: 'cod', label: t('order.cod'), icon: Truck },
   ];
+
+  const mapSrc = `https://www.google.com/maps?q=${encodeURIComponent(
+    mapSelected ? `${mapSelected.lat},${mapSelected.lon}` : `${STORE_LAT},${STORE_LNG}`,
+  )}&z=16&hl=${language}&output=embed`;
 
   const copyText = async (addressText: string) => {
     try {
@@ -550,14 +561,14 @@ const OrderModal: React.FC<OrderModalProps> = ({ product, onClose }) => {
                   </div>
                 )}
 
-                <MapPicker
-                  places={mapResults}
-                  selected={mapSelected}
-                  center={[STORE_LAT, STORE_LNG]}
-                  zoom={15}
-                  language={language}
-                  loadingLabel={t('order.map.resolving')}
-                  onSelect={selectMapPlace}
+                <iframe
+                  title={t('order.map.title')}
+                  src={mapSrc}
+                  className="h-64 w-full"
+                  style={{ border: 0 }}
+                  loading="lazy"
+                  allowFullScreen
+                  referrerPolicy="no-referrer-when-downgrade"
                 />
 
                 <div className="border-t border-border bg-muted/40 px-3 py-2 text-left">
