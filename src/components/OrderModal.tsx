@@ -381,7 +381,9 @@ const OrderModal: React.FC<OrderModalProps> = ({ product, onClose }) => {
                     role="checkbox"
                     aria-checked={qrisConfirmed}
                     tabIndex={0}
-                    onClick={() => {
+                    onClick={(e) => {
+                      e.preventDefault();
+                      e.stopPropagation();
                       const next = !qrisConfirmed;
                       setQrisConfirmed(next);
                       if (next) setQrisProofError('');
@@ -389,6 +391,7 @@ const OrderModal: React.FC<OrderModalProps> = ({ product, onClose }) => {
                     onKeyDown={(e) => {
                       if (e.key === ' ' || e.key === 'Enter') {
                         e.preventDefault();
+                        e.stopPropagation();
                         const next = !qrisConfirmed;
                         setQrisConfirmed(next);
                         if (next) setQrisProofError('');
@@ -397,6 +400,7 @@ const OrderModal: React.FC<OrderModalProps> = ({ product, onClose }) => {
                     className="mt-3 flex items-start gap-3 rounded-xl border border-border bg-card p-3 text-left cursor-pointer select-none"
                   >
                     <Checkbox
+                      type="button"
                       checked={qrisConfirmed}
                       onCheckedChange={(checked) => {
                         setQrisConfirmed(Boolean(checked));

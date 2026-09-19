@@ -132,8 +132,7 @@ const LocationPicker: React.FC<LocationPickerProps> = ({
     }
   };
 
-  const handleSearch = async (e?: React.FormEvent) => {
-    e?.preventDefault();
+  const runSearch = async () => {
     const q = query.trim();
     if (!q) return;
     controllerRef.current?.abort();
@@ -173,22 +172,30 @@ const LocationPicker: React.FC<LocationPickerProps> = ({
         {title}
       </p>
 
-      <form
-        onSubmit={handleSearch}
-        className="flex gap-2"
-      >
+      <div className="flex gap-2">
         <Input
           value={query}
           onChange={(e) => setQuery(e.target.value)}
+          onKeyDown={(e) => {
+            if (e.key === 'Enter') {
+              e.preventDefault();
+              runSearch();
+            }
+          }}
           placeholder={searchPlaceholder}
           className="flex-1 bg-background"
           aria-label={searchPlaceholder}
         />
-        <Button type="submit" disabled={isSearching} className="shrink-0">
+        <Button
+          type="button"
+          onClick={runSearch}
+          disabled={isSearching}
+          className="shrink-0"
+        >
           {isSearching ? <Loader2 className="w-4 h-4 animate-spin" /> : <Search className="w-4 h-4" />}
           {searchLabel}
         </Button>
-      </form>
+      </div>
 
       {isSearching && (
         <p className="mt-2 text-xs text-muted-foreground dark:text-white/80">{searchingLabel}</p>
