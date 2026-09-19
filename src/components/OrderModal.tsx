@@ -1,19 +1,21 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { motion, AnimatePresence } from 'framer-motion';
-import { X, CreditCard, Wallet, Truck, MapPin, Clock } from 'lucide-react';
+import { X, CreditCard, Wallet, Truck, MapPin, Clock, Copy, Check, ExternalLink } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { Checkbox } from '@/components/ui/checkbox';
 import CountryCodeSelect, { getPhonePlaceholder } from '@/components/CountryCodeSelect';
 import { Product } from './ProductsSection';
-import LocationPicker from './LocationPicker';
 import qrisImage from '@/assets/qris.webp';
 
 const WHATSAPP_NUMBER = '6282347905543';
 const FORM_COOLDOWN_MS = 15_000;
 const QRIS_EXPIRY_MS = 10 * 60 * 1000;
+const STORE_LAT = -5.2146092;
+const STORE_LNG = 119.4524519;
+const STORE_ADDRESS = 'Jl. Pangkabinanga, Pangkabinanga, Pallangga, Gowa, Sulawesi Selatan 92161';
 
 const openWhatsApp = (message: string) => {
   const encodedMessage = encodeURIComponent(message);
@@ -43,6 +45,7 @@ const OrderModal: React.FC<OrderModalProps> = ({ product, onClose }) => {
   const [qrisConfirmed, setQrisConfirmed] = useState(false);
   const [qrisProofError, setQrisProofError] = useState('');
   const [secondsLeft, setSecondsLeft] = useState(QRIS_EXPIRY_MS / 1000);
+  const [copied, setCopied] = useState(false);
   const lastSubmission = useRef(0);
 
   // QRIS session: 10 minutes, then reset the payment data.
@@ -97,6 +100,31 @@ const OrderModal: React.FC<OrderModalProps> = ({ product, onClose }) => {
     { id: 'qris', label: 'QRIS', icon: Wallet },
     { id: 'cod', label: t('order.cod'), icon: Truck },
   ];
+
+  const copyStoreAddress = async () => {
+    try {
+      await navigator.clipboard.writeText(STORE_ADDRESS);
+    } catch {
+      const textarea = document.createElement('textarea');
+      textarea.value = STORE_ADDRESS;
+      textarea.style.position = 'fixed';
+      textarea.style.opacity = '0';
+      document.body.appendChild(textarea);
+      textarea.select();
+      document.execCommand('copy');
+      document.body.removeChild(textarea);
+    }
+    setCopied(true);
+    window.setTimeout(() => setCopied(false), 2500);
+  };
+
+  const openGoogleMaps = () => {
+    window.open(
+      `https://www.google.com/maps/search/?api=1&query=${STORE_LAT},${STORE_LNG}`,
+      '_blank',
+      'noopener',
+    );
+  };
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -283,25 +311,45 @@ const OrderModal: React.FC<OrderModalProps> = ({ product, onClose }) => {
                 </Button>
               </div>
               {showMap && (
-                <LocationPicker
-                  address={formData.address}
-                  onSelectAddress={(address) =>
-                    setFormData((prev) => ({ ...prev, address }))
-                  }
-                  title={t('order.map.title')}
-                  searchPlaceholder={t('order.map.searchPlaceholder')}
-                  searchLabel={t('order.map.search')}
-                  searchingLabel={t('order.map.searching')}
-                  findingLabel={t('order.map.finding')}
-                  errorLabel={t('order.map.error')}
-                  hintLabel={t('order.map.hint')}
-                  storeAddress={t('order.storeAddress')}
-                  storeLabel={t('order.storeButton')}
-                />
+                <div className="mt-3 overflow-hidden rounded-lg border border-border">
+                  <iframe
+                    title={t('order.map.title')}
+                    src={`https://www.google.com/maps?q=${STORE_LAT},${STORE_LNG}&z=16&hl=${language}&output=embed`}
+                    className="h-64 w-full"
+                    style={{ border: 0 }}
+                    loading="lazy"
+                    allowFullScreen
+                    referrerPolicy="no-referrer-when-downgrade"
+                  />
+                </div>
               )}
               {showMap && (
-                <p className="mt-1 text-xs text-muted-foreground dark:text-white/80">
-                  {t('order.addressMapsHint')}
+                <div className="mt-2 flex flex-col gap-2 sm:flex-row">
+                  <Button
+                    type="button"
+                    variant="outline"
+                    size="sm"
+                    onClick={copyStoreAddress}
+                    className="shrink-0 border-primary/40 text-primary hover:bg-primary/10"
+                  >
+                    {copied ? <Check className="w-4 h-4" /> : <Copy className="w-4 h-4" />}
+                    {copied ? t('order.map.copied') : t('order.map.copy')}
+                  </Button>
+                  <Button
+                    type="button"
+                    variant="outline"
+                    size="sm"
+                    onClick={openGoogleMaps}
+                    className="shrink-0 border-primary/40 text-primary hover:bg-primary/10"
+                  >
+                    <ExternalLink className="w-4 h-4" />
+                    {t('order.map.open')}
+                  </Button>
+                </div>
+              )}
+              {showMap && (
+                <p className="mt-2 text-xs text-muted-foreground dark:text-white/80">
+                  {t('order.map.hint')}
                 </p>
               )}
             </div>
