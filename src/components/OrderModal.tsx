@@ -1,7 +1,7 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { motion, AnimatePresence } from 'framer-motion';
-import { X, CreditCard, Wallet, Truck, Clock, Copy, Check, ExternalLink, Upload, Trash2, Search } from 'lucide-react';
+import { X, CreditCard, Wallet, Truck, Clock, Copy, Check, ExternalLink, Upload, Trash2, Search, MapPin } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
@@ -46,6 +46,8 @@ const OrderModal: React.FC<OrderModalProps> = ({ product, onClose }) => {
   const [phoneError, setPhoneError] = useState('');
   const [mapQuery, setMapQuery] = useState('');
   const [mapTarget, setMapTarget] = useState('');
+  const [mapAddress, setMapAddress] = useState(STORE_ADDRESS);
+  const [mapResolving, setMapResolving] = useState(false);
   const [qrisExpired, setQrisExpired] = useState(false);
   const [qrisAgreed, setQrisAgreed] = useState(false);
   const [qrisConfirmed, setQrisConfirmed] = useState(false);
@@ -138,11 +140,12 @@ const OrderModal: React.FC<OrderModalProps> = ({ product, onClose }) => {
   )}&z=16&hl=${language}&output=embed`;
 
   const copyStoreAddress = async () => {
+    const addressText = mapAddress || STORE_ADDRESS;
     try {
-      await navigator.clipboard.writeText(STORE_ADDRESS);
+      await navigator.clipboard.writeText(addressText);
     } catch {
       const textarea = document.createElement('textarea');
-      textarea.value = STORE_ADDRESS;
+      textarea.value = addressText;
       textarea.style.position = 'fixed';
       textarea.style.opacity = '0';
       document.body.appendChild(textarea);
@@ -154,9 +157,40 @@ const OrderModal: React.FC<OrderModalProps> = ({ product, onClose }) => {
     window.setTimeout(() => setCopied(false), 2500);
   };
 
+  const resolveMapAddress = async (query: string) => {
+    const q = query.trim();
+    if (!q) {
+      setMapAddress(STORE_ADDRESS);
+      return;
+    }
+    setMapResolving(true);
+    try {
+      const res = await fetch(
+        `https://nominatim.openstreetmap.org/search?format=jsonv2&limit=1&q=${encodeURIComponent(q)}`,
+        { headers: { Accept: 'application/json' } },
+      );
+      if (!res.ok) throw new Error('geocode-failed');
+      const data = (await res.json()) as Array<{ display_name?: string }>;
+      setMapAddress(
+        Array.isArray(data) && data[0]?.display_name ? data[0].display_name : q,
+      );
+    } catch {
+      setMapAddress(q);
+    } finally {
+      setMapResolving(false);
+    }
+  };
+
+  const applyMapSearch = (value?: string) => {
+    const target = (value ?? mapQuery).trim();
+    setMapTarget(target);
+    void resolveMapAddress(target);
+  };
+
   const openGoogleMaps = () => {
+    const q = (mapTarget || mapAddress || `${STORE_LAT},${STORE_LNG}`).trim();
     window.open(
-      `https://www.google.com/maps/search/?api=1&query=${STORE_LAT},${STORE_LNG}`,
+      `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(q)}`,
       '_blank',
       'noopener',
     );
@@ -411,7 +445,7 @@ const OrderModal: React.FC<OrderModalProps> = ({ product, onClose }) => {
                       if (e.key === 'Enter') {
                         e.preventDefault();
                         e.stopPropagation();
-                        setMapTarget(mapQuery);
+                        applyMapSearch(mapQuery);
                       }
                     }}
                     placeholder={t('order.map.search')}
@@ -420,7 +454,7 @@ const OrderModal: React.FC<OrderModalProps> = ({ product, onClose }) => {
                   <Button
                     type="button"
                     size="sm"
-                    onClick={() => setMapTarget(mapQuery)}
+                    onClick={() => applyMapSearch()}
                     className="shrink-0"
                   >
                     <Search className="w-4 h-4" />
@@ -436,6 +470,15 @@ const OrderModal: React.FC<OrderModalProps> = ({ product, onClose }) => {
                   allowFullScreen
                   referrerPolicy="no-referrer-when-downgrade"
                 />
+                <div className="border-t border-border bg-muted/40 px-3 py-2 text-left">
+                  <p className="flex items-start gap-1.5 text-xs text-foreground">
+                    <MapPin className="mt-0.5 h-3.5 w-3.5 shrink-0 text-honey-gold" />
+                    <span>
+                      {mapResolving ? t('order.map.resolving') : null}
+                      <span className={mapResolving ? 'opacity-50' : ''}>{mapAddress}</span>
+                    </span>
+                  </p>
+                </div>
               </div>
 
               <div className="mt-2 flex flex-col gap-2 sm:flex-row">
