@@ -1,7 +1,7 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { motion, AnimatePresence } from 'framer-motion';
-import { X, CreditCard, Wallet, Truck, MapPin, Clock, Copy, Check, ExternalLink, Upload, Trash2 } from 'lucide-react';
+import { X, CreditCard, Wallet, Truck, Clock, Copy, Check, ExternalLink, Upload, Trash2, Search } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
@@ -44,7 +44,8 @@ const OrderModal: React.FC<OrderModalProps> = ({ product, onClose }) => {
     website: '',
   });
   const [phoneError, setPhoneError] = useState('');
-  const [showMap, setShowMap] = useState(false);
+  const [mapQuery, setMapQuery] = useState('');
+  const [mapTarget, setMapTarget] = useState('');
   const [qrisExpired, setQrisExpired] = useState(false);
   const [qrisAgreed, setQrisAgreed] = useState(false);
   const [qrisConfirmed, setQrisConfirmed] = useState(false);
@@ -131,6 +132,10 @@ const OrderModal: React.FC<OrderModalProps> = ({ product, onClose }) => {
     { id: 'qris', label: 'QRIS', icon: Wallet },
     { id: 'cod', label: t('order.cod'), icon: Truck },
   ];
+
+  const mapSrc = `https://www.google.com/maps?q=${encodeURIComponent(
+    mapTarget || `${STORE_LAT},${STORE_LNG}`,
+  )}&z=16&hl=${language}&output=embed`;
 
   const copyStoreAddress = async () => {
     try {
@@ -390,69 +395,75 @@ const OrderModal: React.FC<OrderModalProps> = ({ product, onClose }) => {
               <label className="block text-sm font-medium text-foreground mb-2">
                 {t('order.address')}
               </label>
-              <div className="flex gap-2">
-                <Input
-                  value={formData.address}
-                  onChange={(e) => setFormData({ ...formData, address: e.target.value })}
-                  placeholder={t('order.addressPlaceholder')}
-                  maxLength={160}
-                  className="flex-1"
+              <Input
+                value={formData.address}
+                onChange={(e) => setFormData({ ...formData, address: e.target.value })}
+                placeholder={t('order.addressPlaceholder')}
+                maxLength={160}
+              />
+
+              <div className="mt-3 overflow-hidden rounded-lg border border-border">
+                <div className="flex gap-2 border-b border-border bg-card p-2">
+                  <Input
+                    value={mapQuery}
+                    onChange={(e) => setMapQuery(e.target.value)}
+                    onKeyDown={(e) => {
+                      if (e.key === 'Enter') {
+                        e.preventDefault();
+                        e.stopPropagation();
+                        setMapTarget(mapQuery);
+                      }
+                    }}
+                    placeholder={t('order.map.search')}
+                    className="h-9 flex-1"
+                  />
+                  <Button
+                    type="button"
+                    size="sm"
+                    onClick={() => setMapTarget(mapQuery)}
+                    className="shrink-0"
+                  >
+                    <Search className="w-4 h-4" />
+                    {t('order.map.searchBtn')}
+                  </Button>
+                </div>
+                <iframe
+                  title={t('order.map.title')}
+                  src={mapSrc}
+                  className="h-64 w-full"
+                  style={{ border: 0 }}
+                  loading="lazy"
+                  allowFullScreen
+                  referrerPolicy="no-referrer-when-downgrade"
                 />
+              </div>
+
+              <div className="mt-2 flex flex-col gap-2 sm:flex-row">
                 <Button
                   type="button"
                   variant="outline"
-                  size="icon"
-                  onClick={() => setShowMap((prev) => !prev)}
-                  title={t('order.addressMaps')}
-                  aria-label={t('order.addressMaps')}
-                  aria-pressed={showMap}
-                  className={showMap ? 'shrink-0 border-primary text-primary' : 'shrink-0'}
+                  size="sm"
+                  onClick={copyStoreAddress}
+                  className="shrink-0 border-primary/40 text-primary hover:bg-primary/10"
                 >
-                  <MapPin className="w-4 h-4" />
+                  {copied ? <Check className="w-4 h-4" /> : <Copy className="w-4 h-4" />}
+                  {copied ? t('order.map.copied') : t('order.map.copy')}
+                </Button>
+                <Button
+                  type="button"
+                  variant="outline"
+                  size="sm"
+                  onClick={openGoogleMaps}
+                  className="shrink-0 border-primary/40 text-primary hover:bg-primary/10"
+                >
+                  <ExternalLink className="w-4 h-4" />
+                  {t('order.map.open')}
                 </Button>
               </div>
-              {showMap && (
-                <div className="mt-3 overflow-hidden rounded-lg border border-border">
-                  <iframe
-                    title={t('order.map.title')}
-                    src={`https://www.google.com/maps?q=${STORE_LAT},${STORE_LNG}&z=16&hl=${language}&output=embed`}
-                    className="h-64 w-full"
-                    style={{ border: 0 }}
-                    loading="lazy"
-                    allowFullScreen
-                    referrerPolicy="no-referrer-when-downgrade"
-                  />
-                </div>
-              )}
-              {showMap && (
-                <div className="mt-2 flex flex-col gap-2 sm:flex-row">
-                  <Button
-                    type="button"
-                    variant="outline"
-                    size="sm"
-                    onClick={copyStoreAddress}
-                    className="shrink-0 border-primary/40 text-primary hover:bg-primary/10"
-                  >
-                    {copied ? <Check className="w-4 h-4" /> : <Copy className="w-4 h-4" />}
-                    {copied ? t('order.map.copied') : t('order.map.copy')}
-                  </Button>
-                  <Button
-                    type="button"
-                    variant="outline"
-                    size="sm"
-                    onClick={openGoogleMaps}
-                    className="shrink-0 border-primary/40 text-primary hover:bg-primary/10"
-                  >
-                    <ExternalLink className="w-4 h-4" />
-                    {t('order.map.open')}
-                  </Button>
-                </div>
-              )}
-              {showMap && (
-                <p className="mt-2 text-xs text-muted-foreground dark:text-white/80">
-                  {t('order.map.hint')}
-                </p>
-              )}
+
+              <p className="mt-2 text-xs text-muted-foreground dark:text-white/80">
+                {t('order.map.hint')}
+              </p>
             </div>
 
             <div>
@@ -609,7 +620,7 @@ const OrderModal: React.FC<OrderModalProps> = ({ product, onClose }) => {
                         <span className="text-xs text-foreground">{t('order.qris.confirm')}</span>
                       </div>
                       {qrisProofError && (
-                        <p className="mt-2 text-sm text-destructive">{qrisProofError}</p>
+                        <p className="mt-2 text-sm font-medium text-honey-gold">{qrisProofError}</p>
                       )}
                     </>
                   ) : (
