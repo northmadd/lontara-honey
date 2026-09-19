@@ -182,6 +182,8 @@ const BotVerificationGate: React.FC<BotVerificationGateProps> = ({ children }) =
         mo.disconnect();
       };
     }
+
+    return;
   }, [isVerified]);
 
   if (isVerified) {

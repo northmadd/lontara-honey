@@ -5,7 +5,7 @@ import sharp from 'sharp';
 const assetsDirectory = path.resolve('src/assets');
 const sourceImagePattern = /\.(png|jpe?g)$/i;
 const productImagePattern = /^(acacia honey|forest honey|stingless be honey)/i;
-const iconImagePattern = /^lebah/i;
+const iconImagePattern = /^(lebah|qris)/i;
 const files = (await readdir(assetsDirectory)).filter((file) => sourceImagePattern.test(file));
 
 await Promise.all(

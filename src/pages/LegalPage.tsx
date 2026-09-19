@@ -2,6 +2,8 @@ import { useParams } from 'react-router-dom';
 import { ArrowLeft, Globe } from 'lucide-react';
 import { useLanguage } from '@/contexts/LanguageContext';
 
+const routerBasename = import.meta.env.BASE_URL.replace(/\/$/, "");
+
 const pages: Record<string, { titleKey: string; sections: { headingKey: string; textKey: string }[] }> = {
   privacy: { titleKey: 'legal.privacy.title', sections: [
     { headingKey: 'legal.privacy.s1.heading', textKey: 'legal.privacy.s1.text' },

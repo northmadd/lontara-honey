@@ -1,15 +1,18 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { motion, AnimatePresence } from 'framer-motion';
-import { X, CreditCard, Wallet, Truck } from 'lucide-react';
+import { X, CreditCard, Wallet, Truck, MapPin, Clock } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
+import { Checkbox } from '@/components/ui/checkbox';
 import CountryCodeSelect, { getPhonePlaceholder } from '@/components/CountryCodeSelect';
 import { Product } from './ProductsSection';
+import qrisImage from '@/assets/qris.webp';
 
 const WHATSAPP_NUMBER = '6282347905543';
 const FORM_COOLDOWN_MS = 15_000;
+const QRIS_EXPIRY_MS = 10 * 60 * 1000;
 
 const openWhatsApp = (message: string) => {
   const encodedMessage = encodeURIComponent(message);
@@ -28,12 +31,40 @@ const OrderModal: React.FC<OrderModalProps> = ({ product, onClose }) => {
     name: '',
     countryCode: '+62',
     phone: '',
+    address: '',
     notes: '',
     payment: 'bank',
     website: '',
   });
   const [phoneError, setPhoneError] = useState('');
+  const [qrisExpired, setQrisExpired] = useState(false);
+  const [qrisConfirmed, setQrisConfirmed] = useState(false);
+  const [qrisProofError, setQrisProofError] = useState('');
+  const [secondsLeft, setSecondsLeft] = useState(QRIS_EXPIRY_MS / 1000);
   const lastSubmission = useRef(0);
+
+  // QRIS session: 10 minutes, then reset the payment data.
+  useEffect(() => {
+    if (formData.payment !== 'qris') return;
+
+    const expiresAt = Date.now() + QRIS_EXPIRY_MS;
+    setQrisExpired(false);
+    setQrisConfirmed(false);
+    setQrisProofError('');
+    setSecondsLeft(QRIS_EXPIRY_MS / 1000);
+
+    const interval = window.setInterval(() => {
+      const remaining = Math.max(0, Math.round((expiresAt - Date.now()) / 1000));
+      setSecondsLeft(remaining);
+      if (remaining <= 0) {
+        window.clearInterval(interval);
+        setQrisExpired(true);
+        setFormData((prev) => ({ ...prev, payment: 'bank' }));
+      }
+    }, 1000);
+
+    return () => window.clearInterval(interval);
+  }, [formData.payment]);
 
   useEffect(() => {
     const previousOverflow = document.body.style.overflow;
@@ -53,11 +84,24 @@ const OrderModal: React.FC<OrderModalProps> = ({ product, onClose }) => {
     }).format(price);
   };
 
+  const formatCountdown = (totalSeconds: number) => {
+    const minutes = Math.floor(totalSeconds / 60);
+    const seconds = totalSeconds % 60;
+    return `${String(minutes).padStart(2, '0')}:${String(seconds).padStart(2, '0')}`;
+  };
+
   const paymentMethods = [
     { id: 'bank', label: t('order.bank'), icon: CreditCard },
-    { id: 'qris', label: 'QRIS', icon: Wallet, available: false },
+    { id: 'qris', label: 'QRIS', icon: Wallet },
     { id: 'cod', label: t('order.cod'), icon: Truck },
   ];
+
+  const openGoogleMaps = () => {
+    const query = encodeURIComponent(
+      formData.address.trim() || t('contact.map.error.address'),
+    );
+    window.open(`https://www.google.com/maps/search/?api=1&query=${query}`, '_blank');
+  };
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -69,20 +113,31 @@ const OrderModal: React.FC<OrderModalProps> = ({ product, onClose }) => {
       return;
     }
 
+    if (formData.payment === 'qris') {
+      if (qrisExpired) return;
+      if (!qrisConfirmed) {
+        setQrisProofError(t('order.qris.proofRequired'));
+        return;
+      }
+    }
+
     if (Date.now() - lastSubmission.current < FORM_COOLDOWN_MS) return;
     lastSubmission.current = Date.now();
-    
+
     const paymentLabel = paymentMethods.find(p => p.id === formData.payment)?.label || formData.payment;
-    
-    const message = `${t('order.wa.title')}` +
+
+    const message =
+      `${t('order.wa.title')}` +
       `${t('order.wa.product')} ${language === 'en' ? product.name.en : product.name.id}\n` +
       `${t('order.wa.weight')} ${product.weight}\n` +
       `${t('order.wa.price')} ${formatPrice(product.price)}\n\n` +
       `${t('order.wa.customer')}\n` +
       `${t('order.wa.name')} ${formData.name}\n` +
       `${t('order.wa.phone')} ${formData.countryCode} ${formData.phone}\n` +
+      `${formData.address ? `${t('order.wa.address')} ${formData.address}\n` : ''}` +
       `${t('order.wa.payment')} ${paymentLabel}\n` +
-      `${formData.notes ? `${t('order.wa.notes')} ${formData.notes}` : ''}\n\n` +
+      `${formData.payment === 'qris' ? `${t('order.wa.qris.note')}\n` : ''}` +
+      `${formData.notes ? `${t('order.wa.notes')} ${formData.notes}\n` : ''}\n` +
       `${t('order.wa.thanks')}`;
 
     openWhatsApp(message);
@@ -165,7 +220,9 @@ const OrderModal: React.FC<OrderModalProps> = ({ product, onClose }) => {
               </label>
               <Input
                 value={formData.name}
-                onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+                onChange={(e) =>
+                  setFormData({ ...formData, name: e.target.value.replace(/[0-9]/g, '') })
+                }
                 placeholder={t('order.namePlaceholder')}
                 required
                 maxLength={80}
@@ -207,6 +264,35 @@ const OrderModal: React.FC<OrderModalProps> = ({ product, onClose }) => {
 
             <div>
               <label className="block text-sm font-medium text-foreground mb-2">
+                {t('order.address')}
+              </label>
+              <div className="flex gap-2">
+                <Input
+                  value={formData.address}
+                  onChange={(e) => setFormData({ ...formData, address: e.target.value })}
+                  placeholder={t('order.addressPlaceholder')}
+                  maxLength={160}
+                  className="flex-1"
+                />
+                <Button
+                  type="button"
+                  variant="outline"
+                  size="icon"
+                  onClick={openGoogleMaps}
+                  title={t('order.addressMaps')}
+                  aria-label={t('order.addressMaps')}
+                  className="shrink-0"
+                >
+                  <MapPin className="w-4 h-4" />
+                </Button>
+              </div>
+              <p className="mt-1 text-xs text-muted-foreground dark:text-white/80">
+                {t('order.addressMapsHint')}
+              </p>
+            </div>
+
+            <div>
+              <label className="block text-sm font-medium text-foreground mb-2">
                 {t('order.notes')}
               </label>
               <Textarea
@@ -227,14 +313,11 @@ const OrderModal: React.FC<OrderModalProps> = ({ product, onClose }) => {
                   <button
                     key={method.id}
                     type="button"
-                    disabled={method.available === false}
                     onClick={() => setFormData({ ...formData, payment: method.id })}
                     className={`relative p-4 rounded-xl border-2 transition-all text-center ${
                       formData.payment === method.id
                         ? 'border-primary bg-primary/10'
-                        : method.available === false
-                          ? 'cursor-not-allowed border-border opacity-55'
-                          : 'border-border hover:border-primary/50'
+                        : 'border-border hover:border-primary/50'
                     }`}
                   >
                     <method.icon className={`w-6 h-6 mx-auto mb-2 ${
@@ -245,18 +328,81 @@ const OrderModal: React.FC<OrderModalProps> = ({ product, onClose }) => {
                     }`}>
                       {method.label}
                     </span>
-                    {method.available === false && (
-                      <span className="mt-1 block text-[10px] font-medium uppercase tracking-wide text-muted-foreground dark:text-white/80">{t('order.comingSoon')}</span>
-                    )}
                   </button>
                 ))}
               </div>
+
               {formData.payment === 'bank' && (
                 <div className="mt-4 rounded-xl border border-primary/30 bg-primary/5 p-4 text-sm text-foreground">
                   <p className="font-semibold">{t('order.bank.name')}</p>
                   <p className="mt-1">{t('order.bank.number')} <span className="font-medium">152-00-1864520-6</span></p>
                   <p>{t('order.bank.holder')} Ariani</p>
                   <p className="mt-2 text-xs text-muted-foreground dark:text-white/80">{t('order.bank.confirm')}</p>
+                </div>
+              )}
+
+              {formData.payment === 'qris' && !qrisExpired && (
+                <div className="mt-4 rounded-xl border border-primary/30 bg-primary/5 p-5 text-center">
+                  <div className="inline-flex items-center gap-2 rounded-full bg-primary/10 px-3 py-1 text-sm font-semibold text-primary mb-4">
+                    <Clock className="w-4 h-4" />
+                    <span>{t('order.qris.expires')}</span>
+                    <span className="tabular-nums">{formatCountdown(secondsLeft)}</span>
+                  </div>
+
+                  <div className="mx-auto w-52 rounded-2xl bg-white p-4">
+                    <img
+                      src={qrisImage}
+                      alt="QRIS"
+                      decoding="async"
+                      className="w-full h-auto"
+                    />
+                  </div>
+
+                  <p className="mt-4 text-sm text-foreground">{t('order.qris.scan')}</p>
+
+                  <div className="mt-3 rounded-lg border border-amber-400/40 bg-amber-50 p-3 text-xs text-amber-900 dark:bg-amber-950/40 dark:text-amber-200 text-left">
+                    {t('order.qris.proofReminder')}
+                  </div>
+
+                  <div
+                    role="checkbox"
+                    aria-checked={qrisConfirmed}
+                    tabIndex={0}
+                    onClick={() => {
+                      const next = !qrisConfirmed;
+                      setQrisConfirmed(next);
+                      if (next) setQrisProofError('');
+                    }}
+                    onKeyDown={(e) => {
+                      if (e.key === ' ' || e.key === 'Enter') {
+                        e.preventDefault();
+                        const next = !qrisConfirmed;
+                        setQrisConfirmed(next);
+                        if (next) setQrisProofError('');
+                      }
+                    }}
+                    className="mt-3 flex items-start gap-3 rounded-xl border border-border bg-card p-3 text-left cursor-pointer select-none"
+                  >
+                    <Checkbox
+                      checked={qrisConfirmed}
+                      onCheckedChange={(checked) => {
+                        setQrisConfirmed(Boolean(checked));
+                        if (checked) setQrisProofError('');
+                      }}
+                      className="mt-0.5 pointer-events-none"
+                    />
+                    <span className="text-xs text-foreground">{t('order.qris.confirm')}</span>
+                  </div>
+                  {qrisProofError && (
+                    <p className="mt-2 text-sm text-destructive">{qrisProofError}</p>
+                  )}
+                </div>
+              )}
+
+              {qrisExpired && (
+                <div className="mt-4 rounded-xl border border-destructive/40 bg-destructive/5 p-4 text-sm text-foreground">
+                  <p className="font-semibold">{t('order.qris.expired.title')}</p>
+                  <p className="mt-1 text-xs text-muted-foreground dark:text-white/80">{t('order.qris.expired.desc')}</p>
                 </div>
               )}
             </div>
