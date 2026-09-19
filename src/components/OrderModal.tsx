@@ -7,6 +7,7 @@ import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { Checkbox } from '@/components/ui/checkbox';
 import CountryCodeSelect, { getPhonePlaceholder } from '@/components/CountryCodeSelect';
+import MapPicker, { MapPlace } from '@/components/MapPicker';
 import { Product } from './ProductsSection';
 import qrisImage from '@/assets/qris.webp';
 
@@ -16,6 +17,12 @@ const QRIS_EXPIRY_MS = 10 * 60 * 1000;
 const STORE_LAT = -5.2146092;
 const STORE_LNG = 119.4524519;
 const STORE_ADDRESS = 'Jl. Pangkabinanga, Pangkabinanga, Pallangga, Gowa, Sulawesi Selatan 92161';
+const STORE_PLACE: MapPlace = {
+  placeId: 'store',
+  lat: STORE_LAT,
+  lon: STORE_LNG,
+  display_name: STORE_ADDRESS,
+};
 const CLOUDINARY_CLOUD_NAME = import.meta.env.VITE_CLOUDINARY_CLOUD_NAME ?? '';
 const CLOUDINARY_UPLOAD_PRESET = import.meta.env.VITE_CLOUDINARY_UPLOAD_PRESET ?? '';
 const PROOF_UPLOAD_FOLDER = 'bukti-transfer';
@@ -45,9 +52,11 @@ const OrderModal: React.FC<OrderModalProps> = ({ product, onClose }) => {
   });
   const [phoneError, setPhoneError] = useState('');
   const [mapQuery, setMapQuery] = useState('');
-  const [mapTarget, setMapTarget] = useState('');
+  const [mapResults, setMapResults] = useState<MapPlace[]>([]);
+  const [mapSelected, setMapSelected] = useState<MapPlace | null>(STORE_PLACE);
   const [mapAddress, setMapAddress] = useState(STORE_ADDRESS);
   const [mapResolving, setMapResolving] = useState(false);
+  const [mapNoResult, setMapNoResult] = useState(false);
   const [qrisExpired, setQrisExpired] = useState(false);
   const [qrisAgreed, setQrisAgreed] = useState(false);
   const [qrisConfirmed, setQrisConfirmed] = useState(false);
@@ -135,12 +144,7 @@ const OrderModal: React.FC<OrderModalProps> = ({ product, onClose }) => {
     { id: 'cod', label: t('order.cod'), icon: Truck },
   ];
 
-  const mapSrc = `https://www.google.com/maps?q=${encodeURIComponent(
-    mapTarget || `${STORE_LAT},${STORE_LNG}`,
-  )}&z=16&hl=${language}&output=embed`;
-
-  const copyStoreAddress = async () => {
-    const addressText = mapAddress || STORE_ADDRESS;
+  const copyText = async (addressText: string) => {
     try {
       await navigator.clipboard.writeText(addressText);
     } catch {
@@ -159,36 +163,74 @@ const OrderModal: React.FC<OrderModalProps> = ({ product, onClose }) => {
 
   const resolveMapAddress = async (query: string) => {
     const q = query.trim();
-    if (!q) {
-      setMapAddress(STORE_ADDRESS);
-      return;
-    }
     setMapResolving(true);
     try {
+      const params = new URLSearchParams({
+        format: 'jsonv2',
+        q,
+        limit: '10',
+        addressdetails: '1',
+        'accept-language': language === 'id' ? 'id' : 'en',
+      });
       const res = await fetch(
-        `https://nominatim.openstreetmap.org/search?format=jsonv2&limit=1&q=${encodeURIComponent(q)}`,
+        `https://nominatim.openstreetmap.org/search?${params.toString()}`,
         { headers: { Accept: 'application/json' } },
       );
       if (!res.ok) throw new Error('geocode-failed');
-      const data = (await res.json()) as Array<{ display_name?: string }>;
-      setMapAddress(
-        Array.isArray(data) && data[0]?.display_name ? data[0].display_name : q,
-      );
+      const data = (await res.json()) as Array<{
+        place_id?: number;
+        lat?: string;
+        lon?: string;
+        display_name?: string;
+      }>;
+      const places: MapPlace[] = (Array.isArray(data) ? data : [])
+        .map((item, idx) => {
+          const lat = Number.parseFloat(item.lat ?? '');
+          const lon = Number.parseFloat(item.lon ?? '');
+          if (!Number.isFinite(lat) || !Number.isFinite(lon)) return null;
+          return {
+            placeId: String(item.place_id ?? idx),
+            lat,
+            lon,
+            display_name: item.display_name ?? q,
+          };
+        })
+        .filter((p): p is MapPlace => p !== null);
+      setMapResults(places);
+      setMapNoResult(places.length === 0);
+      if (places.length > 0) {
+        const first = places[0];
+        setMapSelected(first);
+        setMapAddress(first.display_name);
+      } else {
+        setMapAddress('');
+      }
     } catch {
-      setMapAddress(q);
+      setMapResults([]);
+      setMapNoResult(true);
+      setMapAddress('');
     } finally {
       setMapResolving(false);
     }
   };
 
   const applyMapSearch = (value?: string) => {
-    const target = (value ?? mapQuery).trim();
-    setMapTarget(target);
-    void resolveMapAddress(target);
+    const q = (value ?? mapQuery).trim();
+    if (!q) return;
+    void resolveMapAddress(q);
+  };
+
+  const selectMapPlace = (place: MapPlace) => {
+    setMapSelected(place);
+    setMapAddress(place.display_name);
+    setFormData((prev) => ({ ...prev, address: place.display_name.slice(0, 160) }));
+    void copyText(place.display_name);
   };
 
   const openGoogleMaps = () => {
-    const q = (mapTarget || mapAddress || `${STORE_LAT},${STORE_LNG}`).trim();
+    const place = mapSelected;
+    const hasCoords = place && Number.isFinite(place.lat) && Number.isFinite(place.lon);
+    const q = hasCoords ? `${place.lat},${place.lon}` : `${STORE_LAT},${STORE_LNG}`;
     window.open(
       `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(q)}`,
       '_blank',
@@ -455,27 +497,77 @@ const OrderModal: React.FC<OrderModalProps> = ({ product, onClose }) => {
                     type="button"
                     size="sm"
                     onClick={() => applyMapSearch()}
+                    disabled={mapResolving}
                     className="shrink-0"
                   >
                     <Search className="w-4 h-4" />
                     {t('order.map.searchBtn')}
                   </Button>
                 </div>
-                <iframe
-                  title={t('order.map.title')}
-                  src={mapSrc}
-                  className="h-64 w-full"
-                  style={{ border: 0 }}
-                  loading="lazy"
-                  allowFullScreen
-                  referrerPolicy="no-referrer-when-downgrade"
+
+                {mapNoResult && (
+                  <div className="border-b border-border bg-muted/40 px-3 py-2 text-xs text-muted-foreground dark:text-white/80">
+                    {t('order.map.noResult')}
+                  </div>
+                )}
+
+                {mapResults.length > 0 && (
+                  <div className="max-h-40 overflow-y-auto border-b border-border">
+                    <p className="px-3 pt-2 text-xs font-semibold text-honey-gold">
+                      {language === 'id'
+                        ? `${mapResults.length} hasil ditemukan`
+                        : `${mapResults.length} result${mapResults.length > 1 ? 's' : ''} found`}
+                    </p>
+                    <ul>
+                      {mapResults.map((place, idx) => {
+                        const isSelected = mapSelected?.placeId === place.placeId;
+                        return (
+                          <li key={place.placeId}>
+                            <button
+                              type="button"
+                              onClick={() => selectMapPlace(place)}
+                              className={`flex w-full items-start gap-2 px-3 py-2 text-left text-xs transition-colors ${
+                                isSelected
+                                  ? 'bg-honey-gold/10'
+                                  : 'hover:bg-muted/60'
+                              }`}
+                            >
+                              <span
+                                className={`mt-0.5 flex h-5 w-5 shrink-0 items-center justify-center rounded-full text-[10px] font-bold text-white ${
+                                  isSelected ? 'bg-honey-gold' : 'bg-amber-800'
+                                }`}
+                              >
+                                {idx + 1}
+                              </span>
+                              <span className="line-clamp-2 text-foreground">
+                                {place.display_name}
+                              </span>
+                            </button>
+                          </li>
+                        );
+                      })}
+                    </ul>
+                  </div>
+                )}
+
+                <MapPicker
+                  places={mapResults}
+                  selected={mapSelected}
+                  center={[STORE_LAT, STORE_LNG]}
+                  zoom={15}
+                  language={language}
+                  loadingLabel={t('order.map.resolving')}
+                  onSelect={selectMapPlace}
                 />
+
                 <div className="border-t border-border bg-muted/40 px-3 py-2 text-left">
                   <p className="flex items-start gap-1.5 text-xs text-foreground">
                     <MapPin className="mt-0.5 h-3.5 w-3.5 shrink-0 text-honey-gold" />
                     <span>
                       {mapResolving ? t('order.map.resolving') : null}
-                      <span className={mapResolving ? 'opacity-50' : ''}>{mapAddress}</span>
+                      <span className={mapResolving ? 'opacity-50' : ''}>
+                        {mapAddress || STORE_ADDRESS}
+                      </span>
                     </span>
                   </p>
                 </div>
@@ -486,7 +578,7 @@ const OrderModal: React.FC<OrderModalProps> = ({ product, onClose }) => {
                   type="button"
                   variant="outline"
                   size="sm"
-                  onClick={copyStoreAddress}
+                  onClick={() => void copyText(mapAddress || STORE_ADDRESS)}
                   className="shrink-0 border-primary/40 text-primary hover:bg-primary/10"
                 >
                   {copied ? <Check className="w-4 h-4" /> : <Copy className="w-4 h-4" />}
