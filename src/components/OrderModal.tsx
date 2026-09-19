@@ -183,7 +183,7 @@ const OrderModal: React.FC<OrderModalProps> = ({ product, onClose }) => {
 
         {/* Modal */}
         <motion.div
-          className="relative bg-card rounded-3xl shadow-2xl w-full max-w-md max-h-[90vh] overflow-y-auto"
+          className="relative bg-card rounded-3xl shadow-2xl w-full max-w-md md:max-w-xl lg:max-w-2xl max-h-[90vh] overflow-y-auto"
           initial={{ scale: 0.9, opacity: 0, y: 20 }}
           animate={{ scale: 1, opacity: 1, y: 0 }}
           exit={{ scale: 0.9, opacity: 0, y: 20 }}
@@ -412,7 +412,7 @@ const OrderModal: React.FC<OrderModalProps> = ({ product, onClose }) => {
                     <span className="tabular-nums">{formatCountdown(secondsLeft)}</span>
                   </div>
 
-                  <div className="mx-auto w-52 rounded-2xl bg-white p-4">
+                  <div className="mx-auto w-52 md:w-64 rounded-2xl bg-white p-4">
                     <img
                       src={qrisImage}
                       alt="QRIS"
