@@ -36,6 +36,7 @@ jobs:
           BASE_PATH: /lontara-honey/
           VITE_TURNSTILE_SITE_KEY: 0x4AAAAAAEkeAYbLy0BDXtgv
           VITE_TURNSTILE_VERIFY_URL: https://lontarahoney.com/api/verify-turnstile.php
+          VITE_LOCATIONIQ_TOKEN: pk.5e0ac8377e8d8d80f44acdcac18e94e1
 
       - name: Upload artifact
         uses: actions/upload-pages-artifact@v3

@@ -7,26 +7,61 @@ import { Button } from '@/components/ui/button';
 
 const NOMINATIM_URL = 'https://nominatim.openstreetmap.org';
 const NOMINATIM_EMAIL = 'lontarajayanusantara@gmail.com';
+const LOCATIONIQ_URL = 'https://us1.locationiq.com/v1';
+const LOCATIONIQ_TOKEN = import.meta.env.VITE_LOCATIONIQ_TOKEN?.trim();
+const USE_LOCATIONIQ = Boolean(LOCATIONIQ_TOKEN);
 const DEFAULT_CENTER: L.LatLngTuple = [-5.2146092, 119.4524519];
 
-interface NominatimResult {
-  place_id: number;
+interface PlaceResult {
+  place_id: number | string;
   lat: string;
   lon: string;
   display_name: string;
 }
 
-interface LocationPickerProps {
-  address: string;
-  onSelectAddress: (address: string, lat: number, lng: number) => void;
-  title: string;
-  searchPlaceholder: string;
-  searchLabel: string;
-  searchingLabel: string;
-  findingLabel: string;
-  errorLabel: string;
-  hintLabel: string;
-}
+const normalize = (item: unknown): PlaceResult => {
+  const record = item as Record<string, unknown>;
+  return {
+    place_id: (record.place_id as number | string) ?? (record.osm_id as number | string) ?? 0,
+    lat: String(record.lat),
+    lon: String(record.lon),
+    display_name: String(record.display_name ?? ''),
+  };
+};
+
+const fetchProviders = async (url: string, signal?: AbortSignal): Promise<unknown[]> => {
+  const res = await fetch(url, { signal });
+  if (!res.ok) throw new Error('bad status');
+  const data = await res.json();
+  if (Array.isArray(data)) return data;
+  if (data?.error) throw new Error('provider error');
+  if (data?.display_name) return [data];
+  return [];
+};
+
+const searchPlaces = async (q: string): Promise<PlaceResult[]> => {
+  const url = USE_LOCATIONIQ
+    ? `${LOCATIONIQ_URL}/search?key=${LOCATIONIQ_TOKEN}&q=${encodeURIComponent(q)}&format=json&addressdetails=0&limit=6`
+    : `${NOMINATIM_URL}/search?format=jsonv2&q=${encodeURIComponent(q)}&limit=5&addressdetails=1&email=${NOMINATIM_EMAIL}`;
+  const data = await fetchProviders(url);
+  return data.map(normalize);
+};
+
+const suggestPlaces = async (q: string): Promise<PlaceResult[]> => {
+  if (!USE_LOCATIONIQ) return [];
+  const url = `${LOCATIONIQ_URL}/autocomplete?key=${LOCATIONIQ_TOKEN}&q=${encodeURIComponent(q)}&limit=6&tag=place:city,place:town,place:village,address&dedupe=1`;
+  const data = await fetchProviders(url);
+  return data.map(normalize);
+};
+
+const reversePlace = async (lat: number, lng: number): Promise<PlaceResult> => {
+  const url = USE_LOCATIONIQ
+    ? `${LOCATIONIQ_URL}/reverse?key=${LOCATIONIQ_TOKEN}&lat=${lat}&lon=${lng}&format=json`
+    : `${NOMINATIM_URL}/reverse?format=jsonv2&lat=${lat}&lon=${lng}&zoom=18&email=${NOMINATIM_EMAIL}`;
+  const data = await fetchProviders(url);
+  if (data.length === 0) throw new Error('not found');
+  return normalize(data[0]);
+};
 
 const createPinIcon = () =>
   L.divIcon({
@@ -40,6 +75,18 @@ const createPinIcon = () =>
     iconSize: [32, 32],
     iconAnchor: [16, 32],
   });
+
+interface LocationPickerProps {
+  address: string;
+  onSelectAddress: (address: string, lat: number, lng: number) => void;
+  title: string;
+  searchPlaceholder: string;
+  searchLabel: string;
+  searchingLabel: string;
+  findingLabel: string;
+  errorLabel: string;
+  hintLabel: string;
+}
 
 const LocationPicker: React.FC<LocationPickerProps> = ({
   address,
@@ -56,8 +103,10 @@ const LocationPicker: React.FC<LocationPickerProps> = ({
   const mapRef = useRef<L.Map | null>(null);
   const markerRef = useRef<L.Marker | null>(null);
   const controllerRef = useRef<AbortController | null>(null);
+  const debounceRef = useRef<number | null>(null);
   const [query, setQuery] = useState('');
-  const [results, setResults] = useState<NominatimResult[]>([]);
+  const [results, setResults] = useState<PlaceResult[]>([]);
+  const [suggestions, setSuggestions] = useState<PlaceResult[]>([]);
   const [isSearching, setIsSearching] = useState(false);
   const [isFinding, setIsFinding] = useState(false);
   const [error, setError] = useState('');
@@ -98,6 +147,28 @@ const LocationPicker: React.FC<LocationPickerProps> = ({
     }
   }, [address]);
 
+  // Search-as-you-type suggestions (LocationIQ). Nominatim fallback has no
+  // autocomplete endpoint, so suggestions stay empty there.
+  useEffect(() => {
+    if (debounceRef.current) window.clearTimeout(debounceRef.current);
+    const q = query.trim();
+    if (!USE_LOCATIONIQ || q.length < 3) {
+      setSuggestions([]);
+      return;
+    }
+    debounceRef.current = window.setTimeout(async () => {
+      try {
+        const list = await suggestPlaces(q);
+        if (query.trim() === q) setSuggestions(list);
+      } catch {
+        // transient network/provider errors are ignored during typing
+      }
+    }, 400);
+    return () => {
+      if (debounceRef.current) window.clearTimeout(debounceRef.current);
+    };
+  }, [query]);
+
   const placeMarker = (lat: number, lng: number) => {
     if (!mapRef.current) return;
     if (!markerRef.current) {
@@ -114,17 +185,8 @@ const LocationPicker: React.FC<LocationPickerProps> = ({
     setIsFinding(true);
     setError('');
     try {
-      const res = await fetch(
-        `${NOMINATIM_URL}/reverse?format=jsonv2&lat=${lat}&lon=${lng}&zoom=18&email=${NOMINATIM_EMAIL}`,
-        { signal: controller.signal },
-      );
-      if (!res.ok) throw new Error('bad status');
-      const data = await res.json();
-      if (data?.display_name) {
-        onSelectAddress(data.display_name, lat, lng);
-      } else {
-        onSelectAddress('', lat, lng);
-      }
+      const place = await reversePlace(lat, lng);
+      onSelectAddress(place.display_name, lat, lng);
     } catch (err) {
       if ((err as Error).name !== 'AbortError') setError(errorLabel);
     } finally {
@@ -136,16 +198,14 @@ const LocationPicker: React.FC<LocationPickerProps> = ({
     const q = query.trim();
     if (!q) return;
     controllerRef.current?.abort();
+    const controller = new AbortController();
+    controllerRef.current = controller;
     setIsSearching(true);
     setError('');
     setResults([]);
+    setSuggestions([]);
     try {
-      const res = await fetch(
-        `${NOMINATIM_URL}/search?format=jsonv2&q=${encodeURIComponent(q)}&limit=5&addressdetails=1&email=${NOMINATIM_EMAIL}`,
-      );
-      if (!res.ok) throw new Error('bad status');
-      const data = await res.json();
-      const list = Array.isArray(data) ? (data as NominatimResult[]) : [];
+      const list = await searchPlaces(q);
       setResults(list);
       if (list.length === 0) setError(errorLabel);
     } catch {
@@ -155,12 +215,13 @@ const LocationPicker: React.FC<LocationPickerProps> = ({
     }
   };
 
-  const selectResult = (item: NominatimResult) => {
+  const selectResult = (item: PlaceResult) => {
     const lat = Number(item.lat);
     const lng = Number(item.lon);
     mapRef.current?.setView([lat, lng], 16);
     setQuery(item.display_name);
     setResults([]);
+    setSuggestions([]);
     placeMarker(lat, lng);
     onSelectAddress(item.display_name, lat, lng);
   };
@@ -185,6 +246,7 @@ const LocationPicker: React.FC<LocationPickerProps> = ({
           placeholder={searchPlaceholder}
           className="flex-1 bg-background"
           aria-label={searchPlaceholder}
+          autoComplete="off"
         />
         <Button
           type="button"
@@ -201,10 +263,26 @@ const LocationPicker: React.FC<LocationPickerProps> = ({
         <p className="mt-2 text-xs text-muted-foreground dark:text-white/80">{searchingLabel}</p>
       )}
 
+      {suggestions.length > 0 && (
+        <ul className="mt-2 rounded-lg border border-border bg-card overflow-hidden divide-y divide-border">
+          {suggestions.map((item) => (
+            <li key={`s-${item.place_id}`}>
+              <button
+                type="button"
+                onClick={() => selectResult(item)}
+                className="w-full px-3 py-2 text-left text-xs text-foreground hover:bg-muted transition-colors"
+              >
+                {item.display_name}
+              </button>
+            </li>
+          ))}
+        </ul>
+      )}
+
       {results.length > 0 && (
         <ul className="mt-2 rounded-lg border border-border bg-card overflow-hidden divide-y divide-border">
           {results.map((item) => (
-            <li key={item.place_id}>
+            <li key={`r-${item.place_id}`}>
               <button
                 type="button"
                 onClick={() => selectResult(item)}
@@ -232,6 +310,21 @@ const LocationPicker: React.FC<LocationPickerProps> = ({
       </div>
 
       <p className="mt-2 text-xs text-muted-foreground dark:text-white/80">{hintLabel}</p>
+      <p className="mt-1 text-[10px] leading-4 text-muted-foreground dark:text-white/60">
+        © OpenStreetMap contributors · Geocoding:{' '}
+        {USE_LOCATIONIQ ? (
+          <a
+            href="https://locationiq.com"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="hover:underline"
+          >
+            LocationIQ
+          </a>
+        ) : (
+          'Nominatim'
+        )}
+      </p>
     </div>
   );
 };
