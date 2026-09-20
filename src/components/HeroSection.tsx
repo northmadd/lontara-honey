@@ -51,9 +51,9 @@ const HeroSection: React.FC<HeroSectionProps> = ({ onNavigate, heroImage }) => {
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.8 }}
           >
-            <span className="inline-flex items-center gap-2 px-4 py-2 rounded-full border border-primary/15 bg-primary/8 text-honey-amber font-serif italic text-base md:text-lg mb-2">
+            <span className="inline-flex items-center gap-2 px-4 py-2 rounded-full border border-primary/15 bg-primary/8 font-serif italic text-base md:text-lg mb-2">
               <span className="w-2 h-2 rounded-full bg-primary animate-pulse" />
-              <span>{t('hero.subtitle')}</span>
+              <span className="honey-text-gradient">{t('hero.subtitle')}</span>
             </span>
           </motion.div>
 
@@ -90,15 +90,13 @@ const HeroSection: React.FC<HeroSectionProps> = ({ onNavigate, heroImage }) => {
             transition={{ duration: 0.8, delay: 0.6 }}
           >
             <Button
-              size="lg"
-              className="group honey-gradient text-white border-0 hover:opacity-90 transition-all duration-300 honey-glow"
+              className="group honey-gradient text-white border-0 hover:opacity-90 transition-all duration-300 honey-glow px-8 py-6 text-lg font-semibold"
               onClick={() => onNavigate('products')}
             >
               {t('hero.cta')}
               <ArrowRight className="ml-2 w-5 h-5 transition-transform group-hover:translate-x-1" />
             </Button>
             <Button
-              size="lg"
               variant="outline"
               className="px-8 py-6 text-lg font-semibold border-2 border-primary/25 bg-background/80 text-foreground hover:bg-primary/10 hover:text-foreground"
               onClick={() => onNavigate('story')}
@@ -121,8 +119,8 @@ const HeroSection: React.FC<HeroSectionProps> = ({ onNavigate, heroImage }) => {
               { value: '5000+', label: t('hero.stats.customers') },
             ].map((stat, i) => (
               <div key={i} className="text-center">
-                <div className="text-2xl md:text-3xl font-serif font-bold text-foreground">{stat.value}</div>
-                <div className="text-sm text-muted-foreground dark:text-white/80">{stat.label}</div>
+                <div className={`text-2xl md:text-3xl font-serif font-bold ${i === 0 ? 'honey-text-gradient' : 'text-foreground'}`}>{stat.value}</div>
+                <div className={`text-sm ${i === 0 ? 'honey-text-gradient font-medium' : 'text-muted-foreground dark:text-white/80'}`}>{stat.label}</div>
               </div>
             ))}
           </motion.div>

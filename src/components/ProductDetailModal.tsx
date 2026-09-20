@@ -1,7 +1,7 @@
 import React, { useEffect, useMemo } from 'react';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { motion, AnimatePresence, type Variants } from 'framer-motion';
-import { X, Sparkles, Leaf, Droplets, Archive, ShoppingBag, Beaker, Weight, Info } from 'lucide-react';
+import { X, Sparkles, Leaf, Droplets, Archive, Package, ShieldCheck, ShoppingBag, Beaker, Weight, Info } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Product } from './ProductsSection';
 
@@ -102,6 +102,48 @@ const ProductDetailModal: React.FC<ProductDetailModalProps> = ({ product, onClos
         icon: Archive,
         title: t('product.details.storage'),
         body: <p className="text-sm leading-relaxed text-muted-foreground dark:text-white/80">{d.storage[lang]}</p>,
+      },
+      {
+        icon: Package,
+        title: t('product.details.packaging'),
+        body: (
+          <div className="space-y-3">
+            <div className="rounded-xl border border-border bg-muted/40 p-3.5">
+              <p className="text-xs font-semibold text-foreground mb-1">✦ {t('product.details.packaging.glass.title')}</p>
+              <p className="text-sm leading-relaxed text-muted-foreground dark:text-white/80">
+                {t('product.details.packaging.glass.text')}
+              </p>
+            </div>
+            <div className="rounded-xl border border-border bg-muted/40 p-3.5">
+              <p className="text-xs font-semibold text-foreground mb-1">♻ {t('product.details.packaging.plastic.title')}</p>
+              <p className="text-sm leading-relaxed text-muted-foreground dark:text-white/80">
+                {t('product.details.packaging.plastic.text')}
+              </p>
+            </div>
+          </div>
+        ),
+      },
+      {
+        icon: ShieldCheck,
+        title: t('product.details.certifications'),
+        body: (
+          <div>
+            <div className="flex flex-wrap gap-2 mb-3">
+              {['Halal', 'NKV', 'HACCP', t('product.details.certifications.labtest')].map((cert) => (
+                <span
+                  key={cert}
+                  className="inline-flex items-center gap-1.5 rounded-full border border-honey-gold/30 bg-honey-gold/10 px-3 py-1 text-xs font-semibold text-honey-gold"
+                >
+                  <ShieldCheck className="h-3.5 w-3.5" />
+                  {cert}
+                </span>
+              ))}
+            </div>
+            <p className="text-sm leading-relaxed text-muted-foreground dark:text-white/80">
+              {t('product.details.certifications.text')}
+            </p>
+          </div>
+        ),
       },
     ];
   }, [product, lang, t]);
@@ -230,7 +272,7 @@ const ProductDetailModal: React.FC<ProductDetailModalProps> = ({ product, onClos
             {/* Order button */}
             <motion.div
               className="mt-8 flex flex-col gap-3 sm:flex-row"
-              variants={fadeUp(1.15)}
+              variants={fadeUp(1.42)}
               initial="hidden"
               animate="visible"
             >
@@ -252,7 +294,7 @@ const ProductDetailModal: React.FC<ProductDetailModalProps> = ({ product, onClos
             {/* Disclaimer */}
             <motion.p
               className="mt-4 flex items-start gap-2 text-xs text-muted-foreground/80 dark:text-white/60"
-              variants={fadeUp(1.3)}
+              variants={fadeUp(1.58)}
               initial="hidden"
               animate="visible"
             >

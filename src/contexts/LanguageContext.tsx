@@ -62,6 +62,14 @@ const translations: Record<Language, Record<string, string>> = {
     'product.details.usage': 'How to Use',
     'product.details.storage': 'Storage',
     'product.details.close': 'Close',
+    'product.details.packaging': 'Packaging',
+    'product.details.packaging.glass.title': 'Glass Bottle',
+    'product.details.packaging.glass.text': 'Food-grade glass keeps the honey intact without altering its taste or aroma, is easy to clean and reuse, and looks premium on your shelf.',
+    'product.details.packaging.plastic.title': 'Plastic Bottle',
+    'product.details.packaging.plastic.text': 'Made of food-grade, BPA-free plastic — lightweight, leak-proof, practical for travel and daily use, while keeping the honey fresh.',
+    'product.details.certifications': 'Certifications',
+    'product.details.certifications.labtest': 'Lab Test',
+    'product.details.certifications.text': 'Halal, NKV, HACCP, and laboratory-test documents are available on request.',
     'product.details.disclaimer': 'This information is for reference only and is not a substitute for medical advice. Consult your doctor if you have specific health conditions.',
 
     // About
@@ -414,6 +422,14 @@ const translations: Record<Language, Record<string, string>> = {
     'product.details.usage': 'Cara Penggunaan',
     'product.details.storage': 'Penyimpanan',
     'product.details.close': 'Tutup',
+    'product.details.packaging': 'Kemasan',
+    'product.details.packaging.glass.title': 'Botol Kaca',
+    'product.details.packaging.glass.text': 'Kaca food-grade menjaga kemurnian madu tanpa mengubah rasa dan aromanya, mudah dibersihkan dan bisa dipakai ulang, serta tampil premium di rak Anda.',
+    'product.details.packaging.plastic.title': 'Botol Plastik',
+    'product.details.packaging.plastic.text': 'Terbuat dari plastik food-grade bebas BPA — ringan, anti tumpah, praktis untuk dibawa bepergian dan dipakai sehari-hari, sambil tetap menjaga kesegaran madu.',
+    'product.details.certifications': 'Sertifikasi',
+    'product.details.certifications.labtest': 'Uji Lab',
+    'product.details.certifications.text': 'Dokumen Halal, NKV, HACCP, dan hasil uji lab tersedia berdasarkan permintaan.',
     'product.details.disclaimer': 'Informasi ini hanya sebagai referensi dan bukan pengganti saran medis. Konsultasikan dengan dokter jika Anda memiliki kondisi kesehatan tertentu.',
 
     // About
