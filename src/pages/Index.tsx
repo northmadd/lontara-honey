@@ -4,7 +4,7 @@ import { useTheme } from 'next-themes';
 import IntroScreen from '@/components/IntroScreen';
 import Navbar from '@/components/Navbar';
 import HeroSection from '@/components/HeroSection';
-import type { Product } from '@/components/ProductsSection';
+import type { Product, ProductDetail } from '@/components/ProductsSection';
 import backsound from '@/assets/wle.mp3';
 
 const ProductsSection = lazy(() => import('@/components/ProductsSection'));
@@ -15,6 +15,7 @@ const ContactSection = lazy(() => import('@/components/ContactSection'));
 const Footer = lazy(() => import('@/components/Footer'));
 const WhatsAppButton = lazy(() => import('@/components/WhatsAppButton'));
 const OrderModal = lazy(() => import('@/components/OrderModal'));
+const ProductDetailModal = lazy(() => import('@/components/ProductDetailModal'));
 const InternationalSection = lazy(() => import('@/components/InternationalSection'));
 
 // Import images
@@ -33,6 +34,123 @@ import forest670g from '@/assets/forest honey 670g 350k.webp';
 import stingless350g from '@/assets/stingless be honey 350g 180k.webp';
 import stingless670g from '@/assets/stingless be honey 670g 400k.webp';
 
+const acaciaDetails: ProductDetail = {
+  description: {
+    id: 'Madu berwarna emas muda dengan aroma bunga yang lembut dan rasa manis ringan, dipanen dari bunga akasia. Teksturnya halus, cepat larut, dan kaya gula alami sederhana untuk sumber energi instan.',
+    en: 'Light golden honey with a delicate floral aroma and mild sweet taste, harvested from acacia blossoms. Naturally smooth, quick to dissolve, and rich in simple natural sugars for an instant energy boost.',
+  },
+  benefits: {
+    id: [
+      'Mendukung daya tahan tubuh secara alami',
+      'Sumber energi instan setiap hari',
+      'Mengandung antioksidan dari nektar bunga akasia',
+      'Menenangkan dan menyegarkan tenggorokan',
+    ],
+    en: [
+      'Supports the body\'s natural defenses',
+      'Provides a natural daily energy boost',
+      'Contains antioxidants from acacia nectar',
+      'Soothing and refreshing for the throat',
+    ],
+  },
+  usage: {
+    id: [
+      'Minum 1–2 sendok makan setiap hari',
+      'Paling baik dikonsumsi pagi hari dengan air hangat',
+      'Campur dengan perasan lemon sebagai minuman segar',
+      'Hindari mencampur dengan air mendidih',
+    ],
+    en: [
+      'Take 1–2 tablespoons daily',
+      'Best enjoyed in the morning with warm water',
+      'Mix with fresh lemon juice for a refreshing drink',
+      'Avoid mixing with boiling water',
+    ],
+  },
+  storage: {
+    id: 'Simpan di tempat sejuk dan kering, jauh dari sinar matahari langsung. Jika madu mengkristal secara alami, hangatkan botol dengan air hangat untuk mengembalikannya ke bentuk cair.',
+    en: 'Store in a cool, dry place away from direct sunlight. If the honey naturally crystallizes, warm the bottle in warm water to return it to liquid.',
+  },
+};
+
+const forestDetails: ProductDetail = {
+  description: {
+    id: 'Madu berwarna amber gelap yang dipanen dari hutan liar Sulawesi. Rasa kuat dan kaya dengan aroma khas hutan, serta sifat antibakteri alami yang kuat, sangat baik untuk kesehatan harian.',
+    en: 'Dark amber honey harvested from Sulawesi\'s wild forests. Bold, rich flavor with distinctive forest notes and strong natural antibacterial properties, prized for daily wellness.',
+  },
+  benefits: {
+    id: [
+      'Antibakteri dan antimikroba yang kuat',
+      'Meningkatkan sistem kekebalan tubuh',
+      'Meredakan batuk dan sakit tenggorokan',
+      'Membantu proses pemulihan luka',
+    ],
+    en: [
+      'Strong antibacterial and antimicrobial properties',
+      'Boosts the immune system',
+      'Soothes coughs and sore throats',
+      'Supports wound healing',
+    ],
+  },
+  usage: {
+    id: [
+      'Minum 1–2 sendok makan setiap hari',
+      'Konsumsi pagi hari dengan air hangat',
+      'Campur dengan jahe atau lemon saat masuk angin',
+      'Tetap jauhkan madu dari suhu mendidih',
+    ],
+    en: [
+      'Take 1–2 tablespoons daily',
+      'Enjoy in the morning with warm water',
+      'Mix with ginger or lemon when catching a cold',
+      'Keep honey away from boiling temperatures',
+    ],
+  },
+  storage: {
+    id: 'Simpan di tempat sejuk dan kering, jauh dari sinar matahari langsung. Jika madu mengkristal secara alami, hangatkan botol dengan air hangat untuk mengembalikannya ke bentuk cair.',
+    en: 'Store in a cool, dry place away from direct sunlight. If the honey naturally crystallizes, warm the bottle in warm water to return it to liquid.',
+  },
+};
+
+const stinglessDetails: ProductDetail = {
+  description: {
+    id: 'Madu istimewa dari lebah trigona tanpa sengat — penghasil madu terkecil di dunia. Rasa asam-manis yang khas, lebih kaya antioksidan dibanding madu biasa, dan aman dikonsumsi setiap hari.',
+    en: 'Special honey produced by trigona stingless bees — the smallest honey producers in the world. A distinctive sweet-and-sour taste, richer in antioxidants than regular honey, and safe for daily use.',
+  },
+  benefits: {
+    id: [
+      'Kandungan antioksidan yang sangat tinggi',
+      'Menjaga imunitas dan stamina tubuh',
+      'Antibakteri dan anti-inflamasi alami',
+      'Indeks glikemik lebih rendah dari madu biasa',
+    ],
+    en: [
+      'Very high antioxidant content',
+      'Supports immunity and stamina',
+      'Natural antibacterial and anti-inflammatory properties',
+      'Lower glycemic index than common honey',
+    ],
+  },
+  usage: {
+    id: [
+      'Cukup 1 sendok teh setiap hari',
+      'Konsumsi langsung untuk manfaat maksimal',
+      'Bisa dicampur air hangat, bukan air panas',
+      'Hindari air mendidih agar enzimnya tetap terjaga',
+    ],
+    en: [
+      '1 teaspoon daily is enough',
+      'Take directly for maximum benefit',
+      'Can be mixed with warm water, not hot water',
+      'Avoid boiling water to preserve its enzymes',
+    ],
+  },
+  storage: {
+    id: 'Simpan di tempat sejuk dan kering, tertutup rapat, jauh dari sinar matahari langsung. Madu lebah tanpa sengat jarang mengkristal.',
+    en: 'Store in a cool, dry place, tightly closed, away from direct sunlight. Stingless bee honey rarely crystallizes.',
+  },
+};
+
 const products: Product[] = [
   {
     id: 'acacia-140g',
@@ -44,6 +162,7 @@ const products: Product[] = [
     weight: '140g',
     image: acacia140g,
     type: 'plastic' as const,
+    details: acaciaDetails,
   },
   {
     id: 'acacia-350g',
@@ -55,6 +174,7 @@ const products: Product[] = [
     weight: '350g',
     image: acacia350g,
     type: 'plastic' as const,
+    details: acaciaDetails,
   },
   {
     id: 'forest-350g',
@@ -66,6 +186,7 @@ const products: Product[] = [
     weight: '350g',
     image: forest350g,
     type: 'plastic' as const,
+    details: forestDetails,
   },
   {
     id: 'stingless-350g',
@@ -77,6 +198,7 @@ const products: Product[] = [
     weight: '350g',
     image: stingless350g,
     type: 'plastic' as const,
+    details: stinglessDetails,
   },
   {
     id: 'acacia-670g',
@@ -88,6 +210,7 @@ const products: Product[] = [
     weight: '670g',
     image: acacia670g,
     type: 'glass' as const,
+    details: acaciaDetails,
   },
   {
     id: 'forest-670g',
@@ -99,6 +222,7 @@ const products: Product[] = [
     weight: '670g',
     image: forest670g,
     type: 'glass' as const,
+    details: forestDetails,
   },
   {
     id: 'stingless-670g',
@@ -110,6 +234,7 @@ const products: Product[] = [
     weight: '670g',
     image: stingless670g,
     type: 'glass' as const,
+    details: stinglessDetails,
   },
 ].sort((a, b) => a.price - b.price);
 
@@ -129,6 +254,7 @@ const IndexContent: React.FC = () => {
   });
   const [activeSection, setActiveSection] = useState('home');
   const [selectedProduct, setSelectedProduct] = useState<Product | null>(null);
+  const [detailProduct, setDetailProduct] = useState<Product | null>(null);
   const [isBacksoundMuted, setIsBacksoundMuted] = useState(false);
 
   const { language } = useLanguage();
@@ -282,6 +408,7 @@ const IndexContent: React.FC = () => {
           <ProductsSection
             products={products}
             onOrderProduct={setSelectedProduct}
+            onViewProduct={setDetailProduct}
           />
         </Suspense>
       </div>
@@ -322,6 +449,19 @@ const IndexContent: React.FC = () => {
           }}
         />
       </Suspense>
+
+      {detailProduct && (
+        <Suspense fallback={null}>
+          <ProductDetailModal
+            product={detailProduct}
+            onClose={() => setDetailProduct(null)}
+            onOrder={(product) => {
+              setDetailProduct(null);
+              setSelectedProduct(product);
+            }}
+          />
+        </Suspense>
+      )}
 
       {selectedProduct && (
         <Suspense fallback={null}>

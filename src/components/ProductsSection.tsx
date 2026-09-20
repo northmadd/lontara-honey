@@ -1,9 +1,16 @@
 import React from 'react';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { motion } from 'framer-motion';
-import { ShoppingBag } from 'lucide-react';
+import { ShoppingBag, ZoomIn } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import honeyVisual from '@/assets/honey-visual.webp';
+
+export interface ProductDetail {
+  description: { id: string; en: string };
+  benefits: { id: string[]; en: string[] };
+  usage: { id: string[]; en: string[] };
+  storage: { id: string; en: string };
+}
 
 export interface Product {
   id: string;
@@ -15,14 +22,16 @@ export interface Product {
   weight: string;
   image: string;
   type: 'glass' | 'plastic';
+  details: ProductDetail;
 }
 
 interface ProductsSectionProps {
   products: Product[];
   onOrderProduct: (product: Product) => void;
+  onViewProduct: (product: Product) => void;
 }
 
-const ProductsSection: React.FC<ProductsSectionProps> = ({ products, onOrderProduct }) => {
+const ProductsSection: React.FC<ProductsSectionProps> = ({ products, onOrderProduct, onViewProduct }) => {
   const { t, language } = useLanguage();
   const productGroups = [
     {
@@ -114,17 +123,37 @@ const ProductsSection: React.FC<ProductsSectionProps> = ({ products, onOrderProd
                     whileHover={{ y: -8 }}
                   >
                     {/* Product Image */}
-                    <div className="relative h-80 overflow-hidden bg-muted/70 rounded-xl">
+                    <div
+                      role="button"
+                      tabIndex={0}
+                      onClick={() => onViewProduct(product)}
+                      onKeyDown={(e) => {
+                        if (e.key === 'Enter' || e.key === ' ') {
+                          e.preventDefault();
+                          onViewProduct(product);
+                        }
+                      }}
+                      className="relative h-80 overflow-hidden bg-muted/70 rounded-xl cursor-pointer group/image"
+                      aria-label={`${language === 'en' ? product.name.en : product.name.id} - ${t('products.viewDetails')}`}
+                    >
                       <img
                         src={product.image}
                         alt={language === 'en' ? product.name.en : product.name.id}
                         loading="lazy"
                         decoding="async"
-                        className="w-full h-full object-contain p-6 transition-transform duration-500 group-hover:scale-110 rounded-lg"
+                        className="w-full h-full object-contain p-6 transition-transform duration-500 group-hover/image:scale-110 rounded-lg"
                       />
                       <div className="absolute top-4 right-4">
                         <span className="px-3 py-1 rounded-full text-xs font-medium bg-amber-400 text-amber-900">
                           {t(`products.packaging.${product.type}`)}
+                        </span>
+                      </div>
+
+                      {/* Tap to view details hint */}
+                      <div className="absolute inset-x-0 bottom-4 flex justify-center">
+                        <span className="inline-flex items-center gap-1.5 rounded-full bg-foreground/70 backdrop-blur-sm px-3 py-1.5 text-xs font-medium text-background opacity-80 transition-all duration-300 group-hover/image:bg-honey-gold group-hover/image:text-white group-hover/image:opacity-100">
+                          <ZoomIn className="w-3.5 h-3.5" />
+                          {t('products.viewDetails')}
                         </span>
                       </div>
                     </div>

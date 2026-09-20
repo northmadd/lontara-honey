@@ -56,6 +56,13 @@ const translations: Record<Language, Record<string, string>> = {
     'products.selection': 'Product Selection',
     'products.packaging.plastic': 'Plastic Bottle',
     'products.packaging.glass': 'Glass Bottle',
+    'products.viewDetails': 'View Details',
+    'product.details.description': 'Description',
+    'product.details.benefits': 'Benefits',
+    'product.details.usage': 'How to Use',
+    'product.details.storage': 'Storage',
+    'product.details.close': 'Close',
+    'product.details.disclaimer': 'This information is for reference only and is not a substitute for medical advice. Consult your doctor if you have specific health conditions.',
 
     // About
     'about.title': 'About Lontara Honey',
@@ -401,6 +408,13 @@ const translations: Record<Language, Record<string, string>> = {
     'products.selection': 'Pilihan Produk',
     'products.packaging.plastic': 'Botol Plastik',
     'products.packaging.glass': 'Botol Kaca',
+    'products.viewDetails': 'Lihat Detail',
+    'product.details.description': 'Deskripsi',
+    'product.details.benefits': 'Manfaat',
+    'product.details.usage': 'Cara Penggunaan',
+    'product.details.storage': 'Penyimpanan',
+    'product.details.close': 'Tutup',
+    'product.details.disclaimer': 'Informasi ini hanya sebagai referensi dan bukan pengganti saran medis. Konsultasikan dengan dokter jika Anda memiliki kondisi kesehatan tertentu.',
 
     // About
     'about.title': 'Tentang Lontara Honey',
