@@ -211,6 +211,8 @@ const translations: Record<Language, Record<string, string>> = {
     'international.card4.title': 'Return support',
     'international.card4.text': 'Report a damaged shipment within 7 days of delivery with an unboxing video. Resolution is handled with the exporter.',
     'international.footer': 'Contact us for a country-specific shipping quotation.',
+    'international.details.view': 'View Details',
+    'international.details.item': 'items',
 
     // Testimonials
     'testimonials.eyebrow': 'Testimonials',
@@ -571,6 +573,8 @@ const translations: Record<Language, Record<string, string>> = {
     'international.card4.title': 'Dukungan retur',
     'international.card4.text': 'Laporkan kiriman rusak dalam 7 hari setelah diterima dengan video unboxing. Penyelesaian ditangani bersama eksportir.',
     'international.footer': 'Hubungi kami untuk penawaran pengiriman sesuai negara tujuan.',
+    'international.details.view': 'Lihat Detail',
+    'international.details.item': 'item',
 
     // Testimonials
     'testimonials.eyebrow': 'Testimoni',

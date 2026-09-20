@@ -90,7 +90,7 @@ const HeroSection: React.FC<HeroSectionProps> = ({ onNavigate, heroImage }) => {
             transition={{ duration: 0.8, delay: 0.6 }}
           >
             <Button
-              className="group honey-gradient text-white border-0 hover:opacity-90 transition-all duration-300 honey-glow px-8 py-6 text-lg font-semibold"
+              className="group honey-gradient text-white hover:opacity-90 transition-all duration-300 honey-glow px-8 py-6 text-lg font-semibold border-2 border-white/40"
               onClick={() => onNavigate('products')}
             >
               {t('hero.cta')}
@@ -120,7 +120,7 @@ const HeroSection: React.FC<HeroSectionProps> = ({ onNavigate, heroImage }) => {
             ].map((stat, i) => (
               <div key={i} className="text-center">
                 <div className={`text-2xl md:text-3xl font-serif font-bold ${i === 0 ? 'honey-text-gradient' : 'text-foreground'}`}>{stat.value}</div>
-                <div className={`text-sm ${i === 0 ? 'honey-text-gradient font-medium' : 'text-muted-foreground dark:text-white/80'}`}>{stat.label}</div>
+                <div className={`text-sm font-bold ${i === 0 ? 'honey-text-gradient' : 'text-muted-foreground dark:text-white/80'}`}>{stat.label}</div>
               </div>
             ))}
           </motion.div>

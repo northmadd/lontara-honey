@@ -25,8 +25,12 @@ const ProductDetailModal: React.FC<ProductDetailModalProps> = ({ product, onClos
   const name = product.name[lang];
 
   useEffect(() => {
-    const previousOverflow = document.body.style.overflow;
-    document.body.style.overflow = 'hidden';
+    const html = document.documentElement;
+    const body = document.body;
+    const previousHtmlOverflow = html.style.overflow;
+    const previousBodyOverflow = body.style.overflow;
+    html.style.overflow = 'hidden';
+    body.style.overflow = 'hidden';
 
     const previousFocus = document.activeElement as HTMLElement | null;
     previousFocus?.blur();
@@ -37,7 +41,8 @@ const ProductDetailModal: React.FC<ProductDetailModalProps> = ({ product, onClos
     window.addEventListener('keydown', handleKeyDown);
 
     return () => {
-      document.body.style.overflow = previousOverflow;
+      html.style.overflow = previousHtmlOverflow;
+      body.style.overflow = previousBodyOverflow;
       window.removeEventListener('keydown', handleKeyDown);
     };
   }, [onClose]);

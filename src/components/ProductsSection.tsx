@@ -141,7 +141,7 @@ const ProductsSection: React.FC<ProductsSectionProps> = ({ products, onOrderProd
                         alt={language === 'en' ? product.name.en : product.name.id}
                         loading="lazy"
                         decoding="async"
-                        className="w-full h-full object-contain p-6 transition-transform duration-500 group-hover/image:scale-110 rounded-lg"
+                        className="w-full h-full object-contain p-6 rounded-lg group-hover/image:animate-honey-slow-zoom"
                       />
                       <div className="absolute top-4 right-4">
                         <span className="px-3 py-1 rounded-full text-xs font-medium bg-amber-400 text-amber-900">
