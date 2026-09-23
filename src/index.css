@@ -3,9 +3,9 @@
 @tailwind utilities;
 
 @media (prefers-reduced-motion: reduce) {
-  *:not(.northmad-line):not(.honey-zoom-wrap):not(.honey-zoom-img),
-  *:not(.northmad-line):not(.honey-zoom-wrap)::before,
-  *:not(.northmad-line):not(.honey-zoom-wrap)::after {
+  *:not(.northmad-line),
+  *:not(.northmad-line)::before,
+  *:not(.northmad-line)::after {
     animation-duration: 0.01ms !important;
     animation-iteration-count: 1 !important;
     scroll-behavior: auto !important;
@@ -238,14 +238,6 @@
   .animate-slide-right {
     animation: slideRight 0.8s ease-out forwards;
   }
-
-  .honey-zoom-img {
-    transition: transform 1.2s ease-in-out;
-  }
-
-  .honey-zoom-wrap:hover .honey-zoom-img {
-    animation: honeySlowZoom 9s ease-in-out infinite;
-  }
 }
 
 @keyframes honeyDrip {
@@ -286,11 +278,6 @@
 @keyframes slideRight {
   from { opacity: 0; transform: translateX(-50px); }
   to { opacity: 1; transform: translateX(0); }
-}
-
-@keyframes honeySlowZoom {
-  0%, 100% { transform: scale(1); }
-  50% { transform: scale(1.15); }
 }
 
 /* Custom scrollbar */
