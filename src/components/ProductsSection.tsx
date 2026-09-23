@@ -133,7 +133,7 @@ const ProductsSection: React.FC<ProductsSectionProps> = ({ products, onOrderProd
                           onViewProduct(product);
                         }
                       }}
-                      className="relative h-80 overflow-hidden bg-muted/70 rounded-xl cursor-pointer group/image"
+                      className="relative h-80 overflow-hidden bg-muted/70 rounded-xl cursor-pointer group/image honey-zoom-wrap"
                       aria-label={`${language === 'en' ? product.name.en : product.name.id} - ${t('products.viewDetails')}`}
                     >
                       <img
@@ -141,7 +141,7 @@ const ProductsSection: React.FC<ProductsSectionProps> = ({ products, onOrderProd
                         alt={language === 'en' ? product.name.en : product.name.id}
                         loading="lazy"
                         decoding="async"
-                        className="w-full h-full object-contain p-6 rounded-lg group-hover/image:animate-honey-slow-zoom"
+                        className="w-full h-full object-contain p-6 rounded-lg honey-zoom-img"
                       />
                       <div className="absolute top-4 right-4">
                         <span className="px-3 py-1 rounded-full text-xs font-medium bg-amber-400 text-amber-900">

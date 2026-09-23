@@ -239,7 +239,11 @@
     animation: slideRight 0.8s ease-out forwards;
   }
 
-  .animate-honey-slow-zoom {
+  .honey-zoom-img {
+    transition: transform 1.2s ease-in-out;
+  }
+
+  .honey-zoom-wrap:hover .honey-zoom-img {
     animation: honeySlowZoom 9s ease-in-out infinite;
   }
 }
