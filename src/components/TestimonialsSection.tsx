@@ -1,14 +1,17 @@
-import React, { useEffect, useRef } from 'react';
+import React, { useRef, useState } from 'react';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { motion } from 'framer-motion';
-import { Star, BadgeCheck } from 'lucide-react';
+import { Star, BadgeCheck, ChevronUp, ChevronDown } from 'lucide-react';
 import { reviews, type Testimonial } from '@/data/testimonials';
 
 interface TestimonialsSectionProps {
   happyPeopleImage: string;
 }
 
-const AUTO_SPEED = 26;
+const PER_PAGE = 3;
+const REVIEW_COUNT = reviews.length;
+
+const EASE: [number, number, number, number] = [0.22, 1, 0.36, 1];
 
 interface ReviewCardProps {
   review: Testimonial;
@@ -30,7 +33,7 @@ const ReviewCard: React.FC<ReviewCardProps> = ({ review }) => {
   const lang = language === 'en' ? 'en' : 'id';
 
   return (
-    <article className="honey-card p-5 sm:p-6 relative shrink-0">
+    <article className="honey-card p-5 sm:p-6">
       <div className="flex items-center justify-between gap-2 flex-wrap mb-3">
         <ReviewStars rating={review.rating} />
         <span className="inline-flex items-center gap-1 rounded-full bg-honey-gold/15 px-2 py-0.5 text-[11px] font-semibold text-honey-gold">
@@ -54,73 +57,20 @@ const ReviewCard: React.FC<ReviewCardProps> = ({ review }) => {
 
 const TestimonialsSection: React.FC<TestimonialsSectionProps> = ({ happyPeopleImage }) => {
   const { t } = useLanguage();
-  const scrollRef = useRef<HTMLDivElement>(null);
-  const pausedRef = useRef(false);
-  const idleTimerRef = useRef<number | null>(null);
-  const lastFrameRef = useRef(0);
+  const [start, setStart] = useState(0);
+  const dirRef = useRef<'down' | 'up'>('down');
 
-  const pauseAuto = (ms = 2500) => {
-    pausedRef.current = true;
-    if (idleTimerRef.current) window.clearTimeout(idleTimerRef.current);
-    idleTimerRef.current = window.setTimeout(() => {
-      pausedRef.current = false;
-    }, ms);
+  const visible = [0, 1, 2].map((i) => reviews[(start + i) % REVIEW_COUNT]);
+
+  const next = () => {
+    dirRef.current = 'down';
+    setStart((prev) => (prev + PER_PAGE) % REVIEW_COUNT);
   };
 
-  useEffect(() => {
-    const el = scrollRef.current;
-    if (!el) return;
-
-    let raf: number;
-    const tick = (time: number) => {
-      const dt = Math.min((time - lastFrameRef.current) / 1000, 0.1);
-      if (!pausedRef.current) {
-        const half = el.scrollHeight / 2;
-        el.scrollTop += AUTO_SPEED * dt;
-        if (el.scrollTop >= half) el.scrollTop = 0;
-        if (el.scrollTop < 0) el.scrollTop = 0;
-      }
-      lastFrameRef.current = time;
-      raf = requestAnimationFrame(tick);
-    };
-    lastFrameRef.current = performance.now();
-    raf = requestAnimationFrame(tick);
-
-    let startY: number | null = null;
-    const handleTouchStart = (e: TouchEvent) => {
-      startY = e.touches[0].clientY;
-      pausedRef.current = true;
-      if (idleTimerRef.current) window.clearTimeout(idleTimerRef.current);
-    };
-    const handleTouchMove = (e: TouchEvent) => {
-      if (startY === null) return;
-      e.preventDefault();
-      const delta = startY - e.touches[0].clientY;
-      startY = e.touches[0].clientY;
-      el.scrollTop += delta;
-      if (el.scrollTop < 0) el.scrollTop = 0;
-      if (el.scrollTop > el.scrollHeight - el.clientHeight) {
-        el.scrollTop = el.scrollHeight - el.clientHeight;
-      }
-    };
-    const handleTouchEnd = () => {
-      startY = null;
-      idleTimerRef.current = window.setTimeout(() => {
-        pausedRef.current = false;
-      }, 1500);
-    };
-    el.addEventListener('touchstart', handleTouchStart, { passive: true });
-    el.addEventListener('touchmove', handleTouchMove, { passive: false });
-    el.addEventListener('touchend', handleTouchEnd, { passive: true });
-
-    return () => {
-      cancelAnimationFrame(raf);
-      if (idleTimerRef.current) window.clearTimeout(idleTimerRef.current);
-      el.removeEventListener('touchstart', handleTouchStart);
-      el.removeEventListener('touchmove', handleTouchMove);
-      el.removeEventListener('touchend', handleTouchEnd);
-    };
-  }, []);
+  const prev = () => {
+    dirRef.current = 'up';
+    setStart((prev) => (prev - PER_PAGE + REVIEW_COUNT) % REVIEW_COUNT);
+  };
 
   return (
     <section className="py-24 bg-background relative overflow-hidden">
@@ -163,54 +113,51 @@ const TestimonialsSection: React.FC<TestimonialsSectionProps> = ({ happyPeopleIm
               alt={t('testimonials.imageAlt')}
               loading="lazy"
               decoding="async"
-              className="w-full h-[360px] md:h-[440px] lg:h-[540px] object-cover"
+              className="w-full h-[420px] md:h-[460px] lg:h-[560px] object-cover"
             />
             <div className="absolute inset-0 bg-gradient-to-t from-honey-dark/30 to-transparent" />
           </motion.div>
 
-          {/* Infinite vertical marquee — 3 cards visible */}
+          {/* Paged testimonials — 3 per view */}
           <motion.div
-            className="relative"
+            className="relative flex items-center gap-4"
             initial={{ opacity: 0, x: 50 }}
             whileInView={{ opacity: 1, x: 0 }}
             viewport={{ once: true }}
             transition={{ duration: 0.8 }}
           >
-            {/* Edge fade masks */}
-            <div className="pointer-events-none absolute top-0 left-0 right-0 z-10 h-10 bg-gradient-to-b from-background to-transparent" />
-            <div className="pointer-events-none absolute bottom-0 left-0 right-0 z-10 h-10 bg-gradient-to-t from-background to-transparent" />
-
-            {/* Scroll hint */}
-            <div className="absolute -left-2 top-1/2 -translate-y-1/2 z-10 hidden lg:flex flex-col items-center gap-1 text-honey-gold">
-              <div className="h-10 w-1 rounded-full bg-honey-gold/30 overflow-hidden">
-                <div className="h-1/2 w-full rounded-full bg-honey-gold animate-scroll-dot" />
-              </div>
-            </div>
-
-            <div
-              ref={scrollRef}
-              onMouseEnter={() => {
-                pausedRef.current = true;
-              }}
-              onMouseLeave={() => {
-                pausedRef.current = false;
-              }}
-              onWheel={(e) => {
-                const el = scrollRef.current;
-                if (el) {
-                  el.scrollTop += e.deltaY;
-                  if (el.scrollTop < 0) el.scrollTop = 0;
-                  const max = el.scrollHeight - el.clientHeight;
-                  if (el.scrollTop > max) el.scrollTop = max;
-                }
-                pauseAuto();
-              }}
-              className="h-[420px] sm:h-[470px] lg:h-[540px] overflow-y-scroll rounded-2xl [-ms-overflow-style:none] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden scroll-smooth"
-            >
-              <div className="space-y-6">
-                {[...reviews, ...reviews].map((review, index) => (
-                  <ReviewCard key={`${review.name}-${index}`} review={review} />
+            <div className="flex-1">
+              <motion.div
+                key={start}
+                className="space-y-6"
+                initial={{ opacity: 0, y: dirRef.current === 'down' ? 44 : -44 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.5, ease: EASE }}
+              >
+                {visible.map((review) => (
+                  <ReviewCard key={review.name} review={review} />
                 ))}
+              </motion.div>
+
+              {/* Pager */}
+              <div className="mt-6 flex items-center justify-center gap-4">
+                <button
+                  onClick={prev}
+                  aria-label="Previous testimonials"
+                  className="flex h-11 w-11 items-center justify-center rounded-full border-2 border-honey-gold/50 text-honey-gold transition-all duration-300 hover:bg-honey-gold hover:text-white active:scale-90"
+                >
+                  <ChevronUp className="h-5 w-5" />
+                </button>
+                <span className="min-w-[6rem] text-center text-sm font-semibold text-muted-foreground dark:text-white/80">
+                  {start + 1}–{Math.min(start + 3, REVIEW_COUNT)} / {REVIEW_COUNT}
+                </span>
+                <button
+                  onClick={next}
+                  aria-label="Next testimonials"
+                  className="flex h-11 w-11 items-center justify-center rounded-full border-2 border-honey-gold/50 text-honey-gold transition-all duration-300 hover:bg-honey-gold hover:text-white active:scale-90"
+                >
+                  <ChevronDown className="h-5 w-5" />
+                </button>
               </div>
             </div>
           </motion.div>
