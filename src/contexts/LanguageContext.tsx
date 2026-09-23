@@ -219,11 +219,6 @@ const translations: Record<Language, Record<string, string>> = {
     'testimonials.title': 'Happy Customers',
     'testimonials.subtitle': 'Join thousands of customers who have experienced the magic of Lontara Honey',
     'testimonials.imageAlt': 'Happy customers enjoying Lontara Honey',
-    'testimonials.customers': "500+ Happy Customers",
-    'testimonials.ratingFrom': 'From 500+ verified reviews',
-    'testimonials.seeAll': 'See all 500+ reviews',
-    'testimonials.allTitle': 'All Reviews',
-    'testimonials.more': '...and {count} more verified reviews',
 
     // Footer
     'footer.tagline': 'Pure honey from the heart of Sulawesi',
@@ -580,11 +575,6 @@ const translations: Record<Language, Record<string, string>> = {
     'testimonials.title': 'Pelanggan Bahagia',
     'testimonials.subtitle': 'Bergabung dengan ribuan pelanggan yang telah merasakan keajaiban madu Lontara',
     'testimonials.imageAlt': 'Pelanggan bahagia menikmati Lontara Honey',
-    'testimonials.customers': '500+ Pelanggan Puas',
-    'testimonials.ratingFrom': 'Dari 500+ ulasan terverifikasi',
-    'testimonials.seeAll': 'Lihat semua 500+ ulasan',
-    'testimonials.allTitle': 'Semua Ulasan',
-    'testimonials.more': '…dan {count} ulasan terverifikasi lainnya',
 
     // Footer
     'footer.tagline': 'Madu murni dari jantung Sulawesi',

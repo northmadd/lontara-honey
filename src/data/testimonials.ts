@@ -248,14 +248,3 @@ export const reviews: Testimonial[] = [
     },
   },
 ];
-
-export const ratingDistribution = [
-  { stars: 5, pct: 78 },
-  { stars: 4, pct: 15 },
-  { stars: 3, pct: 4 },
-  { stars: 2, pct: 2 },
-  { stars: 1, pct: 1 },
-];
-
-export const RATED_REVIEWS = '500+';
-export const EXTRA_REVIEWS = '480+';
