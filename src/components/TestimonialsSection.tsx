@@ -1,7 +1,7 @@
 import React, { useEffect, useRef } from 'react';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { motion } from 'framer-motion';
-import { Star, Quote, BadgeCheck } from 'lucide-react';
+import { Star, BadgeCheck } from 'lucide-react';
 import { reviews, type Testimonial } from '@/data/testimonials';
 
 interface TestimonialsSectionProps {
@@ -31,8 +31,7 @@ const ReviewCard: React.FC<ReviewCardProps> = ({ review }) => {
 
   return (
     <article className="honey-card p-5 sm:p-6 relative shrink-0">
-      <Quote className="absolute top-4 right-4 w-8 h-8 text-primary/20" />
-      <div className="flex items-center justify-between mb-3">
+      <div className="flex items-center justify-between gap-2 flex-wrap mb-3">
         <ReviewStars rating={review.rating} />
         <span className="inline-flex items-center gap-1 rounded-full bg-honey-gold/15 px-2 py-0.5 text-[11px] font-semibold text-honey-gold">
           <BadgeCheck className="h-3 w-3" />
