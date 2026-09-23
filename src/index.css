@@ -3,9 +3,9 @@
 @tailwind utilities;
 
 @media (prefers-reduced-motion: reduce) {
-  *:not(.northmad-line),
-  *:not(.northmad-line)::before,
-  *:not(.northmad-line)::after {
+  *:not(.northmad-line):not(.honey-zoom-wrap):not(.honey-zoom-img),
+  *:not(.northmad-line):not(.honey-zoom-wrap)::before,
+  *:not(.northmad-line):not(.honey-zoom-wrap)::after {
     animation-duration: 0.01ms !important;
     animation-iteration-count: 1 !important;
     scroll-behavior: auto !important;
