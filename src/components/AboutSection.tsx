@@ -1,20 +1,68 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { motion } from 'framer-motion';
-import { Award, Leaf, MapPin } from 'lucide-react';
+import { Award, Leaf, MapPin, ArrowRight } from 'lucide-react';
 import beeImage from '@/assets/lebah.webp';
+import InternationalDetailModal, { InternationalItem } from '@/components/InternationalDetailModal';
 
 interface AboutSectionProps {
   aboutImage: string;
 }
 
+interface FeatureData {
+  icon: React.ComponentType<{ className?: string }>;
+  titleKey: string;
+  descKey: string;
+  items: InternationalItem[];
+}
+
 const AboutSection: React.FC<AboutSectionProps> = ({ aboutImage }) => {
   const { t } = useLanguage();
+  const [selectedFeature, setSelectedFeature] = useState<number | null>(null);
 
-  const features = [
-    { icon: Award, titleKey: 'about.quality', descKey: 'about.quality.desc' },
-    { icon: Leaf, titleKey: 'about.sustainable', descKey: 'about.sustainable.desc' },
-    { icon: MapPin, titleKey: 'about.authentic', descKey: 'about.authentic.desc' },
+  const features: FeatureData[] = [
+    {
+      icon: Award,
+      titleKey: 'about.quality',
+      descKey: 'about.quality.desc',
+      items: [
+        {
+          name: { id: 'Kualitas Premium', en: 'Premium Quality' },
+          description: {
+            id: 'Madu kami 100% murni tanpa campuran apa pun — dipanen dari hutan, tidak dipanaskan, dan tidak diproses berlebihan agar enzim, vitamin, dan rasa alaminya terjaga utuh sampai ke meja Anda.',
+            en: 'Our honey is 100% pure with no additives — harvested from the forest, never heated, and minimally processed so its natural enzymes, vitamins, and flavor stay intact until it reaches your table.',
+          },
+        },
+      ],
+    },
+    {
+      icon: Leaf,
+      titleKey: 'about.sustainable',
+      descKey: 'about.sustainable.desc',
+      items: [
+        {
+          name: { id: 'Berkelanjutan', en: 'Sustainable' },
+          description: {
+            id: 'Pemanenan dilakukan dengan cara ramah lingkungan: hanya mengambil madu secukupnya, menjaga koloni lebah tetap sehat, dan melindungi hutan Sulawesi tempat mereka bersarang agar tetap lestari.',
+            en: 'Harvesting is done in an eco-friendly way: taking only what is needed, keeping the bee colonies healthy, and protecting the Sulawesi forests they nest in so they stay sustainable for generations.',
+          },
+        },
+      ],
+    },
+    {
+      icon: MapPin,
+      titleKey: 'about.authentic',
+      descKey: 'about.authentic.desc',
+      items: [
+        {
+          name: { id: 'Autentik', en: 'Authentic' },
+          description: {
+            id: 'Madu diambil langsung dari sarang lebah liar di hutan Sulawesi tanpa perantara, sehingga keaslian dan kualitasnya terjamin dari hutan langsung ke tangan Anda.',
+            en: 'Honey is sourced straight from wild beehives in the forests of Sulawesi with no middlemen, guaranteeing authenticity and quality from the forest directly to your hands.',
+          },
+        },
+      ],
+    },
   ];
 
   return (
@@ -82,13 +130,24 @@ const AboutSection: React.FC<AboutSectionProps> = ({ aboutImage }) => {
               {features.map((feature, index) => (
                 <motion.div
                   key={index}
-                  className="honey-card p-5"
+                  className="honey-card p-5 cursor-pointer group"
                   initial={{ opacity: 0, y: 20 }}
                   whileInView={{ opacity: 1, y: 0 }}
                   viewport={{ once: true }}
                   transition={{ duration: 0.5, delay: index * 0.1 }}
+                  whileHover={{ y: -8 }}
+                  onClick={() => setSelectedFeature(index)}
+                  onKeyDown={(e) => {
+                    if (e.key === 'Enter' || e.key === ' ') {
+                      e.preventDefault();
+                      setSelectedFeature(index);
+                    }
+                  }}
+                  role="button"
+                  tabIndex={0}
+                  aria-label={`${t(feature.titleKey)} - ${t('international.details.view')}`}
                 >
-                  <div className="w-12 h-12 rounded-xl honey-gradient flex items-center justify-center mb-4">
+                  <div className="w-12 h-12 rounded-xl honey-gradient flex items-center justify-center mb-4 transition-transform duration-300 group-hover:scale-110">
                     <feature.icon className="w-6 h-6 text-white" />
                   </div>
                   <h3 className="font-semibold text-foreground mb-1">
@@ -97,12 +156,26 @@ const AboutSection: React.FC<AboutSectionProps> = ({ aboutImage }) => {
                   <p className="text-sm text-muted-foreground dark:text-white/80">
                     {t(feature.descKey)}
                   </p>
+                  <div className="mt-4 inline-flex items-center gap-1.5 text-xs font-semibold text-honey-gold opacity-70 transition-opacity duration-300 group-hover:opacity-100">
+                    {t('international.details.view')}
+                    <ArrowRight className="h-3.5 w-3.5 transition-transform duration-300 group-hover:translate-x-1" />
+                  </div>
                 </motion.div>
               ))}
             </div>
           </motion.div>
         </div>
       </div>
+
+      {selectedFeature !== null && (
+        <InternationalDetailModal
+          title={t(features[selectedFeature].titleKey)}
+          icon={features[selectedFeature].icon}
+          items={features[selectedFeature].items}
+          onClose={() => setSelectedFeature(null)}
+          showWhatsApp={false}
+        />
+      )}
     </section>
   );
 };

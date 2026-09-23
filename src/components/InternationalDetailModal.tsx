@@ -14,13 +14,14 @@ interface InternationalDetailModalProps {
   icon: React.ComponentType<{ className?: string }>;
   items: InternationalItem[];
   onClose: () => void;
+  showWhatsApp?: boolean;
 }
 
 const WHATSAPP_NUMBER = '6282347905543';
 
 const EASE: [number, number, number, number] = [0.22, 1, 0.36, 1];
 
-const InternationalDetailModal: React.FC<InternationalDetailModalProps> = ({ title, icon: Icon, items, onClose }) => {
+const InternationalDetailModal: React.FC<InternationalDetailModalProps> = ({ title, icon: Icon, items, onClose, showWhatsApp = true }) => {
   const { t, language } = useLanguage();
   const lang = language === 'en' ? 'en' : 'id';
 
@@ -173,10 +174,12 @@ const InternationalDetailModal: React.FC<InternationalDetailModalProps> = ({ tit
               initial="hidden"
               animate="visible"
             >
-              <Button onClick={openWhatsApp} variant="honey" size="lg" className="flex-1">
-                <Phone className="h-4 w-4 mr-2" />
-                {t('contact.whatsapp')}
-              </Button>
+              {showWhatsApp && (
+                <Button onClick={openWhatsApp} variant="honey" size="lg" className="flex-1">
+                  <Phone className="h-4 w-4 mr-2" />
+                  {t('contact.whatsapp')}
+                </Button>
+              )}
               <Button onClick={onClose} variant="outline" size="lg" className="flex-1">
                 {t('product.details.close')}
               </Button>
