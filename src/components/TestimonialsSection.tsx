@@ -1,6 +1,5 @@
-import React, { useRef, useState } from 'react';
+import React, { useState } from 'react';
 import { useLanguage } from '@/contexts/LanguageContext';
-import { motion } from 'framer-motion';
 import { Star, BadgeCheck, ChevronUp, ChevronDown } from 'lucide-react';
 import { reviews, type Testimonial } from '@/data/testimonials';
 
@@ -10,8 +9,6 @@ interface TestimonialsSectionProps {
 
 const PER_PAGE = 3;
 const REVIEW_COUNT = reviews.length;
-
-const EASE: [number, number, number, number] = [0.22, 1, 0.36, 1];
 
 interface ReviewCardProps {
   review: Testimonial;
@@ -58,17 +55,18 @@ const ReviewCard: React.FC<ReviewCardProps> = ({ review }) => {
 const TestimonialsSection: React.FC<TestimonialsSectionProps> = ({ happyPeopleImage }) => {
   const { t } = useLanguage();
   const [start, setStart] = useState(0);
-  const dirRef = useRef<'down' | 'up'>('down');
+  const [direction, setDirection] = useState<'down' | 'up'>('down');
 
   const visible = [0, 1, 2].map((i) => reviews[(start + i) % REVIEW_COUNT]);
+  const end = Math.min(start + PER_PAGE, REVIEW_COUNT);
 
-  const next = () => {
-    dirRef.current = 'down';
+  const showNext = () => {
+    setDirection('down');
     setStart((prev) => (prev + PER_PAGE) % REVIEW_COUNT);
   };
 
-  const prev = () => {
-    dirRef.current = 'up';
+  const showPrev = () => {
+    setDirection('up');
     setStart((prev) => (prev - PER_PAGE + REVIEW_COUNT) % REVIEW_COUNT);
   };
 
@@ -80,13 +78,7 @@ const TestimonialsSection: React.FC<TestimonialsSectionProps> = ({ happyPeopleIm
 
       <div className="container mx-auto px-4 md:px-6 relative">
         {/* Header */}
-        <motion.div
-          className="text-center mb-14"
-          initial={{ opacity: 0, y: 30 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          viewport={{ once: true }}
-          transition={{ duration: 0.6 }}
-        >
+        <div className="text-center mb-14">
           <span className="text-primary font-medium uppercase tracking-wider text-sm">
             {t('testimonials.eyebrow')}
           </span>
@@ -97,17 +89,11 @@ const TestimonialsSection: React.FC<TestimonialsSectionProps> = ({ happyPeopleIm
           <p className="mt-2 text-muted-foreground dark:text-white/80 max-w-2xl mx-auto">
             {t('testimonials.subtitle')}
           </p>
-        </motion.div>
+        </div>
 
         <div className="grid lg:grid-cols-2 gap-8 md:gap-12 items-center">
           {/* Image */}
-          <motion.div
-            className="relative rounded-3xl overflow-hidden shadow-2xl"
-            initial={{ opacity: 0, x: -50 }}
-            whileInView={{ opacity: 1, x: 0 }}
-            viewport={{ once: true }}
-            transition={{ duration: 0.8 }}
-          >
+          <div className="relative rounded-3xl overflow-hidden shadow-2xl">
             <img
               src={happyPeopleImage}
               alt={t('testimonials.imageAlt')}
@@ -116,43 +102,33 @@ const TestimonialsSection: React.FC<TestimonialsSectionProps> = ({ happyPeopleIm
               className="w-full h-[420px] md:h-[460px] lg:h-[560px] object-cover"
             />
             <div className="absolute inset-0 bg-gradient-to-t from-honey-dark/30 to-transparent" />
-          </motion.div>
+          </div>
 
-          {/* Paged testimonials — 3 per view */}
-          <motion.div
-            className="relative flex items-center gap-4"
-            initial={{ opacity: 0, x: 50 }}
-            whileInView={{ opacity: 1, x: 0 }}
-            viewport={{ once: true }}
-            transition={{ duration: 0.8 }}
-          >
+          {/* Paged testimonials — 3 per view, plain JS state */}
+          <div className="relative flex items-center gap-4">
             <div className="flex-1">
-              <motion.div
-                key={start}
-                className="space-y-6"
-                initial={{ opacity: 0, y: dirRef.current === 'down' ? 44 : -44 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.5, ease: EASE }}
-              >
+              <div key={start} className={`space-y-6 ${direction === 'down' ? 'testi-enter-down' : 'testi-enter-up'}`}>
                 {visible.map((review) => (
                   <ReviewCard key={review.name} review={review} />
                 ))}
-              </motion.div>
+              </div>
 
               {/* Pager */}
               <div className="mt-6 flex items-center justify-center gap-4">
                 <button
-                  onClick={prev}
+                  type="button"
+                  onClick={showPrev}
                   aria-label="Previous testimonials"
                   className="flex h-11 w-11 items-center justify-center rounded-full border-2 border-honey-gold/50 text-honey-gold transition-all duration-300 hover:bg-honey-gold hover:text-white active:scale-90"
                 >
                   <ChevronUp className="h-5 w-5" />
                 </button>
-                <span className="min-w-[6rem] text-center text-sm font-semibold text-muted-foreground dark:text-white/80">
-                  {start + 1}–{Math.min(start + 3, REVIEW_COUNT)} / {REVIEW_COUNT}
+                <span className="min-w-[6.5rem] text-center text-sm font-semibold text-muted-foreground dark:text-white/80">
+                  {start + 1}–{end} / {REVIEW_COUNT}
                 </span>
                 <button
-                  onClick={next}
+                  type="button"
+                  onClick={showNext}
                   aria-label="Next testimonials"
                   className="flex h-11 w-11 items-center justify-center rounded-full border-2 border-honey-gold/50 text-honey-gold transition-all duration-300 hover:bg-honey-gold hover:text-white active:scale-90"
                 >
@@ -160,7 +136,7 @@ const TestimonialsSection: React.FC<TestimonialsSectionProps> = ({ happyPeopleIm
                 </button>
               </div>
             </div>
-          </motion.div>
+          </div>
         </div>
       </div>
     </section>
