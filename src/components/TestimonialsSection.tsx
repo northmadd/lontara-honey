@@ -7,7 +7,6 @@ interface TestimonialsSectionProps {
   happyPeopleImage: string;
 }
 
-const PER_PAGE = 3;
 const REVIEW_COUNT = reviews.length;
 const DURATION = 260;
 
@@ -15,6 +14,7 @@ const easeInOutCubic = (t: number) => (t < 0.5 ? 4 * t * t * t : 1 - Math.pow(-2
 
 interface ReviewCardProps {
   review: Testimonial;
+  featured?: boolean;
 }
 
 const ReviewStars = ({ rating }: { rating: number }) => (
@@ -28,12 +28,18 @@ const ReviewStars = ({ rating }: { rating: number }) => (
   </div>
 );
 
-const ReviewCard: React.FC<ReviewCardProps> = ({ review }) => {
+const ReviewCard: React.FC<ReviewCardProps> = ({ review, featured }) => {
   const { language } = useLanguage();
   const lang = language === 'en' ? 'en' : 'id';
 
   return (
-    <article className="honey-card p-5 sm:p-6">
+    <article
+      className={`honey-card p-5 sm:p-6 transition-shadow duration-300 ${
+        featured
+          ? 'p-6 sm:p-7 ring-2 ring-honey-gold/50 shadow-xl'
+          : 'opacity-80 shadow-sm'
+      }`}
+    >
       <div className="flex items-center justify-between gap-2 flex-wrap mb-3">
         <ReviewStars rating={review.rating} />
         <span className="inline-flex items-center gap-1 rounded-full bg-honey-gold/15 px-2 py-0.5 text-[11px] font-semibold text-honey-gold">
@@ -57,49 +63,58 @@ const ReviewCard: React.FC<ReviewCardProps> = ({ review }) => {
 
 const TestimonialsSection: React.FC<TestimonialsSectionProps> = ({ happyPeopleImage }) => {
   const { t } = useLanguage();
-  const [start, setStart] = useState(0);
-  const wrapperRef = useRef<HTMLDivElement>(null);
+  const [center, setCenter] = useState(0);
+  const middleRef = useRef<HTMLDivElement>(null);
   const animatingRef = useRef(false);
 
-  const visible = [0, 1, 2].map((i) => reviews[(start + i) % REVIEW_COUNT]);
-  const end = Math.min(start + PER_PAGE, REVIEW_COUNT);
+  const idx = (n: number) => ((n % REVIEW_COUNT) + REVIEW_COUNT) % REVIEW_COUNT;
+  const top = reviews[idx(center - 1)];
+  const mid = reviews[center];
+  const bottom = reviews[idx(center + 1)];
 
-  const changePage = (dir: 'down' | 'up') => {
+  const move = (dir: 'down' | 'up') => {
     if (animatingRef.current) return;
-    const el = wrapperRef.current;
+    const el = middleRef.current;
     if (!el) return;
     animatingRef.current = true;
 
-    const out = (time: number, startTime: number, bias: number) => {
-      const p = Math.min((time - startTime) / DURATION, 1);
+    const bias = dir === 'down' ? 44 : -44;
+    const t0 = performance.now();
+
+    const out = (now: number) => {
+      const p = Math.min((now - t0) / DURATION, 1);
       const k = easeInOutCubic(p);
       el.style.opacity = String(1 - k);
       el.style.transform = `translateY(${(-bias * k).toFixed(2)}px)`;
       if (p < 1) {
-        requestAnimationFrame((t) => out(t, startTime, bias));
+        requestAnimationFrame(out);
       } else {
-        setStart((prev) => (dir === 'down' ? (prev + PER_PAGE) % REVIEW_COUNT : (prev - PER_PAGE + REVIEW_COUNT) % REVIEW_COUNT));
-        requestAnimationFrame(() => requestAnimationFrame(() => {
-          const t2 = performance.now();
-          const stepIn = (time: number, startTime: number) => {
-            const q = Math.min((time - startTime) / DURATION, 1);
-            const k2 = easeInOutCubic(q);
-            el.style.opacity = String(k2);
-            el.style.transform = `translateY(${(bias * (1 - k2)).toFixed(2)}px)`;
-            if (q < 1) {
-              requestAnimationFrame((tt) => stepIn(tt, startTime));
-            } else {
-              el.style.opacity = '';
-              el.style.transform = '';
-              animatingRef.current = false;
-            }
-          };
-          requestAnimationFrame((tt) => stepIn(tt, t2));
-        }));
+        el.style.opacity = '0';
+        el.style.transform = `translateY(${(-bias).toFixed(2)}px)`;
+        setCenter((prev) => idx(dir === 'down' ? prev + 1 : prev - 1));
+        requestAnimationFrame(() =>
+          requestAnimationFrame(() => {
+            const t1 = performance.now();
+            const inn = (now2: number) => {
+              const q = Math.min((now2 - t1) / DURATION, 1);
+              const k2 = easeInOutCubic(q);
+              el.style.opacity = String(k2);
+              el.style.transform = `translateY(${(bias * (1 - k2)).toFixed(2)}px)`;
+              if (q < 1) {
+                requestAnimationFrame(inn);
+              } else {
+                el.style.opacity = '';
+                el.style.transform = '';
+                animatingRef.current = false;
+              }
+            };
+            requestAnimationFrame(inn);
+          }),
+        );
       }
     };
 
-    requestAnimationFrame((t) => out(t, performance.now(), dir === 'down' ? 36 : -36));
+    requestAnimationFrame(out);
   };
 
   return (
@@ -123,51 +138,58 @@ const TestimonialsSection: React.FC<TestimonialsSectionProps> = ({ happyPeopleIm
           </p>
         </div>
 
-        <div className="grid lg:grid-cols-2 gap-8 md:gap-12 items-center">
+        {/* Image + cards equal height */}
+        <div className="grid lg:grid-cols-2 gap-10 items-stretch">
           {/* Image */}
-          <div className="relative rounded-3xl overflow-hidden shadow-2xl">
+          <div className="relative rounded-3xl overflow-hidden shadow-2xl h-[340px] lg:h-auto">
             <img
               src={happyPeopleImage}
               alt={t('testimonials.imageAlt')}
               loading="lazy"
               decoding="async"
-              className="w-full h-[420px] md:h-[460px] lg:h-[560px] object-cover"
+              className="absolute inset-0 w-full h-full object-cover"
             />
             <div className="absolute inset-0 bg-gradient-to-t from-honey-dark/30 to-transparent" />
           </div>
 
-          {/* Paged testimonials — 3 per view, JS-driven smooth animation */}
-          <div className="relative flex items-center gap-4">
-            <div className="flex-1">
-              <div ref={wrapperRef} className="space-y-6 will-change-transform">
-                {visible.map((review) => (
-                  <ReviewCard key={review.name} review={review} />
-                ))}
+          {/* Focused vertical carousel */}
+          <div className="flex flex-col items-center gap-3 lg:gap-4">
+            <button
+              type="button"
+              onClick={() => move('up')}
+              aria-label="Previous testimonials"
+              className="flex h-11 w-11 items-center justify-center rounded-full border-2 border-honey-gold/50 bg-background text-honey-gold transition-colors duration-300 hover:bg-honey-gold hover:text-white active:scale-90"
+            >
+              <ChevronUp className="h-5 w-5" />
+            </button>
+
+            <div className="w-full flex-1 flex flex-col justify-center gap-3 lg:gap-4 min-h-0">
+              {/* Top — small */}
+              <div className="w-full max-w-md mx-auto scale-[0.96]">
+                <ReviewCard review={top} />
               </div>
 
-              {/* Pager */}
-              <div className="mt-6 flex items-center justify-center gap-4">
-                <button
-                  type="button"
-                  onClick={() => changePage('up')}
-                  aria-label="Previous testimonials"
-                  className="flex h-11 w-11 items-center justify-center rounded-full border-2 border-honey-gold/50 text-honey-gold transition-colors duration-300 hover:bg-honey-gold hover:text-white active:scale-90"
-                >
-                  <ChevronUp className="h-5 w-5" />
-                </button>
-                <span className="min-w-[6.5rem] text-center text-sm font-semibold text-muted-foreground dark:text-white/80">
-                  {start + 1}–{end} / {REVIEW_COUNT}
-                </span>
-                <button
-                  type="button"
-                  onClick={() => changePage('down')}
-                  aria-label="Next testimonials"
-                  className="flex h-11 w-11 items-center justify-center rounded-full border-2 border-honey-gold/50 text-honey-gold transition-colors duration-300 hover:bg-honey-gold hover:text-white active:scale-90"
-                >
-                  <ChevronDown className="h-5 w-5" />
-                </button>
+              {/* Middle — bigger, focus */}
+              <div className="w-full max-w-md mx-auto z-10">
+                <div ref={middleRef} className="will-change-transform scale-[1.05]">
+                  <ReviewCard review={mid} featured />
+                </div>
+              </div>
+
+              {/* Bottom — small */}
+              <div className="w-full max-w-md mx-auto scale-[0.96]">
+                <ReviewCard review={bottom} />
               </div>
             </div>
+
+            <button
+              type="button"
+              onClick={() => move('down')}
+              aria-label="Next testimonials"
+              className="flex h-11 w-11 items-center justify-center rounded-full border-2 border-honey-gold/50 bg-background text-honey-gold transition-colors duration-300 hover:bg-honey-gold hover:text-white active:scale-90"
+            >
+              <ChevronDown className="h-5 w-5" />
+            </button>
           </div>
         </div>
       </div>
