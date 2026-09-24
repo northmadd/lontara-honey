@@ -1,4 +1,4 @@
-import React, { useRef, useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { Star, BadgeCheck, ChevronUp, ChevronDown } from 'lucide-react';
 import { reviews, type Testimonial } from '@/data/testimonials';
@@ -7,14 +7,18 @@ interface TestimonialsSectionProps {
   happyPeopleImage: string;
 }
 
+const SLOT_COUNT = 5;
 const REVIEW_COUNT = reviews.length;
-const DURATION = 260;
+const DURATION = 340;
+const SPACING = 200;
+const TOP_PAD = 120;
+
+const idx = (n: number) => ((n % REVIEW_COUNT) + REVIEW_COUNT) % REVIEW_COUNT;
 
 const easeInOutCubic = (t: number) => (t < 0.5 ? 4 * t * t * t : 1 - Math.pow(-2 * t + 2, 3) / 2);
 
 interface ReviewCardProps {
   review: Testimonial;
-  featured?: boolean;
 }
 
 const ReviewStars = ({ rating }: { rating: number }) => (
@@ -28,18 +32,12 @@ const ReviewStars = ({ rating }: { rating: number }) => (
   </div>
 );
 
-const ReviewCard: React.FC<ReviewCardProps> = ({ review, featured }) => {
+const ReviewCard: React.FC<ReviewCardProps> = ({ review }) => {
   const { language } = useLanguage();
   const lang = language === 'en' ? 'en' : 'id';
 
   return (
-    <article
-      className={`honey-card p-5 sm:p-6 transition-shadow duration-300 ${
-        featured
-          ? 'p-6 sm:p-7 ring-2 ring-honey-gold/50 shadow-xl'
-          : 'opacity-80 shadow-sm'
-      }`}
-    >
+    <article className="honey-card w-full p-5 sm:p-6">
       <div className="flex items-center justify-between gap-2 flex-wrap mb-3">
         <ReviewStars rating={review.rating} />
         <span className="inline-flex items-center gap-1 rounded-full bg-honey-gold/15 px-2 py-0.5 text-[11px] font-semibold text-honey-gold">
@@ -63,58 +61,76 @@ const ReviewCard: React.FC<ReviewCardProps> = ({ review, featured }) => {
 
 const TestimonialsSection: React.FC<TestimonialsSectionProps> = ({ happyPeopleImage }) => {
   const { t } = useLanguage();
-  const [center, setCenter] = useState(0);
-  const middleRef = useRef<HTMLDivElement>(null);
+  const [slotReviews, setSlotReviews] = useState<Testimonial[]>(() =>
+    [...Array(SLOT_COUNT)].map((_, s) => reviews[idx(s - 2)]),
+  );
+
+  const centerIdxRef = useRef(0);
+  const slotIdxRef = useRef<number[]>([...Array(SLOT_COUNT)].map((_, s) => idx(s - 2)));
+  const baseRef = useRef<number[]>([-1, 0, 1, 2, 3]);
+  const elRefs = useRef<(HTMLDivElement | null)[]>([]);
   const animatingRef = useRef(false);
 
-  const idx = (n: number) => ((n % REVIEW_COUNT) + REVIEW_COUNT) % REVIEW_COUNT;
-  const top = reviews[idx(center - 1)];
-  const mid = reviews[center];
-  const bottom = reviews[idx(center + 1)];
+  const applyStyle = (slot: number, off: number) => {
+    const el = elRefs.current[slot];
+    if (!el) return;
+    const d = Math.abs(off - 1);
+    const scale = 1.06 - 0.12 * d;
+    const opacity = Math.max(0.12, 1 - 0.38 * d);
+    const blur = d * 1.4;
+    el.style.transform = `translate(-50%, -50%) translateY(${(off * SPACING).toFixed(2)}px) scale(${scale.toFixed(3)})`;
+    el.style.opacity = opacity.toFixed(3);
+    el.style.zIndex = String(30 - Math.round(d) * 5);
+    el.style.filter = blur > 0.05 ? `blur(${blur.toFixed(2)}px)` : 'none';
+    el.style.boxShadow = d <= 0.05 ? '0 0 0 2px rgba(212, 160, 80, 0.55)' : 'none';
+  };
+
+  useEffect(() => {
+    baseRef.current.forEach((off, s) => applyStyle(s, off));
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   const move = (dir: 'down' | 'up') => {
     if (animatingRef.current) return;
-    const el = middleRef.current;
-    if (!el) return;
     animatingRef.current = true;
 
-    const bias = dir === 'down' ? 44 : -44;
+    const delta = dir === 'down' ? -1 : 1;
+    const startBase = baseRef.current.slice();
     const t0 = performance.now();
 
-    const out = (now: number) => {
+    const step = (now: number) => {
       const p = Math.min((now - t0) / DURATION, 1);
       const k = easeInOutCubic(p);
-      el.style.opacity = String(1 - k);
-      el.style.transform = `translateY(${(-bias * k).toFixed(2)}px)`;
+      for (let s = 0; s < SLOT_COUNT; s++) applyStyle(s, startBase[s] + delta * k);
       if (p < 1) {
-        requestAnimationFrame(out);
+        requestAnimationFrame(step);
       } else {
-        el.style.opacity = '0';
-        el.style.transform = `translateY(${(-bias).toFixed(2)}px)`;
-        setCenter((prev) => idx(dir === 'down' ? prev + 1 : prev - 1));
-        requestAnimationFrame(() =>
-          requestAnimationFrame(() => {
-            const t1 = performance.now();
-            const inn = (now2: number) => {
-              const q = Math.min((now2 - t1) / DURATION, 1);
-              const k2 = easeInOutCubic(q);
-              el.style.opacity = String(k2);
-              el.style.transform = `translateY(${(bias * (1 - k2)).toFixed(2)}px)`;
-              if (q < 1) {
-                requestAnimationFrame(inn);
-              } else {
-                el.style.opacity = '';
-                el.style.transform = '';
-                animatingRef.current = false;
-              }
-            };
-            requestAnimationFrame(inn);
-          }),
-        );
+        finish();
       }
     };
 
-    requestAnimationFrame(out);
+    const finish = () => {
+      const next = idx(dir === 'down' ? centerIdxRef.current + 1 : centerIdxRef.current - 1);
+      centerIdxRef.current = next;
+
+      if (dir === 'down') {
+        slotIdxRef.current = [idx(next + 2), slotIdxRef.current[1], slotIdxRef.current[2], slotIdxRef.current[3], slotIdxRef.current[4]];
+      } else {
+        slotIdxRef.current = [slotIdxRef.current[0], slotIdxRef.current[1], slotIdxRef.current[2], slotIdxRef.current[3], idx(next - 2)];
+      }
+
+      baseRef.current = [-1, 0, 1, 2, 3];
+      setSlotReviews(slotIdxRef.current.map((i) => reviews[i]));
+
+      requestAnimationFrame(() =>
+        requestAnimationFrame(() => {
+          baseRef.current.forEach((off, s) => applyStyle(s, off));
+          animatingRef.current = false;
+        }),
+      );
+    };
+
+    requestAnimationFrame(step);
   };
 
   return (
@@ -138,7 +154,7 @@ const TestimonialsSection: React.FC<TestimonialsSectionProps> = ({ happyPeopleIm
           </p>
         </div>
 
-        {/* Image + cards equal height */}
+        {/* Image + wheel equal height */}
         <div className="grid lg:grid-cols-2 gap-10 items-stretch">
           {/* Image */}
           <div className="relative rounded-3xl overflow-hidden shadow-2xl h-[340px] lg:h-auto">
@@ -152,8 +168,8 @@ const TestimonialsSection: React.FC<TestimonialsSectionProps> = ({ happyPeopleIm
             <div className="absolute inset-0 bg-gradient-to-t from-honey-dark/30 to-transparent" />
           </div>
 
-          {/* Focused vertical carousel */}
-          <div className="flex flex-col items-center gap-3 lg:gap-4">
+          {/* Focused wheel */}
+          <div className="flex flex-col items-center justify-center gap-4">
             <button
               type="button"
               onClick={() => move('up')}
@@ -163,23 +179,23 @@ const TestimonialsSection: React.FC<TestimonialsSectionProps> = ({ happyPeopleIm
               <ChevronUp className="h-5 w-5" />
             </button>
 
-            <div className="w-full flex-1 flex flex-col justify-center gap-3 lg:gap-4 min-h-0">
-              {/* Top — small */}
-              <div className="w-full max-w-md mx-auto scale-[0.96]">
-                <ReviewCard review={top} />
-              </div>
-
-              {/* Middle — bigger, focus */}
-              <div className="w-full max-w-md mx-auto z-10">
-                <div ref={middleRef} className="will-change-transform scale-[1.05]">
-                  <ReviewCard review={mid} featured />
+            <div
+              className="relative w-full overflow-hidden"
+              style={{ height: SPACING * 3 + TOP_PAD * 2 }}
+            >
+              {slotReviews.map((review, s) => (
+                <div
+                  key={s}
+                  ref={(el) => {
+                    elRefs.current[s] = el;
+                  }}
+                  className="absolute left-1/2 top-1/2 w-full max-w-xl will-change-transform"
+                >
+                  <div className="mx-auto w-full">
+                    <ReviewCard review={review} />
+                  </div>
                 </div>
-              </div>
-
-              {/* Bottom — small */}
-              <div className="w-full max-w-md mx-auto scale-[0.96]">
-                <ReviewCard review={bottom} />
-              </div>
+              ))}
             </div>
 
             <button
