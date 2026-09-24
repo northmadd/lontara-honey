@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useRef, useState } from 'react';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { Star, BadgeCheck, ChevronUp, ChevronDown } from 'lucide-react';
 import { reviews, type Testimonial } from '@/data/testimonials';
@@ -9,6 +9,9 @@ interface TestimonialsSectionProps {
 
 const PER_PAGE = 3;
 const REVIEW_COUNT = reviews.length;
+const DURATION = 260;
+
+const easeInOutCubic = (t: number) => (t < 0.5 ? 4 * t * t * t : 1 - Math.pow(-2 * t + 2, 3) / 2);
 
 interface ReviewCardProps {
   review: Testimonial;
@@ -55,19 +58,48 @@ const ReviewCard: React.FC<ReviewCardProps> = ({ review }) => {
 const TestimonialsSection: React.FC<TestimonialsSectionProps> = ({ happyPeopleImage }) => {
   const { t } = useLanguage();
   const [start, setStart] = useState(0);
-  const [direction, setDirection] = useState<'down' | 'up'>('down');
+  const wrapperRef = useRef<HTMLDivElement>(null);
+  const animatingRef = useRef(false);
 
   const visible = [0, 1, 2].map((i) => reviews[(start + i) % REVIEW_COUNT]);
   const end = Math.min(start + PER_PAGE, REVIEW_COUNT);
 
-  const showNext = () => {
-    setDirection('down');
-    setStart((prev) => (prev + PER_PAGE) % REVIEW_COUNT);
-  };
+  const changePage = (dir: 'down' | 'up') => {
+    if (animatingRef.current) return;
+    const el = wrapperRef.current;
+    if (!el) return;
+    animatingRef.current = true;
 
-  const showPrev = () => {
-    setDirection('up');
-    setStart((prev) => (prev - PER_PAGE + REVIEW_COUNT) % REVIEW_COUNT);
+    const out = (time: number, startTime: number, bias: number) => {
+      const p = Math.min((time - startTime) / DURATION, 1);
+      const k = easeInOutCubic(p);
+      el.style.opacity = String(1 - k);
+      el.style.transform = `translateY(${(-bias * k).toFixed(2)}px)`;
+      if (p < 1) {
+        requestAnimationFrame((t) => out(t, startTime, bias));
+      } else {
+        setStart((prev) => (dir === 'down' ? (prev + PER_PAGE) % REVIEW_COUNT : (prev - PER_PAGE + REVIEW_COUNT) % REVIEW_COUNT));
+        requestAnimationFrame(() => requestAnimationFrame(() => {
+          const t2 = performance.now();
+          const stepIn = (time: number, startTime: number) => {
+            const q = Math.min((time - startTime) / DURATION, 1);
+            const k2 = easeInOutCubic(q);
+            el.style.opacity = String(k2);
+            el.style.transform = `translateY(${(bias * (1 - k2)).toFixed(2)}px)`;
+            if (q < 1) {
+              requestAnimationFrame((tt) => stepIn(tt, startTime));
+            } else {
+              el.style.opacity = '';
+              el.style.transform = '';
+              animatingRef.current = false;
+            }
+          };
+          requestAnimationFrame((tt) => stepIn(tt, t2));
+        }));
+      }
+    };
+
+    requestAnimationFrame((t) => out(t, performance.now(), dir === 'down' ? 36 : -36));
   };
 
   return (
@@ -104,10 +136,10 @@ const TestimonialsSection: React.FC<TestimonialsSectionProps> = ({ happyPeopleIm
             <div className="absolute inset-0 bg-gradient-to-t from-honey-dark/30 to-transparent" />
           </div>
 
-          {/* Paged testimonials — 3 per view, plain JS state */}
+          {/* Paged testimonials — 3 per view, JS-driven smooth animation */}
           <div className="relative flex items-center gap-4">
             <div className="flex-1">
-              <div key={start} className={`space-y-6 ${direction === 'down' ? 'testi-enter-down' : 'testi-enter-up'}`}>
+              <div ref={wrapperRef} className="space-y-6 will-change-transform">
                 {visible.map((review) => (
                   <ReviewCard key={review.name} review={review} />
                 ))}
@@ -117,9 +149,9 @@ const TestimonialsSection: React.FC<TestimonialsSectionProps> = ({ happyPeopleIm
               <div className="mt-6 flex items-center justify-center gap-4">
                 <button
                   type="button"
-                  onClick={showPrev}
+                  onClick={() => changePage('up')}
                   aria-label="Previous testimonials"
-                  className="flex h-11 w-11 items-center justify-center rounded-full border-2 border-honey-gold/50 text-honey-gold transition-all duration-300 hover:bg-honey-gold hover:text-white active:scale-90"
+                  className="flex h-11 w-11 items-center justify-center rounded-full border-2 border-honey-gold/50 text-honey-gold transition-colors duration-300 hover:bg-honey-gold hover:text-white active:scale-90"
                 >
                   <ChevronUp className="h-5 w-5" />
                 </button>
@@ -128,9 +160,9 @@ const TestimonialsSection: React.FC<TestimonialsSectionProps> = ({ happyPeopleIm
                 </span>
                 <button
                   type="button"
-                  onClick={showNext}
+                  onClick={() => changePage('down')}
                   aria-label="Next testimonials"
-                  className="flex h-11 w-11 items-center justify-center rounded-full border-2 border-honey-gold/50 text-honey-gold transition-all duration-300 hover:bg-honey-gold hover:text-white active:scale-90"
+                  className="flex h-11 w-11 items-center justify-center rounded-full border-2 border-honey-gold/50 text-honey-gold transition-colors duration-300 hover:bg-honey-gold hover:text-white active:scale-90"
                 >
                   <ChevronDown className="h-5 w-5" />
                 </button>

@@ -280,25 +280,6 @@
   to { opacity: 1; transform: translateX(0); }
 }
 
-/* Testimonial pager enter */
-@keyframes testiEnterDown {
-  from { opacity: 0; transform: translateY(44px); }
-  to { opacity: 1; transform: translateY(0); }
-}
-
-@keyframes testiEnterUp {
-  from { opacity: 0; transform: translateY(-44px); }
-  to { opacity: 1; transform: translateY(0); }
-}
-
-.testi-enter-down {
-  animation: testiEnterDown 0.5s cubic-bezier(0.22, 1, 0.36, 1) both;
-}
-
-.testi-enter-up {
-  animation: testiEnterUp 0.5s cubic-bezier(0.22, 1, 0.36, 1) both;
-}
-
 /* Custom scrollbar */
 ::-webkit-scrollbar {
   width: 8px;
