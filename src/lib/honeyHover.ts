@@ -26,6 +26,14 @@ function parseHslVar(el: HTMLElement, name: string): RGB | null {
   return hslToRgb(h, s, l);
 }
 
+const GOLD: RGB = { r: 238, g: 173, b: 43 };
+
+function resolveGold(el: HTMLElement): RGB {
+  const parsed = parseHslVar(el, '--honey-gold');
+  if (parsed && parsed.r >= parsed.b && parsed.g >= parsed.b) return parsed;
+  return GOLD;
+}
+
 const clamp = (n: number) => (Number.isFinite(n) ? Math.max(0, Math.min(255, Math.round(n))) : 255);
 
 const mix = (a: number, b: number, t: number) => a + (b - a) * t;
@@ -45,7 +53,7 @@ export function animateHoneyHover(el: HTMLElement, enter: boolean) {
   else el.classList.remove('honey-hovered');
 
   const isReverse = el.classList.contains('honey-js-hover-reverse');
-  const gold = parseHslVar(el, '--honey-gold') ?? { r: 212, g: 160, b: 86 };
+  const gold = resolveGold(el);
   const white: RGB = { r: 255, g: 255, b: 255 };
   const start = performance.now();
 
