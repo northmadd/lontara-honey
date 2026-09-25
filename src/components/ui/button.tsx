@@ -3,6 +3,7 @@ import { Slot } from "@radix-ui/react-slot";
 import { cva, type VariantProps } from "class-variance-authority";
 
 import { cn } from "@/lib/utils";
+import { animateHoneyHover } from "@/lib/honeyHover";
 
 const buttonVariants = cva(
   "inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-lg text-sm font-medium ring-offset-background transition-all duration-300 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 [&_svg]:pointer-events-none [&_svg]:size-4 [&_svg]:shrink-0",
@@ -46,11 +47,11 @@ const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
     const isHoneyHover = honeyHover || honeyReverse || variant === "honey";
     const honeyClass = honeyReverse ? "honey-js-hover-reverse" : "honey-js-hover";
     const handleMouseEnter = (e: React.MouseEvent<HTMLButtonElement>) => {
-      if (isHoneyHover) e.currentTarget.classList.add("honey-hovered");
+      if (isHoneyHover) animateHoneyHover(e.currentTarget, true);
       onMouseEnter?.(e);
     };
     const handleMouseLeave = (e: React.MouseEvent<HTMLButtonElement>) => {
-      if (isHoneyHover) e.currentTarget.classList.remove("honey-hovered");
+      if (isHoneyHover) animateHoneyHover(e.currentTarget, false);
       onMouseLeave?.(e);
     };
     return (
