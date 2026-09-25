@@ -589,7 +589,7 @@ const OrderModal: React.FC<OrderModalProps> = ({ product, onClose }) => {
                 <Button
                   type="button"
                   size="sm"
-                  honeyHover
+                  honeyReverse
                   onClick={() => void copyText(mapAddress || STORE_ADDRESS)}
                   className="shrink-0"
                 >
@@ -599,7 +599,7 @@ const OrderModal: React.FC<OrderModalProps> = ({ product, onClose }) => {
                 <Button
                   type="button"
                   size="sm"
-                  honeyHover
+                  honeyReverse
                   onClick={openGoogleMaps}
                   className="shrink-0"
                 >

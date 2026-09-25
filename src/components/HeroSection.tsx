@@ -98,7 +98,7 @@ const HeroSection: React.FC<HeroSectionProps> = ({ onNavigate, heroImage }) => {
               <ArrowRight className="ml-2 w-5 h-5 transition-transform group-hover:translate-x-1" />
             </Button>
             <Button
-              honeyHover
+              honeyReverse
               className="px-8 py-6 text-lg font-semibold"
               onClick={() => onNavigate('story')}
             >

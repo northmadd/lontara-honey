@@ -2,6 +2,7 @@ import React, { useEffect, useRef, useState } from 'react';
 import { Globe } from 'lucide-react';
 import logo from '@/assets/logo-lontara.webp';
 import { useLanguage } from '@/contexts/LanguageContext';
+import { Button } from '@/components/ui/button';
 
 const TURNSTILE_SCRIPT_SRC = 'https://challenges.cloudflare.com/turnstile/v0/api.js?render=explicit';
 
@@ -229,16 +230,17 @@ const BotVerificationGate: React.FC<BotVerificationGateProps> = ({ children }) =
           </div>
 
           {isChallengePassed && (
-            <button
+            <Button
               type="button"
+              honeyHover
               onClick={() => {
                 markAsVerified();
                 setIsVerified(true);
               }}
-              className="mt-4 w-full rounded-full bg-gradient-to-r from-amber-600/80 to-yellow-500/70 px-7 py-3 text-base font-bold text-white shadow-lg shadow-amber-950/40 transition hover:scale-105 hover:from-amber-500/80 hover:to-yellow-400/80 focus:outline-none focus:ring-2 focus:ring-amber-200 focus:ring-offset-2 focus:ring-offset-stone-950"
+              className="mt-4 w-full rounded-full px-7 py-3 text-base font-bold shadow-lg shadow-amber-950/40 focus:outline-none focus:ring-2 focus:ring-amber-200 focus:ring-offset-2 focus:ring-offset-stone-950"
             >
               {t('verify.enter')}
-            </button>
+            </Button>
           )}
 
           {isChecking && (

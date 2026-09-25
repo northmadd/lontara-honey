@@ -37,12 +37,14 @@ export interface ButtonProps
     VariantProps<typeof buttonVariants> {
   asChild?: boolean;
   honeyHover?: boolean;
+  honeyReverse?: boolean;
 }
 
 const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
-  ({ className, variant, size, asChild = false, honeyHover, onMouseEnter, onMouseLeave, ...props }, ref) => {
+  ({ className, variant, size, asChild = false, honeyHover, honeyReverse, onMouseEnter, onMouseLeave, ...props }, ref) => {
     const Comp = asChild ? Slot : "button";
-    const isHoneyHover = honeyHover || variant === "honey";
+    const isHoneyHover = honeyHover || honeyReverse || variant === "honey";
+    const honeyClass = honeyReverse ? "honey-js-hover-reverse" : "honey-js-hover";
     const handleMouseEnter = (e: React.MouseEvent<HTMLButtonElement>) => {
       if (isHoneyHover) e.currentTarget.classList.add("honey-hovered");
       onMouseEnter?.(e);
@@ -53,7 +55,7 @@ const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
     };
     return (
       <Comp
-        className={cn(buttonVariants({ variant, size, className }), isHoneyHover && "honey-js-hover")}
+        className={cn(buttonVariants({ variant, size, className }), isHoneyHover && honeyClass)}
         ref={ref}
         onMouseEnter={handleMouseEnter}
         onMouseLeave={handleMouseLeave}
