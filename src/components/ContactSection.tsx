@@ -133,7 +133,7 @@ const ContactSection: React.FC = () => {
 
               <Button
                 size="lg"
-                className="honey-gradient text-white border-2 border-transparent honey-hover"
+                honeyHover
                 onClick={() =>
                   openWhatsApp(t('contact.wa.message'))
                 }
@@ -224,7 +224,8 @@ const ContactSection: React.FC = () => {
                 <Button
                   type="submit"
                   size="lg"
-                  className="w-full honey-gradient text-white border-2 border-transparent honey-hover mt-auto"
+                  honeyHover
+                  className="w-full mt-auto"
                 >
                   <Send className="w-5 h-5 mr-2" />
                   {t('contact.send')}

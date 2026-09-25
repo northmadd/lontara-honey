@@ -143,14 +143,14 @@ const ProductsSection: React.FC<ProductsSectionProps> = ({ products, onOrderProd
                         imgClassName="rounded-lg"
                       />
                       <div className="absolute top-4 right-4">
-                        <span className="px-3 py-1 rounded-full text-xs font-medium bg-amber-400 text-amber-900">
+                        <span className="px-3 py-1 rounded-full text-xs font-medium bg-black/45 backdrop-blur-sm text-white">
                           {t(`products.packaging.${product.type}`)}
                         </span>
                       </div>
 
                       {/* Tap to view details hint */}
                       <div className="absolute inset-x-0 bottom-4 flex justify-center">
-                        <span className="inline-flex items-center gap-1.5 rounded-full bg-foreground/70 backdrop-blur-sm px-3 py-1.5 text-xs font-medium text-background opacity-80 transition-all duration-300 group-hover/image:bg-honey-gold group-hover/image:text-white group-hover/image:opacity-100">
+                        <span className="inline-flex items-center gap-1.5 rounded-full bg-black/45 backdrop-blur-sm px-3 py-1.5 text-xs font-medium text-white opacity-90 transition-all duration-300 group-hover/image:bg-honey-gold/90 group-hover/image:text-white group-hover/image:opacity-100">
                           <ZoomIn className="w-3.5 h-3.5" />
                           {t('products.viewDetails')}
                         </span>
@@ -176,8 +176,9 @@ const ProductsSection: React.FC<ProductsSectionProps> = ({ products, onOrderProd
                         </span>
                       </div>
                       <Button
+                        honeyHover
                         onClick={() => onOrderProduct(product)}
-                        className="honey-gradient text-white border-2 border-transparent honey-hover mt-3"
+                        className="mt-3"
                       >
                         <ShoppingBag className="w-4 h-4 mr-2" />
                         {t('products.order')}

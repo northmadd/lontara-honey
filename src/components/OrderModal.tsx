@@ -504,13 +504,14 @@ const OrderModal: React.FC<OrderModalProps> = ({ product, onClose }) => {
                     placeholder={t('order.map.search')}
                     className="h-9 flex-1"
                   />
-                  <Button
-                    type="button"
-                    size="sm"
-                    onClick={() => applyMapSearch()}
-                    disabled={mapResolving}
-                    className="shrink-0"
-                  >
+<Button
+                  type="button"
+                  size="sm"
+                  honeyHover
+                  onClick={() => applyMapSearch()}
+                  disabled={mapResolving}
+                  className="shrink-0"
+                >
                     <Search className="w-4 h-4" />
                     {t('order.map.searchBtn')}
                   </Button>
@@ -587,20 +588,20 @@ const OrderModal: React.FC<OrderModalProps> = ({ product, onClose }) => {
               <div className="mt-2 flex flex-col gap-2 sm:flex-row">
                 <Button
                   type="button"
-                  variant="outline"
                   size="sm"
+                  honeyHover
                   onClick={() => void copyText(mapAddress || STORE_ADDRESS)}
-                  className="shrink-0 border-primary/40 text-primary hover:bg-primary/10"
+                  className="shrink-0"
                 >
                   {copied ? <Check className="w-4 h-4" /> : <Copy className="w-4 h-4" />}
                   {copied ? t('order.map.copied') : t('order.map.copy')}
                 </Button>
                 <Button
                   type="button"
-                  variant="outline"
                   size="sm"
+                  honeyHover
                   onClick={openGoogleMaps}
-                  className="shrink-0 border-primary/40 text-primary hover:bg-primary/10"
+                  className="shrink-0"
                 >
                   <ExternalLink className="w-4 h-4" />
                   {t('order.map.open')}
@@ -831,8 +832,9 @@ const OrderModal: React.FC<OrderModalProps> = ({ product, onClose }) => {
             <Button
               type="submit"
               size="lg"
+              honeyHover
               disabled={sending}
-              className="w-full honey-gradient text-white border-2 border-transparent honey-hover py-6 text-lg font-semibold"
+              className="w-full py-6 text-lg font-semibold"
             >
               {sending ? t('order.qris.proof.uploading') : t('order.submit')}
             </Button>

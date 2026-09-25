@@ -90,15 +90,16 @@ const HeroSection: React.FC<HeroSectionProps> = ({ onNavigate, heroImage }) => {
             transition={{ duration: 0.8, delay: 0.6 }}
           >
             <Button
-              className="group honey-gradient text-white honey-hover honey-glow px-8 py-6 text-lg font-semibold border-2 border-transparent"
+              honeyHover
+              className="group honey-glow px-8 py-6 text-lg font-semibold"
               onClick={() => onNavigate('products')}
             >
               {t('hero.cta')}
               <ArrowRight className="ml-2 w-5 h-5 transition-transform group-hover:translate-x-1" />
             </Button>
             <Button
-              variant="outline"
-              className="honey-outline-hover px-8 py-6 text-lg font-semibold border-2 border-primary/25 bg-background/80 text-foreground"
+              honeyHover
+              className="px-8 py-6 text-lg font-semibold"
               onClick={() => onNavigate('story')}
             >
               <Play className="mr-2 w-5 h-5" />

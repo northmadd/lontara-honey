@@ -4,6 +4,7 @@ import { Star, BadgeCheck, ChevronUp, ChevronDown, PenLine, X } from 'lucide-rea
 import { reviews, type Testimonial } from '@/data/testimonials';
 import { listComments, addComment } from '@/lib/comments';
 import { translateText } from '@/lib/translate';
+import { Button } from '@/components/ui/button';
 
 interface TestimonialsSectionProps {
   happyPeopleImage: string;
@@ -364,15 +365,16 @@ const TestimonialsSection: React.FC<TestimonialsSectionProps> = ({ happyPeopleIm
 
             {/* Tombol tulis komentar — di bawah komentar */}
             <div className="flex justify-center">
-              <button
+              <Button
                 type="button"
+                honeyHover
                 onClick={() => setShowForm(true)}
                 aria-label={t('testimonials.writeAria')}
-                className="inline-flex items-center gap-2 rounded-full honey-gradient text-white border-2 border-transparent honey-hover px-5 py-2.5 font-semibold"
+                className="rounded-full px-5 py-2.5 font-semibold"
               >
                 <PenLine className="h-4 w-4" />
                 {t('testimonials.writeCta')}
-              </button>
+              </Button>
             </div>
           </div>
         </div>
@@ -459,14 +461,15 @@ const TestimonialsSection: React.FC<TestimonialsSectionProps> = ({ happyPeopleIm
               {formError && <p className="text-sm font-medium text-honey-gold">{formError}</p>}
 
               <div className="flex items-center gap-3 pt-1">
-                <button
+                <Button
                   type="button"
+                  honeyHover
                   onClick={submit}
                   disabled={submitting}
-                  className="flex-1 rounded-full honey-gradient text-white border-2 border-transparent honey-hover px-4 py-2.5 font-semibold disabled:cursor-not-allowed disabled:opacity-60"
+                  className="flex-1 rounded-full px-4 py-2.5 font-semibold disabled:cursor-not-allowed disabled:opacity-60"
                 >
                   {submitting ? t('testimonials.writePosting') : t('testimonials.writeSubmit')}
-                </button>
+                </Button>
                 <button
                   type="button"
                   onClick={() => setShowForm(false)}

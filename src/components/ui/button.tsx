@@ -15,7 +15,7 @@ const buttonVariants = cva(
         secondary: "bg-secondary text-secondary-foreground hover:bg-secondary/80",
         ghost: "hover:bg-accent hover:text-accent-foreground",
         link: "text-primary underline-offset-4 hover:underline",
-        honey: "honey-gradient text-white border-2 border-transparent honey-hover shadow-lg hover:shadow-xl",
+        honey: "honey-js-hover shadow-lg hover:shadow-xl",
       },
       size: {
         default: "h-10 px-4 py-2",
@@ -36,12 +36,30 @@ export interface ButtonProps
   extends React.ButtonHTMLAttributes<HTMLButtonElement>,
     VariantProps<typeof buttonVariants> {
   asChild?: boolean;
+  honeyHover?: boolean;
 }
 
 const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
-  ({ className, variant, size, asChild = false, ...props }, ref) => {
+  ({ className, variant, size, asChild = false, honeyHover, onMouseEnter, onMouseLeave, ...props }, ref) => {
     const Comp = asChild ? Slot : "button";
-    return <Comp className={cn(buttonVariants({ variant, size, className }))} ref={ref} {...props} />;
+    const isHoneyHover = honeyHover || variant === "honey";
+    const handleMouseEnter = (e: React.MouseEvent<HTMLButtonElement>) => {
+      if (isHoneyHover) e.currentTarget.classList.add("honey-hovered");
+      onMouseEnter?.(e);
+    };
+    const handleMouseLeave = (e: React.MouseEvent<HTMLButtonElement>) => {
+      if (isHoneyHover) e.currentTarget.classList.remove("honey-hovered");
+      onMouseLeave?.(e);
+    };
+    return (
+      <Comp
+        className={cn(buttonVariants({ variant, size, className }), isHoneyHover && "honey-js-hover")}
+        ref={ref}
+        onMouseEnter={handleMouseEnter}
+        onMouseLeave={handleMouseLeave}
+        {...props}
+      />
+    );
   },
 );
 Button.displayName = "Button";
