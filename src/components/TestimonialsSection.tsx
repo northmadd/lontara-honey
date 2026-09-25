@@ -66,7 +66,7 @@ const TestimonialsSection: React.FC<TestimonialsSectionProps> = ({ happyPeopleIm
 
   const centerIdxRef = useRef(0);
   const slotIdxRef = useRef<number[]>([...Array(SLOT_COUNT)].map((_, s) => idx(s - 2)));
-  const baseRef = useRef<number[]>([-1, 0, 1, 2, 3]);
+  const offsetsRef = useRef<number[]>([-1, 0, 1, 2, 3]);
   const elRefs = useRef<(HTMLDivElement | null)[]>([]);
   const animatingRef = useRef(false);
 
@@ -77,14 +77,14 @@ const TestimonialsSection: React.FC<TestimonialsSectionProps> = ({ happyPeopleIm
     const scale = 1.05 - 0.13 * d;
     const opacity = Math.max(0, 1 - 0.55 * d);
     const blur = d * 1.8;
-    el.style.transform = `translate(-50%, -50%) translateY(${(off * SPACING).toFixed(2)}px) scale(${scale.toFixed(3)})`;
+    el.style.transform = `translate(-50%, -50%) translateY(${((off - 1) * SPACING).toFixed(2)}px) scale(${scale.toFixed(3)})`;
     el.style.opacity = opacity.toFixed(3);
     el.style.zIndex = String(30 - Math.round(d) * 10);
     el.style.filter = blur > 0.05 ? `blur(${blur.toFixed(2)}px)` : 'none';
   };
 
   useEffect(() => {
-    baseRef.current.forEach((off, s) => applyStyle(s, off));
+    offsetsRef.current.forEach((off, s) => applyStyle(s, off));
   }, []);
 
   const move = (dir: 'down' | 'up') => {
@@ -92,41 +92,41 @@ const TestimonialsSection: React.FC<TestimonialsSectionProps> = ({ happyPeopleIm
     animatingRef.current = true;
 
     const delta = dir === 'down' ? -1 : 1;
-    const startBase = baseRef.current.slice();
-    const t0 = performance.now();
+    const startOffsets = offsetsRef.current.slice();
 
     const step = (now: number) => {
       const p = Math.min((now - t0) / DURATION, 1);
       const k = easeInOutCubic(p);
-      for (let s = 0; s < SLOT_COUNT; s++) applyStyle(s, startBase[s] + delta * k);
-      if (p < 1) {
-        requestAnimationFrame(step);
-      } else {
-        finish();
-      }
+      for (let s = 0; s < SLOT_COUNT; s++) applyStyle(s, startOffsets[s] + delta * k);
+      if (p < 1) requestAnimationFrame(step);
+      else finish();
     };
 
     const finish = () => {
       const next = idx(dir === 'down' ? centerIdxRef.current + 1 : centerIdxRef.current - 1);
       centerIdxRef.current = next;
 
-      if (dir === 'down') {
-        slotIdxRef.current = [slotIdxRef.current[1], slotIdxRef.current[2], slotIdxRef.current[3], slotIdxRef.current[4], idx(next + 2)];
-      } else {
-        slotIdxRef.current = [idx(next - 2), slotIdxRef.current[0], slotIdxRef.current[1], slotIdxRef.current[2], slotIdxRef.current[3]];
-      }
+      const newOffsets = startOffsets.map((off) => off + delta);
 
-      baseRef.current = [-1, 0, 1, 2, 3];
+      // Node yang keluar dari layar direcycle menjadi kartu "jauh" di sisi berlawanan,
+      // isinya diganti HANYA pada node tersembunyi ini (tidak ada glitch terlihat).
+      const exitOffset = dir === 'down' ? -2 : 4;
+      const exitIndex = newOffsets.indexOf(exitOffset);
+      newOffsets[exitIndex] = dir === 'down' ? 3 : -1;
+      slotIdxRef.current[exitIndex] = dir === 'down' ? idx(next + 2) : idx(next - 2);
+
+      offsetsRef.current = newOffsets;
       setSlotReviews(slotIdxRef.current.map((i) => reviews[i]));
 
       requestAnimationFrame(() =>
         requestAnimationFrame(() => {
-          baseRef.current.forEach((off, s) => applyStyle(s, off));
+          newOffsets.forEach((off, s) => applyStyle(s, off));
           animatingRef.current = false;
         }),
       );
     };
 
+    const t0 = performance.now();
     requestAnimationFrame(step);
   };
 
