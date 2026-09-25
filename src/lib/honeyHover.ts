@@ -1,4 +1,5 @@
 const DURATION = 1000;
+const FRAMES = Math.max(30, Math.round(DURATION / 16.7));
 
 const easeInOutCubic = (t: number) => (t < 0.5 ? 4 * t * t * t : 1 - Math.pow(-2 * t + 2, 3) / 2);
 
@@ -44,10 +45,16 @@ const toOutline = (g: RGB, p: number) =>
   `rgba(${clamp(g.r)}, ${clamp(g.g)}, ${clamp(g.b)}, ${Number.isFinite(p) ? Math.max(0, Math.min(1, p)) : 0})`;
 
 const rafs = new WeakMap<HTMLElement, number>();
+const timers = new WeakMap<HTMLElement, number>();
+const settled = new WeakMap<HTMLElement, 'on' | 'off'>();
 
 export function animateHoneyHover(el: HTMLElement, enter: boolean) {
-  const existing = rafs.get(el);
-  if (existing !== undefined) cancelAnimationFrame(existing);
+  const handle = rafs.get(el);
+  if (handle !== undefined) cancelAnimationFrame(handle);
+  const timer = timers.get(el);
+  if (timer !== undefined) clearTimeout(timer);
+
+  if (settled.get(el) === (enter ? 'on' : 'off')) return;
 
   if (enter) el.classList.add('honey-hovered');
   else el.classList.remove('honey-hovered');
@@ -55,11 +62,19 @@ export function animateHoneyHover(el: HTMLElement, enter: boolean) {
   const isReverse = el.classList.contains('honey-js-hover-reverse');
   const gold = resolveGold(el);
   const white: RGB = { r: 255, g: 255, b: 255 };
-  const start = performance.now();
+  let start: number | null = null;
+  let frames = 0;
 
   const frame = (now: number) => {
-    if (!el.isConnected) return;
-    const raw = Math.min(1, (now - start) / DURATION);
+    if (!el.isConnected) {
+      rafs.delete(el);
+      return;
+    }
+    frames += 1;
+    if (start === null) start = now;
+    const timeRaw = now - start >= 0 ? Math.min(1, (now - start) / DURATION) : -1;
+    const frameRaw = Math.min(1, frames / FRAMES);
+    const raw = timeRaw >= 0 ? Math.min(timeRaw, frameRaw) : frameRaw;
     const p = easeInOutCubic(raw);
 
     if (isReverse) {
@@ -74,8 +89,29 @@ export function animateHoneyHover(el: HTMLElement, enter: boolean) {
 
     if (raw < 1) {
       rafs.set(el, requestAnimationFrame(frame));
+    } else {
+      rafs.delete(el);
+      settled.set(el, enter ? 'on' : 'off');
     }
   };
 
   rafs.set(el, requestAnimationFrame(frame));
+
+  timers.set(
+    el,
+    window.setTimeout(() => {
+      const h = rafs.get(el);
+      if (h !== undefined) cancelAnimationFrame(h);
+      rafs.delete(el);
+      settled.set(el, enter ? 'on' : 'off');
+    }, DURATION + 400),
+  );
+}
+
+export function resetHoneyHoverSettle(el: HTMLElement) {
+  settled.delete(el);
+  const handle = rafs.get(el);
+  if (handle !== undefined) cancelAnimationFrame(handle);
+  const timer = timers.get(el);
+  if (timer !== undefined) clearTimeout(timer);
 }
