@@ -1,4 +1,4 @@
-import React, { useRef, useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { Star, BadgeCheck, ChevronUp, ChevronDown } from 'lucide-react';
 import { reviews, type Testimonial } from '@/data/testimonials';
@@ -7,8 +7,10 @@ interface TestimonialsSectionProps {
   happyPeopleImage: string;
 }
 
+const SLOT_COUNT = 5;
 const REVIEW_COUNT = reviews.length;
-const DURATION = 300;
+const DURATION = 380;
+const SPACING = 214;
 
 const idx = (n: number) => ((n % REVIEW_COUNT) + REVIEW_COUNT) % REVIEW_COUNT;
 
@@ -58,61 +60,74 @@ const ReviewCard: React.FC<ReviewCardProps> = ({ review }) => {
 
 const TestimonialsSection: React.FC<TestimonialsSectionProps> = ({ happyPeopleImage }) => {
   const { t } = useLanguage();
-  const [center, setCenter] = useState(0);
-  const middleRef = useRef<HTMLDivElement>(null);
+  const [slotReviews, setSlotReviews] = useState<Testimonial[]>(() =>
+    [...Array(SLOT_COUNT)].map((_, s) => reviews[idx(s - 2)]),
+  );
+
+  const centerIdxRef = useRef(0);
+  const slotIdxRef = useRef<number[]>([...Array(SLOT_COUNT)].map((_, s) => idx(s - 2)));
+  const baseRef = useRef<number[]>([-1, 0, 1, 2, 3]);
+  const elRefs = useRef<(HTMLDivElement | null)[]>([]);
   const animatingRef = useRef(false);
 
-  const top = reviews[idx(center - 1)];
-  const mid = reviews[center];
-  const bottom = reviews[idx(center + 1)];
+  const applyStyle = (slot: number, off: number) => {
+    const el = elRefs.current[slot];
+    if (!el) return;
+    const d = Math.abs(off - 1);
+    const scale = 1.05 - 0.13 * d;
+    const opacity = Math.max(0, 1 - 0.55 * d);
+    const blur = d * 1.8;
+    el.style.transform = `translate(-50%, -50%) translateY(${(off * SPACING).toFixed(2)}px) scale(${scale.toFixed(3)})`;
+    el.style.opacity = opacity.toFixed(3);
+    el.style.zIndex = String(30 - Math.round(d) * 10);
+    el.style.filter = blur > 0.05 ? `blur(${blur.toFixed(2)}px)` : 'none';
+  };
+
+  useEffect(() => {
+    baseRef.current.forEach((off, s) => applyStyle(s, off));
+  }, []);
 
   const move = (dir: 'down' | 'up') => {
     if (animatingRef.current) return;
-    const el = middleRef.current;
-    if (!el) return;
     animatingRef.current = true;
 
-    const bias = dir === 'down' ? 40 : -40;
+    const delta = dir === 'down' ? -1 : 1;
+    const startBase = baseRef.current.slice();
     const t0 = performance.now();
 
-    const out = (now: number) => {
+    const step = (now: number) => {
       const p = Math.min((now - t0) / DURATION, 1);
       const k = easeInOutCubic(p);
-      const y = -bias * k;
-      const s = 1.06 - 0.1 * k;
-      el.style.opacity = String(1 - k);
-      el.style.transform = `translateY(${y.toFixed(2)}px) scale(${s.toFixed(3)})`;
+      for (let s = 0; s < SLOT_COUNT; s++) applyStyle(s, startBase[s] + delta * k);
       if (p < 1) {
-        requestAnimationFrame(out);
+        requestAnimationFrame(step);
       } else {
-        el.style.opacity = '0';
-        el.style.transform = `translateY(${(-bias).toFixed(2)}px) scale(0.96)`;
-        setCenter((prev) => idx(dir === 'down' ? prev + 1 : prev - 1));
-        requestAnimationFrame(() =>
-          requestAnimationFrame(() => {
-            const t1 = performance.now();
-            const inn = (now2: number) => {
-              const q = Math.min((now2 - t1) / DURATION, 1);
-              const k2 = easeInOutCubic(q);
-              const y2 = bias * (1 - k2);
-              const s2 = 0.96 + 0.1 * k2;
-              el.style.opacity = String(k2);
-              el.style.transform = `translateY(${y2.toFixed(2)}px) scale(${s2.toFixed(3)})`;
-              if (q < 1) {
-                requestAnimationFrame(inn);
-              } else {
-                el.style.opacity = '';
-                el.style.transform = '';
-                animatingRef.current = false;
-              }
-            };
-            requestAnimationFrame(inn);
-          }),
-        );
+        finish();
       }
     };
 
-    requestAnimationFrame(out);
+    const finish = () => {
+      const next = idx(dir === 'down' ? centerIdxRef.current + 1 : centerIdxRef.current - 1);
+      centerIdxRef.current = next;
+
+      if (dir === 'down') {
+        slotIdxRef.current = [idx(next + 2), slotIdxRef.current[1], slotIdxRef.current[2], slotIdxRef.current[3], slotIdxRef.current[4]];
+      } else {
+        slotIdxRef.current = [slotIdxRef.current[0], slotIdxRef.current[1], slotIdxRef.current[2], slotIdxRef.current[3], idx(next - 2)];
+      }
+
+      baseRef.current = [-1, 0, 1, 2, 3];
+      setSlotReviews(slotIdxRef.current.map((i) => reviews[i]));
+
+      requestAnimationFrame(() =>
+        requestAnimationFrame(() => {
+          baseRef.current.forEach((off, s) => applyStyle(s, off));
+          animatingRef.current = false;
+        }),
+      );
+    };
+
+    requestAnimationFrame(step);
   };
 
   return (
@@ -149,8 +164,8 @@ const TestimonialsSection: React.FC<TestimonialsSectionProps> = ({ happyPeopleIm
             <div className="absolute inset-0 bg-gradient-to-t from-honey-dark/30 to-transparent" />
           </div>
 
-          {/* 3 komentar: tengah fokus, atas & bawah blur */}
-          <div className="flex flex-col items-center gap-4 lg:gap-5">
+          {/* Wheel: 3 tampil, semua bergerak serempak */}
+          <div className="flex flex-col items-center justify-center gap-5">
             <button
               type="button"
               onClick={() => move('up')}
@@ -160,23 +175,23 @@ const TestimonialsSection: React.FC<TestimonialsSectionProps> = ({ happyPeopleIm
               <ChevronUp className="h-5 w-5" />
             </button>
 
-            <div className="w-full flex flex-col gap-4">
-              {/* Blur atas */}
-              <div className="w-full opacity-60 blur-[1.5px] scale-[0.97]">
-                <ReviewCard review={top} />
-              </div>
-
-              {/* Fokus tengah */}
-              <div className="w-full">
-                <div ref={middleRef} className="will-change-transform scale-[1.06] shadow-lg">
-                  <ReviewCard review={mid} />
+            <div
+              className="relative w-full overflow-hidden"
+              style={{ height: SPACING * 3 + 140 }}
+            >
+              {slotReviews.map((review, s) => (
+                <div
+                  key={s}
+                  ref={(el) => {
+                    elRefs.current[s] = el;
+                  }}
+                  className="absolute left-1/2 top-1/2 w-full max-w-xl will-change-transform"
+                >
+                  <div className="mx-auto w-full">
+                    <ReviewCard review={review} />
+                  </div>
                 </div>
-              </div>
-
-              {/* Blur bawah */}
-              <div className="w-full opacity-60 blur-[1.5px] scale-[0.97]">
-                <ReviewCard review={bottom} />
-              </div>
+              ))}
             </div>
 
             <button
