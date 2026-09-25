@@ -111,9 +111,9 @@ const TestimonialsSection: React.FC<TestimonialsSectionProps> = ({ happyPeopleIm
       centerIdxRef.current = next;
 
       if (dir === 'down') {
-        slotIdxRef.current = [idx(next + 2), slotIdxRef.current[1], slotIdxRef.current[2], slotIdxRef.current[3], slotIdxRef.current[4]];
+        slotIdxRef.current = [slotIdxRef.current[1], slotIdxRef.current[2], slotIdxRef.current[3], slotIdxRef.current[4], idx(next + 2)];
       } else {
-        slotIdxRef.current = [slotIdxRef.current[0], slotIdxRef.current[1], slotIdxRef.current[2], slotIdxRef.current[3], idx(next - 2)];
+        slotIdxRef.current = [idx(next - 2), slotIdxRef.current[0], slotIdxRef.current[1], slotIdxRef.current[2], slotIdxRef.current[3]];
       }
 
       baseRef.current = [-1, 0, 1, 2, 3];
