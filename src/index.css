@@ -151,9 +151,12 @@
     position: relative;
     isolation: isolate;
     background: transparent !important;
-    color: var(--honey-text-color, #fff) !important;
+    color: #fff !important;
     text-decoration: none;
-    outline: 2px solid var(--honey-outline-color, transparent);
+    outline: 2px solid transparent;
+    outline-offset: 2px;
+    transition: color 1s ease, outline-color 1s ease, box-shadow 0.3s ease !important;
+    -webkit-tap-highlight-color: transparent;
   }
 
   .honey-js-hover::before {
@@ -163,16 +166,29 @@
     z-index: -1;
     border-radius: inherit;
     background: linear-gradient(135deg, hsl(var(--honey-gold)) 0%, hsl(var(--honey-amber)) 50%, hsl(var(--honey-drip)) 100%);
-    opacity: var(--honey-bg-opacity, 1);
+    opacity: 1;
+    transition: opacity 1s ease !important;
+  }
+
+  .honey-js-hover:hover {
+    color: hsl(var(--honey-gold)) !important;
+    outline-color: hsl(var(--honey-gold));
+  }
+
+  .honey-js-hover:hover::before {
+    opacity: 0;
   }
 
   .honey-js-hover-reverse {
     position: relative;
     isolation: isolate;
     background: transparent !important;
-    color: var(--honey-text-color, hsl(var(--honey-gold))) !important;
+    color: hsl(var(--honey-gold)) !important;
     text-decoration: none;
-    outline: 2px solid var(--honey-outline-color, hsl(var(--honey-gold)));
+    outline: 2px solid hsl(var(--honey-gold));
+    outline-offset: 2px;
+    transition: color 1s ease, outline-color 1s ease, box-shadow 0.3s ease !important;
+    -webkit-tap-highlight-color: transparent;
   }
 
   .honey-js-hover-reverse::before {
@@ -182,19 +198,23 @@
     z-index: -1;
     border-radius: inherit;
     background: linear-gradient(135deg, hsl(var(--honey-gold)) 0%, hsl(var(--honey-amber)) 50%, hsl(var(--honey-drip)) 100%);
-    opacity: var(--honey-bg-opacity, 0);
+    opacity: 0;
+    transition: opacity 1s ease !important;
   }
 
-  .honey-js-hover,
-  .honey-js-hover-reverse {
-    transition: box-shadow 300ms ease !important;
-    -webkit-tap-highlight-color: transparent;
+  .honey-js-hover-reverse:hover {
+    color: #fff !important;
+    outline-color: transparent;
+  }
+
+  .honey-js-hover-reverse:hover::before {
+    opacity: 1;
   }
 
   .honey-js-hover:focus-visible,
   .honey-js-hover-reverse:focus-visible {
-    outline: 2px solid hsl(var(--honey-gold));
-    outline-offset: 2px;
+    outline: 2px solid hsl(var(--honey-gold)) !important;
+    outline-offset: 2px !important;
   }
 
   .honey-gradient-soft {
