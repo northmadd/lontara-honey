@@ -177,7 +177,7 @@ const ProductsSection: React.FC<ProductsSectionProps> = ({ products, onOrderProd
                       </div>
                       <Button
                         onClick={() => onOrderProduct(product)}
-                        className="honey-gradient text-white border-0 hover:opacity-90 mt-3"
+                        className="honey-gradient text-white border-2 border-transparent hover:bg-none hover:text-honey-gold hover:border-honey-gold mt-3"
                       >
                         <ShoppingBag className="w-4 h-4 mr-2" />
                         {t('products.order')}
