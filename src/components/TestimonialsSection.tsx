@@ -430,7 +430,7 @@ const TestimonialsSection: React.FC<TestimonialsSectionProps> = ({ happyPeopleIm
                 />
               </div>
 
-              {formError && <p className="text-sm font-medium text-red-500">{formError}</p>}
+              {formError && <p className="text-sm font-medium text-honey-gold">{formError}</p>}
 
               <div className="flex items-center gap-3 pt-1">
                 <button
