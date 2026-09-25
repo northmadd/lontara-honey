@@ -183,6 +183,18 @@
     opacity: var(--honey-bg-opacity, 0);
   }
 
+  .honey-js-hover,
+  .honey-js-hover-reverse {
+    transition: box-shadow 300ms ease !important;
+    -webkit-tap-highlight-color: transparent;
+  }
+
+  .honey-js-hover:focus-visible,
+  .honey-js-hover-reverse:focus-visible {
+    outline: 2px solid hsl(var(--honey-gold));
+    outline-offset: 2px;
+  }
+
   .honey-gradient-soft {
     background: linear-gradient(180deg, hsl(var(--honey-cream)) 0%, hsl(var(--honey-light)) 100%);
   }
