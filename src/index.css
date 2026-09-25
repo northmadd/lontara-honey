@@ -13,6 +13,13 @@
   }
 }
 
+.honey-js-hover,
+.honey-js-hover::before,
+.honey-js-hover-reverse,
+.honey-js-hover-reverse::before {
+  transition-duration: 1s !important;
+}
+
 @layer base {
   :root {
     --background: 40 25% 99%;
