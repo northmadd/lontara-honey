@@ -3,6 +3,7 @@ import { useLanguage } from '@/contexts/LanguageContext';
 import { motion } from 'framer-motion';
 import { ShoppingBag, ZoomIn } from 'lucide-react';
 import { Button } from '@/components/ui/button';
+import SlowZoomImage from '@/components/SlowZoomImage';
 import honeyVisual from '@/assets/honey-visual.webp';
 
 export interface ProductDetail {
@@ -136,12 +137,10 @@ const ProductsSection: React.FC<ProductsSectionProps> = ({ products, onOrderProd
                       className="relative h-80 overflow-hidden bg-muted/70 rounded-xl cursor-pointer group/image"
                       aria-label={`${language === 'en' ? product.name.en : product.name.id} - ${t('products.viewDetails')}`}
                     >
-                      <img
+                      <SlowZoomImage
                         src={product.image}
                         alt={language === 'en' ? product.name.en : product.name.id}
-                        loading="lazy"
-                        decoding="async"
-                        className="w-full h-full object-contain p-6 transition-transform duration-500 group-hover/image:scale-110 rounded-lg"
+                        imgClassName="rounded-lg transition-transform duration-500 group-hover/image:scale-110"
                       />
                       <div className="absolute top-4 right-4">
                         <span className="px-3 py-1 rounded-full text-xs font-medium bg-amber-400 text-amber-900">
