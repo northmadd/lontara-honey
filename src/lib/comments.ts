@@ -11,6 +11,8 @@ export interface SupabaseCommentRow {
   city: string;
   rating: number;
   comment: string;
+  comment_id?: string;
+  comment_en?: string;
   created_at?: string;
 }
 
@@ -33,7 +35,7 @@ const toTestimonial = (row: SupabaseCommentRow): Testimonial => ({
   city: { id: row.city, en: row.city },
   rating: row.rating,
   date: row.created_at ? relativeDate(row.created_at) : { id: 'Baru saja', en: 'Just now' },
-  text: { id: row.comment, en: row.comment },
+  text: { id: row.comment_id || row.comment, en: row.comment_en || row.comment },
 });
 
 const authHeaders = (extra?: Record<string, string>) => ({
@@ -57,6 +59,8 @@ export const addComment = async (input: {
   city: string;
   rating: number;
   comment: string;
+  commentId: string;
+  commentEn: string;
 }): Promise<Testimonial> => {
   if (!isSupabaseConfigured) throw new Error('supabase-not-configured');
   const res = await fetch(`${SUPABASE_URL}/rest/v1/testimonials`, {
@@ -70,6 +74,8 @@ export const addComment = async (input: {
       city: input.city,
       rating: input.rating,
       comment: input.comment,
+      comment_id: input.commentId,
+      comment_en: input.commentEn,
     }),
   });
   if (!res.ok) throw new Error(`supabase-post-failed:${res.status}`);

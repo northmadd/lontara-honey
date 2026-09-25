@@ -3,6 +3,7 @@ import { useLanguage } from '@/contexts/LanguageContext';
 import { Star, BadgeCheck, ChevronUp, ChevronDown, PenLine, X } from 'lucide-react';
 import { reviews, type Testimonial } from '@/data/testimonials';
 import { listComments, addComment } from '@/lib/comments';
+import { translateText } from '@/lib/translate';
 
 interface TestimonialsSectionProps {
   happyPeopleImage: string;
@@ -11,6 +12,21 @@ interface TestimonialsSectionProps {
 const SLOT_COUNT = 5;
 const DURATION = 380;
 const SPACING = 214;
+
+// Posisi wheel dipindah ke scope modul supaya tidak terkunci ke komentar awal
+// saat section di-remount ketika user mengganti bahasa (en/id) atau tema
+// (light/dark) — Index memakai key={animationKey} yang me-remount semua
+// section. Catatan: lazy() React meng-cache chunk, jadi nilai modul ini tetap
+// hidup antar-remount selama sesi SPA; reload penuh akan memulai dari awal.
+let persistedWheel: {
+  userComments: Testimonial[];
+  slotIdx: number[] | null;
+  centerIdx: number;
+} | null = null;
+
+const syncPersistedWheel = (userComments: Testimonial[], slotIdx: number[] | null, centerIdx: number) => {
+  persistedWheel = { userComments, slotIdx, centerIdx };
+};
 
 const easeInOutCubic = (t: number) => (t < 0.5 ? 4 * t * t * t : 1 - Math.pow(-2 * t + 2, 3) / 2);
 
@@ -59,9 +75,13 @@ const ReviewCard: React.FC<ReviewCardProps> = ({ review }) => {
 
 const TestimonialsSection: React.FC<TestimonialsSectionProps> = ({ happyPeopleImage }) => {
   const { t } = useLanguage();
-  const [items, setItems] = useState<Testimonial[]>(reviews);
+  const restored = persistedWheel;
+  const restoredItems = restored ? [...restored.userComments, ...reviews] : reviews;
+  const [items, setItems] = useState<Testimonial[]>(restoredItems);
   const [slotReviews, setSlotReviews] = useState<Testimonial[]>(() =>
-    [...Array(SLOT_COUNT)].map((_, s) => reviews[((s - 2) % reviews.length + reviews.length) % reviews.length]),
+    restored?.slotIdx
+      ? restored.slotIdx.map((i) => restoredItems[i])
+      : [...Array(SLOT_COUNT)].map((_, s) => reviews[((s - 2) % reviews.length + reviews.length) % reviews.length]),
   );
   const [showForm, setShowForm] = useState(false);
   const [formName, setFormName] = useState('');
@@ -72,13 +92,16 @@ const TestimonialsSection: React.FC<TestimonialsSectionProps> = ({ happyPeopleIm
   const [submitting, setSubmitting] = useState(false);
 
   const itemsRef = useRef(items);
-  const centerIdxRef = useRef(0);
-  const slotIdxRef = useRef<number[]>([...Array(SLOT_COUNT)].map((_, s) => ((s - 2) % reviews.length + reviews.length) % reviews.length));
+  const centerIdxRef = useRef(restored?.centerIdx ?? 0);
+  const slotIdxRef = useRef<number[]>(
+    restored?.slotIdx ??
+      [...Array(SLOT_COUNT)].map((_, s) => ((s - 2) % reviews.length + reviews.length) % reviews.length),
+  );
   const offsetsRef = useRef<number[]>([-1, 0, 1, 2, 3]);
   const elRefs = useRef<(HTMLDivElement | null)[]>([]);
   const animatingRef = useRef(false);
   const animTokenRef = useRef(0);
-  const userCommentsRef = useRef<Testimonial[]>([]);
+  const userCommentsRef = useRef<Testimonial[]>(restored?.userComments ?? []);
 
   const mod = (n: number) => ((n % itemsRef.current.length) + itemsRef.current.length) % itemsRef.current.length;
 
@@ -144,6 +167,7 @@ const TestimonialsSection: React.FC<TestimonialsSectionProps> = ({ happyPeopleIm
 
       offsetsRef.current = newOffsets;
       setSlotReviews(slotIdxRef.current.map((i) => itemsRef.current[i]));
+      syncPersistedWheel(userCommentsRef.current, slotIdxRef.current, centerIdxRef.current);
 
       requestAnimationFrame(() =>
         requestAnimationFrame(() => {
@@ -167,6 +191,7 @@ const TestimonialsSection: React.FC<TestimonialsSectionProps> = ({ happyPeopleIm
     slotIdxRef.current = [nidx(-2), nidx(-1), 0, 1, 2];
     offsetsRef.current = [-1, 0, 1, 2, 3];
     setSlotReviews(slotIdxRef.current.map((i) => list[i]));
+    syncPersistedWheel(list.slice(0, Math.max(0, list.length - reviews.length)), slotIdxRef.current, centerIdxRef.current);
 
     requestAnimationFrame(() =>
       requestAnimationFrame(() => {
@@ -177,14 +202,16 @@ const TestimonialsSection: React.FC<TestimonialsSectionProps> = ({ happyPeopleIm
 
   // Ambil komentar pengguna yang sudah tersimpan di Supabase (tampil selamanya)
   useEffect(() => {
+    const hasRestoredWheel = persistedWheel !== null;
     (async () => {
       try {
         const list = await listComments();
-        if (list.length > 0) {
-          userCommentsRef.current = list;
-          const merged = [...list, ...reviews];
-          itemsRef.current = merged;
-          setItems(merged);
+        userCommentsRef.current = list;
+        const merged = list.length > 0 ? [...list, ...reviews] : reviews;
+        itemsRef.current = merged;
+        setItems(merged);
+        syncPersistedWheel(list, slotIdxRef.current, centerIdxRef.current);
+        if (!hasRestoredWheel) {
           setWheelFrom(merged);
         }
       } catch {
@@ -225,11 +252,20 @@ const TestimonialsSection: React.FC<TestimonialsSectionProps> = ({ happyPeopleIm
         setFormError(t('testimonials.writeCityInvalid'));
         return;
       }
+      const rawText = formComment.trim();
+      const [translatedEn, translatedId] = await Promise.all([
+        translateText(rawText, 'en'),
+        translateText(rawText, 'id'),
+      ]);
+      const commentEn = translatedEn && translatedEn.trim() ? translatedEn.trim() : rawText;
+      const commentId = translatedId && translatedId.trim() ? translatedId.trim() : rawText;
       const added = await addComment({
         name: formName.trim(),
         city: formCity.trim(),
         rating: formRating,
-        comment: formComment.trim(),
+        comment: rawText,
+        commentId,
+        commentEn,
       });
       const userList = [added, ...userCommentsRef.current];
       userCommentsRef.current = userList;

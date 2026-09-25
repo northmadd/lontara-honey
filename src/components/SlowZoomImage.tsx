@@ -6,37 +6,55 @@ interface SlowZoomImageProps {
   imgClassName?: string;
 }
 
-const DURATION = 12000;
-const MIN_SCALE = 1;
-const MAX_SCALE = 1.15;
+const DURATION = 700;
+const MAX_SCALE = 1.12;
 
-const easeInOutSine = (t: number) => -(Math.cos(Math.PI * t) - 1) / 2;
+const easeInOutCubic = (t: number) => (t < 0.5 ? 4 * t * t * t : 1 - Math.pow(-2 * t + 2, 3) / 2);
 
 const SlowZoomImage: React.FC<SlowZoomImageProps> = ({ src, alt, imgClassName = '' }) => {
   const ref = useRef<HTMLDivElement | null>(null);
+  const scaleRef = useRef(1);
+  const rafRef = useRef(0);
 
   useEffect(() => {
     const el = ref.current;
     if (!el) return;
-    let raf = 0;
-    const start = performance.now();
 
-    const tick = (now: number) => {
-      const t = ((now - start) % DURATION) / DURATION;
-      const scale = MIN_SCALE + (MAX_SCALE - MIN_SCALE) * easeInOutSine(t);
-      el.style.transform = `scale(${scale.toFixed(4)})`;
-      raf = requestAnimationFrame(tick);
+    const startTween = (target: number) => {
+      cancelAnimationFrame(rafRef.current);
+      const from = scaleRef.current;
+      if (from === target) return;
+      const t0 = performance.now();
+
+      const apply = (now: number) => {
+        const p = Math.min((now - t0) / DURATION, 1);
+        const scale = from + (target - from) * easeInOutCubic(p);
+        scaleRef.current = scale;
+        el.style.transform = `scale(${scale.toFixed(4)})`;
+        if (p < 1) rafRef.current = requestAnimationFrame(apply);
+      };
+
+      rafRef.current = requestAnimationFrame(apply);
     };
 
-    raf = requestAnimationFrame(tick);
-    return () => cancelAnimationFrame(raf);
+    const onEnter = () => startTween(MAX_SCALE);
+    const onLeave = () => startTween(1);
+
+    el.addEventListener('mouseenter', onEnter);
+    el.addEventListener('mouseleave', onLeave);
+
+    return () => {
+      cancelAnimationFrame(rafRef.current);
+      el.removeEventListener('mouseenter', onEnter);
+      el.removeEventListener('mouseleave', onLeave);
+    };
   }, []);
 
   return (
     <div
       ref={ref}
       className="w-full h-full will-change-transform"
-      style={{ transformOrigin: 'center' }}
+      style={{ transformOrigin: 'center', transform: 'scale(1)' }}
     >
       <img
         src={src}

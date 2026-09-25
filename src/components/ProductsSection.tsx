@@ -140,7 +140,7 @@ const ProductsSection: React.FC<ProductsSectionProps> = ({ products, onOrderProd
                       <SlowZoomImage
                         src={product.image}
                         alt={language === 'en' ? product.name.en : product.name.id}
-                        imgClassName="rounded-lg transition-transform duration-500 group-hover/image:scale-110"
+                        imgClassName="rounded-lg"
                       />
                       <div className="absolute top-4 right-4">
                         <span className="px-3 py-1 rounded-full text-xs font-medium bg-amber-400 text-amber-900">
