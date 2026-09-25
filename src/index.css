@@ -498,6 +498,11 @@ body {
   transition: height 150ms ease;
 }
 
+button::-moz-focus-inner {
+  border: 0;
+  padding: 0;
+}
+
 .cf-turnstile {
   overflow: hidden;
   width: 100%;
