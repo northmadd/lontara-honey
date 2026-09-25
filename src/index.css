@@ -282,7 +282,6 @@ html body .nav-link-line {
   .nav-link:focus-visible .nav-link-line,
   .nav-link-active .nav-link-line {
     transform: scaleX(1);
-    transform-origin: right;
   }
 }
 
