@@ -230,10 +230,11 @@ const translations: Record<Language, Record<string, string>> = {
     'testimonials.writeCommentPh': 'Tell us about your experience with Lontara Honey...',
     'testimonials.writeSubmit': 'Post Review',
     'testimonials.writeCancel': 'Cancel',
-    'testimonials.writeRequired': 'Please fill in your name and review.',
-    'testimonials.writeThanks': 'Thank you! Your review has been posted.',
+    'testimonials.writeRequired': 'Please fill in your name, city, and review.',
+    'testimonials.writeCityInvalid': 'City not found. Please make sure the city name is spelled correctly and exists in the world.',
+    'testimonials.writeFailed': 'Failed to save your review. Please check your connection and try again.',
+    'testimonials.writePosting': 'Posting...',
     'testimonials.writeAria': 'Write a review',
-    'testimonials.delete.aria': 'Remove review',
 
     // Footer
     'footer.tagline': 'Pure honey from the heart of Sulawesi',
@@ -601,10 +602,11 @@ const translations: Record<Language, Record<string, string>> = {
     'testimonials.writeCommentPh': 'Ceritakan pengalaman Anda dengan Lontara Honey...',
     'testimonials.writeSubmit': 'Kirim Komentar',
     'testimonials.writeCancel': 'Batal',
-    'testimonials.writeRequired': 'Mohon isi nama dan komentar Anda.',
-    'testimonials.writeThanks': 'Terima kasih! Komentar Anda berhasil diposting.',
+    'testimonials.writeRequired': 'Mohon isi nama, kota, dan komentar Anda.',
+    'testimonials.writeCityInvalid': 'Kota tidak ditemukan. Pastikan nama kota ditulis dengan benar dan ada di dunia.',
+    'testimonials.writeFailed': 'Gagal menyimpan komentar. Periksa koneksi Anda dan coba lagi.',
+    'testimonials.writePosting': 'Mengirim...',
     'testimonials.writeAria': 'Tulis komentar',
-    'testimonials.delete.aria': 'Hapus komentar',
 
     // Footer
     'footer.tagline': 'Madu murni dari jantung Sulawesi',

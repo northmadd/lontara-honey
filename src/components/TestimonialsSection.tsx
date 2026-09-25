@@ -7,6 +7,8 @@ interface TestimonialsSectionProps {
   happyPeopleImage: string;
 }
 
+const API_URL = `${import.meta.env.BASE_URL}api/user-testimonials.php`;
+
 const SLOT_COUNT = 5;
 const DURATION = 380;
 const SPACING = 214;
@@ -68,6 +70,7 @@ const TestimonialsSection: React.FC<TestimonialsSectionProps> = ({ happyPeopleIm
   const [formRating, setFormRating] = useState(5);
   const [formComment, setFormComment] = useState('');
   const [formError, setFormError] = useState('');
+  const [submitting, setSubmitting] = useState(false);
 
   const itemsRef = useRef(items);
   const centerIdxRef = useRef(0);
@@ -75,6 +78,7 @@ const TestimonialsSection: React.FC<TestimonialsSectionProps> = ({ happyPeopleIm
   const offsetsRef = useRef<number[]>([-1, 0, 1, 2, 3]);
   const elRefs = useRef<(HTMLDivElement | null)[]>([]);
   const animatingRef = useRef(false);
+  const animTokenRef = useRef(0);
 
   const mod = (n: number) => ((n % itemsRef.current.length) + itemsRef.current.length) % itemsRef.current.length;
 
@@ -112,11 +116,13 @@ const TestimonialsSection: React.FC<TestimonialsSectionProps> = ({ happyPeopleIm
     if (animatingRef.current) return;
     animatingRef.current = true;
 
+    const myToken = ++animTokenRef.current;
     const delta = dir === 'down' ? -1 : 1;
     const startOffsets = offsetsRef.current.slice();
     const t0 = performance.now();
 
     const step = (now: number) => {
+      if (animTokenRef.current !== myToken) return;
       const p = Math.min((now - t0) / DURATION, 1);
       const k = easeInOutCubic(p);
       for (let s = 0; s < SLOT_COUNT; s++) applyStyle(s, startOffsets[s] + delta * k);
@@ -125,6 +131,7 @@ const TestimonialsSection: React.FC<TestimonialsSectionProps> = ({ happyPeopleIm
     };
 
     const finish = () => {
+      if (animTokenRef.current !== myToken) return;
       const next = mod(dir === 'down' ? centerIdxRef.current + 1 : centerIdxRef.current - 1);
       centerIdxRef.current = next;
 
@@ -140,6 +147,7 @@ const TestimonialsSection: React.FC<TestimonialsSectionProps> = ({ happyPeopleIm
 
       requestAnimationFrame(() =>
         requestAnimationFrame(() => {
+          if (animTokenRef.current !== myToken) return;
           newOffsets.forEach((off, s) => applyStyle(s, off));
           animatingRef.current = false;
         }),
@@ -149,47 +157,106 @@ const TestimonialsSection: React.FC<TestimonialsSectionProps> = ({ happyPeopleIm
     requestAnimationFrame(step);
   };
 
-  const addReview = (review: Testimonial) => {
-    const nextItems = [review, ...itemsRef.current];
-    itemsRef.current = nextItems;
-    setItems(nextItems);
+  const setWheelFrom = (list: Testimonial[]) => {
+    animTokenRef.current += 1;
+    animatingRef.current = false;
 
-    const N = nextItems.length;
+    const N = list.length;
     const nidx = (n: number) => ((n % N) + N) % N;
     centerIdxRef.current = 0;
     slotIdxRef.current = [nidx(-2), nidx(-1), 0, 1, 2];
     offsetsRef.current = [-1, 0, 1, 2, 3];
-    setSlotReviews(slotIdxRef.current.map((i) => nextItems[i]));
+    setSlotReviews(slotIdxRef.current.map((i) => list[i]));
 
-    if (animatingRef.current) return;
-    animatingRef.current = true;
     requestAnimationFrame(() =>
       requestAnimationFrame(() => {
         offsetsRef.current.forEach((off, s) => applyStyle(s, off));
-        animatingRef.current = false;
       }),
     );
   };
 
-  const submit = () => {
-    if (!formName.trim() || !formComment.trim()) {
+  // Ambil komentar pengguna yang sudah tersimpan di server (tampil selamanya)
+  useEffect(() => {
+    let cancelled = false;
+    (async () => {
+      try {
+        const res = await fetch(API_URL, { headers: { Accept: 'application/json' } });
+        if (!res.ok) return;
+        const list = (await res.json()) as Testimonial[];
+        if (!cancelled && Array.isArray(list) && list.length > 0) {
+          const merged = [...list, ...reviews];
+          itemsRef.current = merged;
+          setItems(merged);
+          setWheelFrom(merged);
+        }
+      } catch {
+        // Abaikan — cukup testimonial statis bawaan
+        return;
+      }
+    })();
+    return () => {
+      cancelled = true;
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  // Validasi: apakah nama kota benar-benar ada di dunia (OpenStreetMap/Nominatim)
+  const verifyCity = async (city: string): Promise<boolean> => {
+    try {
+      const params = new URLSearchParams({ format: 'jsonv2', q: city, limit: '1', 'accept-language': 'id' });
+      const res = await fetch(`https://nominatim.openstreetmap.org/search?${params.toString()}`, {
+        headers: { Accept: 'application/json' },
+      });
+      if (!res.ok) return false;
+      const data = (await res.json()) as Array<unknown>;
+      return Array.isArray(data) && data.length > 0;
+    } catch {
+      // Gagal terhubung layanan verifikasi — jangan blokir pengguna
+      return true;
+    }
+  };
+
+  const submit = async () => {
+    if (submitting) return;
+    if (!formName.trim() || !formCity.trim() || !formComment.trim()) {
       setFormError(t('testimonials.writeRequired'));
       return;
     }
-    const review: Testimonial = {
-      name: formName.trim(),
-      city: { id: formCity.trim() || 'Sulawesi Selatan', en: formCity.trim() || 'South Sulawesi' },
-      rating: formRating,
-      date: { id: 'Baru saja', en: 'Just now' },
-      text: { id: formComment.trim(), en: formComment.trim() },
-    };
-    addReview(review);
-    setFormName('');
-    setFormCity('');
-    setFormRating(5);
-    setFormComment('');
+    setSubmitting(true);
     setFormError('');
-    setShowForm(false);
+    try {
+      const cityExists = await verifyCity(formCity.trim());
+      if (!cityExists) {
+        setFormError(t('testimonials.writeCityInvalid'));
+        return;
+      }
+      const res = await fetch(API_URL, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          name: formName.trim(),
+          city: formCity.trim(),
+          rating: formRating,
+          comment: formComment.trim(),
+        }),
+      });
+      if (!res.ok) throw new Error('post-failed');
+      const result = (await res.json()) as { success?: boolean; entries?: Testimonial[] };
+      const serverList = Array.isArray(result.entries) ? result.entries : [];
+      const merged = [...serverList, ...reviews];
+      itemsRef.current = merged;
+      setItems(merged);
+      setWheelFrom(merged);
+      setFormName('');
+      setFormCity('');
+      setFormRating(5);
+      setFormComment('');
+      setShowForm(false);
+    } catch {
+      setFormError(t('testimonials.writeFailed'));
+    } finally {
+      setSubmitting(false);
+    }
   };
 
   return (
@@ -275,7 +342,7 @@ const TestimonialsSection: React.FC<TestimonialsSectionProps> = ({ happyPeopleIm
                 type="button"
                 onClick={() => setShowForm(true)}
                 aria-label={t('testimonials.writeAria')}
-                className="inline-flex items-center gap-2 rounded-full border-2 border-honey-gold bg-honey-gold px-5 py-2.5 font-semibold text-honey-dark transition-colors duration-300 hover:bg-transparent hover:text-honey-gold"
+                className="inline-flex items-center gap-2 rounded-full border-2 border-honey-gold bg-honey-gold px-5 py-2.5 font-semibold text-white transition-colors duration-300 hover:bg-transparent hover:text-honey-gold"
               >
                 <PenLine className="h-4 w-4" />
                 {t('testimonials.writeCta')}
@@ -319,7 +386,7 @@ const TestimonialsSection: React.FC<TestimonialsSectionProps> = ({ happyPeopleIm
 
               <div>
                 <label className="mb-1 block text-sm font-medium text-muted-foreground dark:text-white/80">
-                  {t('testimonials.writeCity')}
+                  {t('testimonials.writeCity')} *
                 </label>
                 <input
                   value={formCity}
@@ -369,9 +436,10 @@ const TestimonialsSection: React.FC<TestimonialsSectionProps> = ({ happyPeopleIm
                 <button
                   type="button"
                   onClick={submit}
-                  className="flex-1 rounded-full bg-honey-gold px-4 py-2.5 font-semibold text-honey-dark transition-colors duration-300 hover:bg-transparent hover:text-honey-gold border-2 border-honey-gold"
+                  disabled={submitting}
+                  className="flex-1 rounded-full bg-honey-gold px-4 py-2.5 font-semibold text-white transition-colors duration-300 hover:bg-transparent hover:text-honey-gold border-2 border-honey-gold disabled:cursor-not-allowed disabled:opacity-60"
                 >
-                  {t('testimonials.writeSubmit')}
+                  {submitting ? t('testimonials.writePosting') : t('testimonials.writeSubmit')}
                 </button>
                 <button
                   type="button"
