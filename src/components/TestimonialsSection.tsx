@@ -368,7 +368,7 @@ const TestimonialsSection: React.FC<TestimonialsSectionProps> = ({ happyPeopleIm
                 type="button"
                 onClick={() => setShowForm(true)}
                 aria-label={t('testimonials.writeAria')}
-                className="inline-flex items-center gap-2 rounded-full border-2 border-honey-gold bg-honey-gold px-5 py-2.5 font-semibold text-white transition-colors duration-300 hover:bg-transparent hover:text-honey-gold"
+                className="inline-flex items-center gap-2 rounded-full honey-gradient text-white border-2 border-transparent honey-hover px-5 py-2.5 font-semibold"
               >
                 <PenLine className="h-4 w-4" />
                 {t('testimonials.writeCta')}
@@ -463,7 +463,7 @@ const TestimonialsSection: React.FC<TestimonialsSectionProps> = ({ happyPeopleIm
                   type="button"
                   onClick={submit}
                   disabled={submitting}
-                  className="flex-1 rounded-full bg-honey-gold px-4 py-2.5 font-semibold text-white transition-colors duration-300 hover:bg-transparent hover:text-honey-gold border-2 border-honey-gold disabled:cursor-not-allowed disabled:opacity-60"
+                  className="flex-1 rounded-full honey-gradient text-white border-2 border-transparent honey-hover px-4 py-2.5 font-semibold disabled:cursor-not-allowed disabled:opacity-60"
                 >
                   {submitting ? t('testimonials.writePosting') : t('testimonials.writeSubmit')}
                 </button>
