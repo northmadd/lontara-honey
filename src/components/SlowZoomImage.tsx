@@ -6,7 +6,7 @@ interface SlowZoomImageProps {
   imgClassName?: string;
 }
 
-const DURATION = 700;
+const DURATION = 500;
 const MAX_SCALE = 1.12;
 const MAX_FRAMES = Math.max(30, Math.round((DURATION / 16.7) * 1.5));
 
