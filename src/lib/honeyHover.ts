@@ -26,7 +26,14 @@ function parseHslVar(el: HTMLElement, name: string): RGB | null {
   return hslToRgb(h, s, l);
 }
 
-const mix = (a: number, b: number, t: number) => Math.round(a + (b - a) * t);
+const clamp = (n: number) => (Number.isFinite(n) ? Math.max(0, Math.min(255, Math.round(n))) : 255);
+
+const mix = (a: number, b: number, t: number) => a + (b - a) * t;
+
+const toColor = (r: number, g: number, b: number) => `rgb(${clamp(r)}, ${clamp(g)}, ${clamp(b)})`;
+
+const toOutline = (g: RGB, p: number) =>
+  `rgba(${clamp(g.r)}, ${clamp(g.g)}, ${clamp(g.b)}, ${Number.isFinite(p) ? Math.max(0, Math.min(1, p)) : 0})`;
 
 const rafs = new WeakMap<HTMLElement, number>();
 
@@ -48,19 +55,13 @@ export function animateHoneyHover(el: HTMLElement, enter: boolean) {
     const p = easeInOutCubic(raw);
 
     if (isReverse) {
-      el.style.setProperty('--honey-bg-opacity', String(p));
-      el.style.setProperty(
-        '--honey-text-color',
-        `rgb(${mix(gold.r, white.r, p)}, ${mix(gold.g, white.g, p)}, ${mix(gold.b, white.b, p)})`,
-      );
-      el.style.setProperty('--honey-outline-color', `rgba(${gold.r}, ${gold.g}, ${gold.b}, ${1 - p})`);
+      el.style.setProperty('--honey-bg-opacity', String(Number.isFinite(p) ? Math.max(0, Math.min(1, p)) : 0));
+      el.style.setProperty('--honey-text-color', toColor(mix(gold.r, white.r, p), mix(gold.g, white.g, p), mix(gold.b, white.b, p)));
+      el.style.setProperty('--honey-outline-color', toOutline(gold, 1 - p));
     } else {
-      el.style.setProperty('--honey-bg-opacity', String(1 - p));
-      el.style.setProperty(
-        '--honey-text-color',
-        `rgb(${mix(white.r, gold.r, p)}, ${mix(white.g, gold.g, p)}, ${mix(white.b, gold.b, p)})`,
-      );
-      el.style.setProperty('--honey-outline-color', `rgba(${gold.r}, ${gold.g}, ${gold.b}, ${p})`);
+      el.style.setProperty('--honey-bg-opacity', String(Number.isFinite(p) ? Math.max(0, Math.min(1, 1 - p)) : 1));
+      el.style.setProperty('--honey-text-color', toColor(mix(white.r, gold.r, p), mix(white.g, gold.g, p), mix(white.b, gold.b, p)));
+      el.style.setProperty('--honey-outline-color', toOutline(gold, p));
     }
 
     if (raw < 1) {

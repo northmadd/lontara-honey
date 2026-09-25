@@ -152,6 +152,7 @@
     isolation: isolate;
     background: transparent !important;
     color: var(--honey-text-color, #fff) !important;
+    text-decoration: none;
     outline: 2px solid var(--honey-outline-color, transparent);
   }
 
@@ -170,6 +171,7 @@
     isolation: isolate;
     background: transparent !important;
     color: var(--honey-text-color, hsl(var(--honey-gold))) !important;
+    text-decoration: none;
     outline: 2px solid var(--honey-outline-color, hsl(var(--honey-gold)));
   }
 
