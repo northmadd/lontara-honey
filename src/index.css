@@ -13,10 +13,10 @@
   }
 }
 
-.honey-js-hover,
-.honey-js-hover::before,
-.honey-js-hover-reverse,
-.honey-js-hover-reverse::before {
+html body .honey-js-hover,
+html body .honey-js-hover::before,
+html body .honey-js-hover-reverse,
+html body .honey-js-hover-reverse::before {
   transition-duration: 1s !important;
 }
 

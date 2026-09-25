@@ -64,11 +64,17 @@
       body {
         transition: none !important;
       }
-      html:not(.ready) *,
-      html:not(.ready) *::before,
-      html:not(.ready) *::after {
+      *,
+      *::before,
+      *::after {
         transition-duration: 0ms !important;
         animation-duration: 0ms !important;
+      }
+      html.ready *,
+      html.ready *::before,
+      html.ready *::after {
+        transition-duration: initial !important;
+        animation-duration: initial !important;
       }
     </style>
 
