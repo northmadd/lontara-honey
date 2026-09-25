@@ -163,7 +163,7 @@ const InternationalSection = () => {
           {cards.map((card, index) => (
             <motion.article
               key={card.titleKey}
-              className="honey-card p-6 relative group cursor-pointer"
+              className="honey-card p-6 relative group cursor-pointer flex flex-col"
               initial={{ opacity: 0, y: 30 }}
               whileInView={{ opacity: 1, y: 0 }}
               viewport={{ once: true, margin: '-40px' }}
@@ -183,8 +183,8 @@ const InternationalSection = () => {
               <card.icon className="h-7 w-7 text-honey-amber transition-transform duration-300 group-hover:scale-110" />
               <h3 className="mt-4 font-bold text-honey-gold">{t(card.titleKey)}</h3>
               <div className="mt-2 h-0.5 w-12 bg-honey-gold/60 transition-all duration-300 group-hover:w-20" />
-              <p className="mt-3 text-sm text-muted-foreground dark:text-white/80">{t(card.textKey)}</p>
-              <div className="mt-5 inline-flex items-center gap-1.5 text-xs font-semibold text-honey-gold opacity-70 transition-opacity duration-300 group-hover:opacity-100">
+              <p className="mt-3 flex-1 text-sm text-muted-foreground dark:text-white/80">{t(card.textKey)}</p>
+              <div className="mt-auto inline-flex items-center gap-1.5 pt-5 text-xs font-semibold text-honey-gold opacity-70 transition-opacity duration-300 group-hover:opacity-100">
                 {t('international.details.view')}
                 <ArrowRight className="h-3.5 w-3.5 transition-transform duration-300 group-hover:translate-x-1" />
               </div>
