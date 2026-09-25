@@ -130,7 +130,7 @@ const AboutSection: React.FC<AboutSectionProps> = ({ aboutImage }) => {
               {features.map((feature, index) => (
                 <motion.div
                   key={index}
-                  className="honey-card p-5 cursor-pointer group"
+                  className="honey-card p-5 cursor-pointer group flex flex-col h-full"
                   initial={{ opacity: 0, y: 20 }}
                   whileInView={{ opacity: 1, y: 0 }}
                   viewport={{ once: true }}
@@ -156,7 +156,7 @@ const AboutSection: React.FC<AboutSectionProps> = ({ aboutImage }) => {
                   <p className="text-sm text-muted-foreground dark:text-white/80">
                     {t(feature.descKey)}
                   </p>
-                  <div className="mt-4 inline-flex items-center gap-1.5 text-xs font-semibold text-honey-gold opacity-70 transition-opacity duration-300 group-hover:opacity-100">
+                  <div className="mt-auto pt-4 inline-flex items-center gap-1.5 text-xs font-semibold text-honey-gold opacity-70 transition-opacity duration-300 group-hover:opacity-100">
                     {t('international.details.view')}
                     <ArrowRight className="h-3.5 w-3.5 transition-transform duration-300 group-hover:translate-x-1" />
                   </div>
