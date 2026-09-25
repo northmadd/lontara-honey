@@ -12,6 +12,7 @@ interface TestimonialsSectionProps {
 
 const SLOT_COUNT = 5;
 const DURATION = 380;
+const MAX_FRAMES = Math.max(30, Math.round((DURATION / 16.7) * 1.5));
 const SPACING = 214;
 
 // Posisi wheel dipindah ke scope modul supaya tidak terkunci ke komentar awal
@@ -143,11 +144,17 @@ const TestimonialsSection: React.FC<TestimonialsSectionProps> = ({ happyPeopleIm
     const myToken = ++animTokenRef.current;
     const delta = dir === 'down' ? -1 : 1;
     const startOffsets = offsetsRef.current.slice();
-    const t0 = performance.now();
+    let t0: number | null = null;
+    let frames = 0;
 
     const step = (now: number) => {
       if (animTokenRef.current !== myToken) return;
-      const p = Math.min((now - t0) / DURATION, 1);
+      if (t0 === null) t0 = now;
+      frames += 1;
+      const elapsed = now - t0 >= 0 ? (now - t0) / DURATION : -1;
+      const timeP = elapsed >= 0 ? Math.min(1, elapsed) : -1;
+      const frameP = Math.min(1, frames / MAX_FRAMES);
+      const p = timeP >= 0 ? Math.min(timeP, frameP) : frameP;
       const k = easeInOutCubic(p);
       for (let s = 0; s < SLOT_COUNT; s++) applyStyle(s, startOffsets[s] + delta * k);
       if (p < 1) requestAnimationFrame(step);

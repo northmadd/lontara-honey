@@ -8,6 +8,7 @@ interface SlowZoomImageProps {
 
 const DURATION = 700;
 const MAX_SCALE = 1.12;
+const MAX_FRAMES = Math.max(30, Math.round((DURATION / 16.7) * 1.5));
 
 const easeInOutCubic = (t: number) => (t < 0.5 ? 4 * t * t * t : 1 - Math.pow(-2 * t + 2, 3) / 2);
 
@@ -24,10 +25,16 @@ const SlowZoomImage: React.FC<SlowZoomImageProps> = ({ src, alt, imgClassName = 
       cancelAnimationFrame(rafRef.current);
       const from = scaleRef.current;
       if (from === target) return;
-      const t0 = performance.now();
+      let t0: number | null = null;
+      let frames = 0;
 
       const apply = (now: number) => {
-        const p = Math.min((now - t0) / DURATION, 1);
+        if (t0 === null) t0 = now;
+        frames += 1;
+        const elapsed = now - t0 >= 0 ? (now - t0) / DURATION : -1;
+        const timeP = elapsed >= 0 ? Math.min(1, elapsed) : -1;
+        const frameP = Math.min(1, frames / MAX_FRAMES);
+        const p = timeP >= 0 ? Math.min(timeP, frameP) : frameP;
         const scale = from + (target - from) * easeInOutCubic(p);
         scaleRef.current = scale;
         el.style.transform = `scale(${scale.toFixed(4)})`;
