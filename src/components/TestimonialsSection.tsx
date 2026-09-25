@@ -2,12 +2,11 @@ import React, { useEffect, useRef, useState } from 'react';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { Star, BadgeCheck, ChevronUp, ChevronDown, PenLine, X } from 'lucide-react';
 import { reviews, type Testimonial } from '@/data/testimonials';
+import { listComments, addComment } from '@/lib/comments';
 
 interface TestimonialsSectionProps {
   happyPeopleImage: string;
 }
-
-const API_URL = `${import.meta.env.BASE_URL}api/user-testimonials.php`;
 
 const SLOT_COUNT = 5;
 const DURATION = 380;
@@ -79,6 +78,7 @@ const TestimonialsSection: React.FC<TestimonialsSectionProps> = ({ happyPeopleIm
   const elRefs = useRef<(HTMLDivElement | null)[]>([]);
   const animatingRef = useRef(false);
   const animTokenRef = useRef(0);
+  const userCommentsRef = useRef<Testimonial[]>([]);
 
   const mod = (n: number) => ((n % itemsRef.current.length) + itemsRef.current.length) % itemsRef.current.length;
 
@@ -175,15 +175,13 @@ const TestimonialsSection: React.FC<TestimonialsSectionProps> = ({ happyPeopleIm
     );
   };
 
-  // Ambil komentar pengguna yang sudah tersimpan di server (tampil selamanya)
+  // Ambil komentar pengguna yang sudah tersimpan di Supabase (tampil selamanya)
   useEffect(() => {
-    let cancelled = false;
     (async () => {
       try {
-        const res = await fetch(API_URL, { headers: { Accept: 'application/json' } });
-        if (!res.ok) return;
-        const list = (await res.json()) as Testimonial[];
-        if (!cancelled && Array.isArray(list) && list.length > 0) {
+        const list = await listComments();
+        if (list.length > 0) {
+          userCommentsRef.current = list;
           const merged = [...list, ...reviews];
           itemsRef.current = merged;
           setItems(merged);
@@ -194,9 +192,6 @@ const TestimonialsSection: React.FC<TestimonialsSectionProps> = ({ happyPeopleIm
         return;
       }
     })();
-    return () => {
-      cancelled = true;
-    };
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
@@ -230,20 +225,15 @@ const TestimonialsSection: React.FC<TestimonialsSectionProps> = ({ happyPeopleIm
         setFormError(t('testimonials.writeCityInvalid'));
         return;
       }
-      const res = await fetch(API_URL, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          name: formName.trim(),
-          city: formCity.trim(),
-          rating: formRating,
-          comment: formComment.trim(),
-        }),
+      const added = await addComment({
+        name: formName.trim(),
+        city: formCity.trim(),
+        rating: formRating,
+        comment: formComment.trim(),
       });
-      if (!res.ok) throw new Error('post-failed');
-      const result = (await res.json()) as { success?: boolean; entries?: Testimonial[] };
-      const serverList = Array.isArray(result.entries) ? result.entries : [];
-      const merged = [...serverList, ...reviews];
+      const userList = [added, ...userCommentsRef.current];
+      userCommentsRef.current = userList;
+      const merged = [...userList, ...reviews];
       itemsRef.current = merged;
       setItems(merged);
       setWheelFrom(merged);

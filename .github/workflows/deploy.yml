@@ -38,6 +38,8 @@ jobs:
           VITE_TURNSTILE_VERIFY_URL: https://lontarahoney.com/api/verify-turnstile.php
           VITE_CLOUDINARY_CLOUD_NAME: ida9vdv6
           VITE_CLOUDINARY_UPLOAD_PRESET: lontara_honey
+          VITE_SUPABASE_URL: ''
+          VITE_SUPABASE_ANON_KEY: ''
 
       - name: Upload artifact
         uses: actions/upload-pages-artifact@v3
