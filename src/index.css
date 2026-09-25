@@ -147,6 +147,13 @@
     background: linear-gradient(135deg, hsl(var(--honey-gold)) 0%, hsl(var(--honey-amber)) 50%, hsl(var(--honey-drip)) 100%);
   }
 
+  .honey-hover:hover {
+    background-image: none !important;
+    background-color: transparent;
+    color: hsl(var(--honey-gold));
+    border-color: hsl(var(--honey-gold));
+  }
+
   .honey-gradient-soft {
     background: linear-gradient(180deg, hsl(var(--honey-cream)) 0%, hsl(var(--honey-light)) 100%);
   }

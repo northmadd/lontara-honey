@@ -832,7 +832,7 @@ const OrderModal: React.FC<OrderModalProps> = ({ product, onClose }) => {
               type="submit"
               size="lg"
               disabled={sending}
-              className="w-full honey-gradient text-white border-2 border-transparent hover:bg-none hover:text-honey-gold hover:border-honey-gold py-6 text-lg font-semibold"
+              className="w-full honey-gradient text-white border-2 border-transparent honey-hover py-6 text-lg font-semibold"
             >
               {sending ? t('order.qris.proof.uploading') : t('order.submit')}
             </Button>
