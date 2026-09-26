@@ -24,6 +24,10 @@ html body .nav-link-line {
   transition-duration: 300ms !important;
 }
 
+html body .honey-underline {
+  transition-duration: 300ms !important;
+}
+
 @layer base {
   :root {
     --background: 40 25% 99%;
@@ -283,6 +287,20 @@ html body .nav-link-line {
   .nav-link-active .nav-link-line {
     transform: scaleX(1);
     transform-origin: left;
+  }
+
+  .honey-underline {
+    display: block;
+    width: 3rem;
+    height: 2px;
+    background: hsl(var(--primary));
+    opacity: 0.95;
+    transition: width 300ms ease;
+  }
+
+  .group:hover .honey-underline,
+  .group:focus-visible .honey-underline {
+    width: 100%;
   }
 }
 

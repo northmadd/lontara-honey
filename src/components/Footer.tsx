@@ -496,11 +496,11 @@ const Footer: React.FC = () => {
           <div className="grid grid-cols-1 gap-6 min-[1250px]:contents">
             {/* Navigation */}
             <div>
-              <div className="mb-4">
+              <div className="mb-4 group">
                 <h4 className="text-xs font-semibold tracking-[0.3em] uppercase text-honey-gold dark:text-honey-gold">
                   {t('footer.navigation')}
                 </h4>
-                <div className="mt-2 h-0.5 w-12 bg-honey-gold/60 dark:bg-honey-gold/50" />
+                <div className="honey-underline mt-2" />
               </div>
               <ul className="space-y-2 text-sm md:text-[0.85rem] text-foreground">
                 <li onClick={() => scrollToSection('home')} className="cursor-pointer transition-colors hover:text-honey-gold dark:hover:text-[#D4A347]">{t('nav.home')}</li>
@@ -514,11 +514,11 @@ const Footer: React.FC = () => {
 
             {/* Quick Link */}
             <div>
-              <div className="mb-4">
+              <div className="mb-4 group">
                 <h4 className="text-xs font-semibold tracking-[0.3em] uppercase text-honey-gold dark:text-honey-gold">
                   {t('footer.quickLink')}
                 </h4>
-                <div className="mt-2 h-0.5 w-12 bg-honey-gold/60 dark:bg-honey-gold/50" />
+                <div className="honey-underline mt-2" />
               </div>
               <ul className="space-y-2 text-sm md:text-[0.85rem] text-foreground">
                 <li><a href={`${routerBasename}/legal/faq`} target="_blank" rel="noopener noreferrer" className="transition-colors hover:text-honey-gold dark:hover:text-[#D4A347]">{t('footer.faqs')}</a></li>
@@ -538,11 +538,11 @@ const Footer: React.FC = () => {
 
             {/* Services */}
             <div>
-              <div className="mb-4">
+              <div className="mb-4 group">
                 <h4 className="text-xs font-semibold tracking-[0.3em] uppercase text-honey-gold dark:text-honey-gold">
                   {t('footer.services')}
                 </h4>
-                <div className="mt-2 h-0.5 w-12 bg-honey-gold/60 dark:bg-honey-gold/50" />
+                <div className="honey-underline mt-2" />
               </div>
               <ul className="space-y-2 text-sm md:text-[0.85rem] text-foreground">
                 <li onClick={() => scrollToSection('products')} className="cursor-pointer transition-colors hover:text-honey-gold dark:hover:text-[#D4A347]">{t('footer.premiumSupply')}</li>
