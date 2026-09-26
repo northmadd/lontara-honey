@@ -165,7 +165,7 @@ html body .nav-link-line {
     color: #fff !important;
     text-decoration: none;
     outline: 2px solid transparent;
-    outline-offset: 2px;
+    outline-offset: 0;
     transition: color 500ms ease, outline-color 500ms ease, box-shadow 0.3s ease !important;
     -webkit-tap-highlight-color: transparent;
   }
@@ -197,7 +197,7 @@ html body .nav-link-line {
     color: hsl(var(--honey-gold)) !important;
     text-decoration: none;
     outline: 2px solid hsl(var(--honey-gold));
-    outline-offset: 2px;
+    outline-offset: 0;
     transition: color 500ms ease, outline-color 500ms ease, box-shadow 0.3s ease !important;
     -webkit-tap-highlight-color: transparent;
   }
@@ -225,7 +225,7 @@ html body .nav-link-line {
   .honey-js-hover:focus-visible,
   .honey-js-hover-reverse:focus-visible {
     outline: 2px solid hsl(var(--honey-gold)) !important;
-    outline-offset: 2px !important;
+    outline-offset: 0 !important;
   }
 
   .honey-gradient-soft {
@@ -273,7 +273,7 @@ html body .nav-link-line {
     background: hsl(var(--primary));
     opacity: 0.95;
     transform: scaleX(0);
-    transform-origin: left;
+    transform-origin: right;
     transition: transform 300ms ease, opacity 220ms ease;
     will-change: transform;
   }
@@ -282,6 +282,7 @@ html body .nav-link-line {
   .nav-link:focus-visible .nav-link-line,
   .nav-link-active .nav-link-line {
     transform: scaleX(1);
+    transform-origin: left;
   }
 }
 
