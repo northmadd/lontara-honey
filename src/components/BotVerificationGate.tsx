@@ -1,7 +1,8 @@
 import React, { useEffect, useRef, useState } from 'react';
-import { Globe } from 'lucide-react';
+import { Globe, UserRound, X } from 'lucide-react';
 import logo from '@/assets/logo-lontara.webp';
 import { useLanguage } from '@/contexts/LanguageContext';
+import { useAdmin } from '@/contexts/AdminContext';
 import { Button } from '@/components/ui/button';
 
 const TURNSTILE_SCRIPT_SRC = 'https://challenges.cloudflare.com/turnstile/v0/api.js?render=explicit';
@@ -47,12 +48,31 @@ const BotVerificationGate: React.FC<BotVerificationGateProps> = ({ children }) =
   const siteKey = import.meta.env.VITE_TURNSTILE_SITE_KEY;
   const verifyUrl = import.meta.env.VITE_TURNSTILE_VERIFY_URL || `${import.meta.env.BASE_URL}api/verify-turnstile.php`;
   const { language, setLanguage, t } = useLanguage();
-  const [isVerified, setIsVerified] = useState(() => isVerificationStillValid());
+  const { isAdmin, login } = useAdmin();
+  const [isVerified, setIsVerified] = useState(() => isVerificationStillValid() || isAdmin);
   const [isChallengePassed, setIsChallengePassed] = useState(false);
   const [isChecking, setIsChecking] = useState(false);
   const [errorMessage, setErrorMessage] = useState('');
+  const [showAdminLogin, setShowAdminLogin] = useState(false);
+  const [adminUsername, setAdminUsername] = useState('');
+  const [adminPassword, setAdminPassword] = useState('');
+  const [adminError, setAdminError] = useState('');
   const widgetContainerRef = useRef<HTMLDivElement | null>(null);
   const widgetIdRef = useRef<TurnstileWidgetId | null>(null);
+
+  const handleAdminLogin = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (login(adminUsername, adminPassword)) {
+      setAdminUsername('');
+      setAdminPassword('');
+      setAdminError('');
+      setShowAdminLogin(false);
+      markAsVerified();
+      setIsVerified(true);
+    } else {
+      setAdminError(t('admin.invalid'));
+    }
+  };
 
   useEffect(() => {
     if (!siteKey) {
@@ -192,7 +212,20 @@ const BotVerificationGate: React.FC<BotVerificationGateProps> = ({ children }) =
   }
 
   return (
-    <main className="min-h-screen overflow-hidden bg-[radial-gradient(circle_at_top,#5b3208_0%,#1f1307_42%,#070503_100%)] flex items-center justify-center px-4 py-10 notranslate" translate="no">
+    <>
+    <main className="relative min-h-screen overflow-hidden bg-[radial-gradient(circle_at_top,#5b3208_0%,#1f1307_42%,#070503_100%)] flex items-center justify-center px-4 py-10 notranslate" translate="no">
+      <button
+        type="button"
+        onClick={() => {
+          setAdminError('');
+          setShowAdminLogin(true);
+        }}
+        aria-label={t('admin.aria')}
+        title={t('admin.aria')}
+        className="absolute right-4 top-4 z-20 flex h-11 w-11 items-center justify-center rounded-full border border-amber-400/30 bg-stone-900/70 text-amber-200 backdrop-blur transition-colors hover:bg-amber-500/20 hover:text-amber-100 sm:right-6 sm:top-6"
+      >
+        <UserRound className="h-5 w-5" />
+      </button>
       <section className="relative w-full max-w-md overflow-hidden rounded-3xl bg-stone-950/85 p-8 text-center shadow-2xl shadow-black/50 backdrop-blur">
         <div className="absolute inset-x-0 top-0 h-1 bg-gradient-to-r from-amber-700 via-yellow-500 to-amber-700" />
         <div className="absolute -right-16 -top-16 h-40 w-40 rounded-full bg-amber-500/10 blur-3xl" />
@@ -253,6 +286,67 @@ const BotVerificationGate: React.FC<BotVerificationGateProps> = ({ children }) =
         </div>
       </section>
     </main>
+
+    {showAdminLogin && (
+      <div className="fixed inset-0 z-50 flex items-center justify-center p-4 notranslate" translate="no">
+        <div
+          className="absolute inset-0 bg-black/70 backdrop-blur-sm"
+          onClick={() => setShowAdminLogin(false)}
+        />
+        <div className="relative w-full max-w-sm overflow-hidden rounded-3xl bg-stone-950/95 p-7 text-left shadow-2xl shadow-black/60 ring-1 ring-amber-400/20">
+          <div className="absolute inset-x-0 top-0 h-1 bg-gradient-to-r from-amber-700 via-yellow-500 to-amber-700" />
+          <button
+            type="button"
+            onClick={() => setShowAdminLogin(false)}
+            aria-label={t('product.details.close')}
+            className="absolute right-4 top-4 flex h-9 w-9 items-center justify-center rounded-full text-white/70 transition-colors hover:bg-white/10 hover:text-white"
+          >
+            <X className="h-4 w-4" />
+          </button>
+
+          <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-full bg-amber-500/15 text-amber-300">
+            <UserRound className="h-6 w-6" />
+          </div>
+          <h2 className="mt-4 text-center text-xl font-bold text-amber-50">{t('admin.title')}</h2>
+          <p className="mt-1 text-center text-sm text-white/60">{t('admin.subtitle')}</p>
+
+          <form onSubmit={handleAdminLogin} className="mt-6 space-y-4">
+            <div>
+              <label className="mb-1 block text-sm font-medium text-white/80">{t('admin.username')}</label>
+              <input
+                value={adminUsername}
+                onChange={(e) => setAdminUsername(e.target.value)}
+                placeholder={t('admin.usernamePh')}
+                autoComplete="username"
+                className="w-full rounded-lg border border-amber-400/25 bg-stone-900/80 px-3 py-2 text-white outline-none focus:border-amber-400"
+              />
+            </div>
+            <div>
+              <label className="mb-1 block text-sm font-medium text-white/80">{t('admin.password')}</label>
+              <input
+                type="password"
+                value={adminPassword}
+                onChange={(e) => setAdminPassword(e.target.value)}
+                placeholder={t('admin.passwordPh')}
+                autoComplete="current-password"
+                className="w-full rounded-lg border border-amber-400/25 bg-stone-900/80 px-3 py-2 text-white outline-none focus:border-amber-400"
+              />
+            </div>
+
+            {adminError && <p className="text-sm font-medium text-red-300">{adminError}</p>}
+
+            <Button
+              type="submit"
+              honeyHover
+              className="w-full rounded-full px-6 py-3 text-base font-bold"
+            >
+              {t('admin.login')}
+            </Button>
+          </form>
+        </div>
+      </div>
+    )}
+    </>
   );
 };
 

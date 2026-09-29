@@ -8,6 +8,7 @@ import Index from "./pages/Index";
 import NotFound from "./pages/NotFound";
 import LegalPage from "./pages/LegalPage";
 import { LanguageProvider } from "@/contexts/LanguageContext";
+import { AdminProvider } from "@/contexts/AdminContext";
 
 const queryClient = new QueryClient();
 
@@ -16,6 +17,7 @@ const routerBasename = import.meta.env.BASE_URL.replace(/\/$/, "");
 const App = () => (
   <QueryClientProvider client={queryClient}>
     <LanguageProvider>
+    <AdminProvider>
     <TooltipProvider>
       <Toaster />
       <Sonner />
@@ -31,6 +33,7 @@ const App = () => (
         </Routes>
       </BrowserRouter>
     </TooltipProvider>
+    </AdminProvider>
     </LanguageProvider>
   </QueryClientProvider>
 );

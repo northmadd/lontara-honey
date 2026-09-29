@@ -1,4 +1,5 @@
 export interface Testimonial {
+  id?: string;
   name: string;
   city: { id: string; en: string };
   rating: number;

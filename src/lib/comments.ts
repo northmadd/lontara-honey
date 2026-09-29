@@ -31,6 +31,7 @@ const relativeDate = (iso: string): { id: string; en: string } => {
 };
 
 const toTestimonial = (row: SupabaseCommentRow): Testimonial => ({
+  id: row.id,
   name: row.name,
   city: { id: row.city, en: row.city },
   rating: row.rating,
@@ -82,5 +83,41 @@ export const addComment = async (input: {
   const rows = (await res.json()) as SupabaseCommentRow[];
   const row = Array.isArray(rows) && rows.length > 0 ? rows[0] : null;
   if (!row) throw new Error('supabase-post-empty');
+  return toTestimonial(row);
+};
+
+export const deleteComment = async (id: string): Promise<void> => {
+  if (!isSupabaseConfigured) throw new Error('supabase-not-configured');
+  const res = await fetch(`${SUPABASE_URL}/rest/v1/testimonials?id=eq.${encodeURIComponent(id)}`, {
+    method: 'DELETE',
+    headers: authHeaders({ Prefer: 'return=minimal' }),
+  });
+  if (!res.ok) throw new Error(`supabase-delete-failed:${res.status}`);
+};
+
+export const updateComment = async (
+  id: string,
+  input: { name: string; city: string; rating: number; comment: string; commentId: string; commentEn: string },
+): Promise<Testimonial> => {
+  if (!isSupabaseConfigured) throw new Error('supabase-not-configured');
+  const res = await fetch(`${SUPABASE_URL}/rest/v1/testimonials?id=eq.${encodeURIComponent(id)}`, {
+    method: 'PATCH',
+    headers: authHeaders({
+      'Content-Type': 'application/json',
+      Prefer: 'return=representation',
+    }),
+    body: JSON.stringify({
+      name: input.name,
+      city: input.city,
+      rating: input.rating,
+      comment: input.comment,
+      comment_id: input.commentId,
+      comment_en: input.commentEn,
+    }),
+  });
+  if (!res.ok) throw new Error(`supabase-patch-failed:${res.status}`);
+  const rows = (await res.json()) as SupabaseCommentRow[];
+  const row = Array.isArray(rows) && rows.length > 0 ? rows[0] : null;
+  if (!row) throw new Error('supabase-patch-empty');
   return toTestimonial(row);
 };
