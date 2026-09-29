@@ -1,10 +1,9 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { useLanguage } from '@/contexts/LanguageContext';
-import { Star, BadgeCheck, ChevronUp, ChevronDown, PenLine, Trash2, X } from 'lucide-react';
+import { Star, BadgeCheck, ChevronUp, ChevronDown, PenLine, X } from 'lucide-react';
 import { reviews, type Testimonial } from '@/data/testimonials';
-import { listComments, addComment, deleteComment, updateComment } from '@/lib/comments';
+import { listComments, addComment } from '@/lib/comments';
 import { translateText } from '@/lib/translate';
-import { useAdmin } from '@/contexts/AdminContext';
 import { Button } from '@/components/ui/button';
 
 interface TestimonialsSectionProps {
@@ -57,9 +56,6 @@ const easeInOutCubic = (t: number) => (t < 0.5 ? 4 * t * t * t : 1 - Math.pow(-2
 
 interface ReviewCardProps {
   review: Testimonial;
-  isAdmin: boolean;
-  onEdit: (review: Testimonial) => void;
-  onDelete: (review: Testimonial) => void;
 }
 
 const AVATAR_HUES = [12, 32, 48, 90, 150, 190, 220, 260, 300, 335];
@@ -99,8 +95,8 @@ const ReviewStars = ({ rating, size = 'w-4 h-4' }: { rating: number; size?: stri
   </div>
 );
 
-const ReviewCard: React.FC<ReviewCardProps> = ({ review, isAdmin, onEdit, onDelete }) => {
-  const { language, t } = useLanguage();
+const ReviewCard: React.FC<ReviewCardProps> = ({ review }) => {
+  const { language } = useLanguage();
   const lang = language === 'en' ? 'en' : 'id';
 
   return (
@@ -136,36 +132,12 @@ const ReviewCard: React.FC<ReviewCardProps> = ({ review, isAdmin, onEdit, onDele
           </div>
         </div>
       </div>
-
-      {isAdmin && review.id && (
-        <div className="mt-3 flex items-center justify-end gap-2 border-t border-honey-gold/20 pt-3">
-          <button
-            type="button"
-            onClick={() => onEdit(review)}
-            aria-label={t('admin.edit')}
-            className="inline-flex items-center gap-1.5 rounded-full border border-honey-gold/50 px-3 py-1.5 text-xs font-semibold text-honey-gold transition-colors hover:bg-honey-gold hover:text-white"
-          >
-            <PenLine className="h-3.5 w-3.5" />
-            {t('admin.edit')}
-          </button>
-          <button
-            type="button"
-            onClick={() => onDelete(review)}
-            aria-label={t('admin.delete')}
-            className="inline-flex items-center gap-1.5 rounded-full border border-red-400/50 px-3 py-1.5 text-xs font-semibold text-red-400 transition-colors hover:bg-red-500 hover:text-white"
-          >
-            <Trash2 className="h-3.5 w-3.5" />
-            {t('admin.delete')}
-          </button>
-        </div>
-      )}
     </article>
   );
 };
 
 const TestimonialsSection: React.FC<TestimonialsSectionProps> = ({ happyPeopleImage }) => {
   const { t } = useLanguage();
-  const { isAdmin, logout } = useAdmin();
   const restored = readStoredWheel();
   const restoredItems = restored ? [...restored.userComments, ...reviews] : reviews;
   const nRestored = restoredItems.length;
@@ -186,13 +158,6 @@ const TestimonialsSection: React.FC<TestimonialsSectionProps> = ({ happyPeopleIm
   const [formComment, setFormComment] = useState('');
   const [formError, setFormError] = useState('');
   const [submitting, setSubmitting] = useState(false);
-  const [editing, setEditing] = useState<Testimonial | null>(null);
-  const [editName, setEditName] = useState('');
-  const [editCity, setEditCity] = useState('');
-  const [editRating, setEditRating] = useState(5);
-  const [editComment, setEditComment] = useState('');
-  const [editError, setEditError] = useState('');
-  const [editSaving, setEditSaving] = useState(false);
 
   const itemsRef = useRef(items);
   const centerIdxRef = useRef(restoredCenter);
@@ -392,68 +357,6 @@ const TestimonialsSection: React.FC<TestimonialsSectionProps> = ({ happyPeopleIm
     }
   };
 
-  const startEdit = (review: Testimonial) => {
-    setEditing(review);
-    setEditName(review.name);
-    setEditCity(review.city.id);
-    setEditRating(review.rating);
-    setEditComment(review.text.id);
-    setEditError('');
-  };
-
-  const handleDelete = async (review: Testimonial) => {
-    if (!review.id || !window.confirm(t('admin.deleteConfirm'))) return;
-    try {
-      await deleteComment(review.id);
-      const userList = userCommentsRef.current.filter((c) => c.id !== review.id);
-      userCommentsRef.current = userList;
-      const merged = userList.length > 0 ? [...userList, ...reviews] : reviews;
-      itemsRef.current = merged;
-      setItems(merged);
-      setWheelCenter(merged, Math.min(centerIdxRef.current, Math.max(0, merged.length - 1)));
-    } catch {
-      window.alert(t('admin.deleteFailed'));
-    }
-  };
-
-  const saveEdit = async () => {
-    if (!editing?.id || editSaving) return;
-    if (!editName.trim() || !editCity.trim() || !editComment.trim()) {
-      setEditError(t('testimonials.writeRequired'));
-      return;
-    }
-    setEditSaving(true);
-    setEditError('');
-    try {
-      const rawText = editComment.trim();
-      const [translatedEn, translatedId] = await Promise.all([
-        translateText(rawText, 'en'),
-        translateText(rawText, 'id'),
-      ]);
-      const commentEn = translatedEn && translatedEn.trim() ? translatedEn.trim() : rawText;
-      const commentId = translatedId && translatedId.trim() ? translatedId.trim() : rawText;
-      const updated = await updateComment(editing.id, {
-        name: editName.trim(),
-        city: editCity.trim(),
-        rating: editRating,
-        comment: rawText,
-        commentId,
-        commentEn,
-      });
-      const userList = userCommentsRef.current.map((c) => (c.id === editing.id ? updated : c));
-      userCommentsRef.current = userList;
-      const merged = [...userList, ...reviews];
-      itemsRef.current = merged;
-      setItems(merged);
-      setSlotReviews(slotIdxRef.current.map((i) => merged[i]));
-      setEditing(null);
-    } catch {
-      setEditError(t('admin.updateFailed'));
-    } finally {
-      setEditSaving(false);
-    }
-  };
-
   return (
     <section className="py-24 bg-background relative overflow-hidden">
       {/* Background decoration */}
@@ -504,12 +407,7 @@ const TestimonialsSection: React.FC<TestimonialsSectionProps> = ({ happyPeopleIm
                     className="absolute left-1/2 top-1/2 w-full max-w-xl will-change-transform"
                   >
                     <div className="mx-auto w-full px-4 sm:px-6">
-                      <ReviewCard
-                        review={review}
-                        isAdmin={isAdmin}
-                        onEdit={startEdit}
-                        onDelete={handleDelete}
-                      />
+                      <ReviewCard review={review} />
                     </div>
                   </div>
                 ))}
@@ -537,7 +435,7 @@ const TestimonialsSection: React.FC<TestimonialsSectionProps> = ({ happyPeopleIm
             </div>
 
             {/* Tombol tulis komentar — di bawah komentar */}
-            <div className="flex flex-col items-center justify-center gap-3 sm:flex-row">
+            <div className="flex justify-center">
               <Button
                 type="button"
                 honeyHover
@@ -548,19 +446,6 @@ const TestimonialsSection: React.FC<TestimonialsSectionProps> = ({ happyPeopleIm
                 <PenLine className="h-4 w-4" />
                 {t('testimonials.writeCta')}
               </Button>
-              {isAdmin && (
-                <div className="flex items-center gap-2 rounded-full border border-honey-gold/40 bg-honey-gold/10 px-3 py-1.5 text-xs font-semibold text-honey-gold">
-                  <BadgeCheck className="h-3.5 w-3.5" />
-                  {t('admin.loggedIn')}
-                  <button
-                    type="button"
-                    onClick={logout}
-                    className="rounded-full border border-honey-gold/50 px-2.5 py-1 font-semibold transition-colors hover:bg-honey-gold hover:text-white"
-                  >
-                    {t('admin.logout')}
-                  </button>
-                </div>
-              )}
             </div>
           </div>
         </div>
@@ -669,105 +554,6 @@ const TestimonialsSection: React.FC<TestimonialsSectionProps> = ({ happyPeopleIm
         </div>
       )}
 
-      {/* Card edit komentar (admin) */}
-      {editing && (
-        <div className="fixed inset-0 z-[60] flex items-center justify-center p-4">
-          <div
-            className="absolute inset-0 bg-black/60 backdrop-blur-sm"
-            onClick={() => setEditing(null)}
-          />
-          <div className="relative w-full max-w-md rounded-2xl bg-background p-6 shadow-2xl border border-honey-gold/30">
-            <button
-              type="button"
-              onClick={() => setEditing(null)}
-              aria-label={t('product.details.close')}
-              className="absolute right-4 top-4 flex h-8 w-8 items-center justify-center rounded-full text-muted-foreground hover:bg-black/5 hover:text-foreground dark:hover:bg-white/10"
-            >
-              <X className="h-4 w-4" />
-            </button>
-
-            <h3 className="text-xl font-serif font-bold text-foreground pr-8">{t('admin.editTitle')}</h3>
-
-            <div className="mt-5 space-y-4">
-              <div>
-                <label className="mb-1 block text-sm font-medium text-muted-foreground dark:text-white/80">
-                  {t('testimonials.writeName')} *
-                </label>
-                <input
-                  value={editName}
-                  onChange={(e) => setEditName(e.target.value)}
-                  className="w-full rounded-lg border border-honey-gold/30 bg-background px-3 py-2 text-foreground outline-none focus:border-honey-gold"
-                />
-              </div>
-
-              <div>
-                <label className="mb-1 block text-sm font-medium text-muted-foreground dark:text-white/80">
-                  {t('testimonials.writeCity')} *
-                </label>
-                <input
-                  value={editCity}
-                  onChange={(e) => setEditCity(e.target.value)}
-                  className="w-full rounded-lg border border-honey-gold/30 bg-background px-3 py-2 text-foreground outline-none focus:border-honey-gold"
-                />
-              </div>
-
-              <div>
-                <label className="mb-1 block text-sm font-medium text-muted-foreground dark:text-white/80">
-                  {t('testimonials.writeRating')}
-                </label>
-                <div className="flex items-center gap-1">
-                  {[...Array(5)].map((_, i) => (
-                    <button
-                      key={i}
-                      type="button"
-                      onClick={() => setEditRating(i + 1)}
-                      aria-label={`${i + 1}`}
-                      className="p-0"
-                    >
-                      <Star
-                        className={`h-7 w-7 ${i < editRating ? 'fill-honey-gold text-honey-gold' : 'fill-muted text-muted'}`}
-                      />
-                    </button>
-                  ))}
-                </div>
-              </div>
-
-              <div>
-                <label className="mb-1 block text-sm font-medium text-muted-foreground dark:text-white/80">
-                  {t('testimonials.writeComment')} *
-                </label>
-                <textarea
-                  value={editComment}
-                  onChange={(e) => setEditComment(e.target.value)}
-                  rows={4}
-                  className="w-full resize-none rounded-lg border border-honey-gold/30 bg-background px-3 py-2 text-foreground outline-none focus:border-honey-gold"
-                />
-              </div>
-
-              {editError && <p className="text-sm font-medium text-honey-gold">{editError}</p>}
-
-              <div className="flex items-center gap-3 pt-1">
-                <Button
-                  type="button"
-                  honeyHover
-                  onClick={saveEdit}
-                  disabled={editSaving}
-                  className="flex-1 rounded-full px-4 py-2.5 font-semibold disabled:cursor-not-allowed disabled:opacity-60"
-                >
-                  {editSaving ? t('admin.saving') : t('admin.save')}
-                </Button>
-                <button
-                  type="button"
-                  onClick={() => setEditing(null)}
-                  className="rounded-full border-2 border-honey-gold/50 px-4 py-2 font-semibold text-muted-foreground transition-colors duration-300 hover:border-honey-gold hover:text-foreground"
-                >
-                  {t('testimonials.writeCancel')}
-                </button>
-              </div>
-            </div>
-          </div>
-        </div>
-      )}
     </section>
   );
 };

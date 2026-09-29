@@ -222,7 +222,7 @@ const BotVerificationGate: React.FC<BotVerificationGateProps> = ({ children }) =
         }}
         aria-label={t('admin.aria')}
         title={t('admin.aria')}
-        className="absolute right-4 top-4 z-20 flex h-11 w-11 items-center justify-center rounded-full border border-amber-400/30 bg-stone-900/70 text-amber-200 backdrop-blur transition-colors hover:bg-amber-500/20 hover:text-amber-100 sm:right-6 sm:top-6"
+        className="absolute right-4 top-4 z-20 flex h-11 w-11 items-center justify-center rounded-full bg-transparent text-amber-200 opacity-0 transition-opacity duration-300 hover:bg-amber-500/20 hover:opacity-100 focus-visible:bg-amber-500/20 focus-visible:opacity-100 active:opacity-100 sm:right-6 sm:top-6"
       >
         <UserRound className="h-5 w-5" />
       </button>

@@ -313,6 +313,16 @@ const translations: Record<Language, Record<string, string>> = {
     'admin.updateFailed': 'Failed to update the comment.',
     'admin.edit': 'Edit',
     'admin.delete': 'Delete',
+    'admin.dashboard': 'Admin Dashboard',
+    'admin.menuComments': 'Comments',
+    'admin.commentsHeading': 'All Comments',
+    'admin.totalComments': 'comments',
+    'admin.loading': 'Loading comments...',
+    'admin.loadFailed': 'Failed to load comments.',
+    'admin.empty': 'No comments yet.',
+    'admin.open': 'Open dashboard',
+    'admin.close': 'Close dashboard',
+    'admin.refresh': 'Refresh',
 
     // Country names
     'country.indonesia': 'Indonesia',
@@ -707,6 +717,16 @@ const translations: Record<Language, Record<string, string>> = {
     'admin.updateFailed': 'Gagal memperbarui komentar.',
     'admin.edit': 'Edit',
     'admin.delete': 'Hapus',
+    'admin.dashboard': 'Dashboard Admin',
+    'admin.menuComments': 'Komentar',
+    'admin.commentsHeading': 'Semua Komentar',
+    'admin.totalComments': 'komentar',
+    'admin.loading': 'Memuat komentar...',
+    'admin.loadFailed': 'Gagal memuat komentar.',
+    'admin.empty': 'Belum ada komentar.',
+    'admin.open': 'Buka dashboard',
+    'admin.close': 'Tutup dashboard',
+    'admin.refresh': 'Muat ulang',
 
     // Country names
     'country.indonesia': 'Indonesia',

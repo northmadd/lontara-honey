@@ -17,6 +17,7 @@ const WhatsAppButton = lazy(() => import('@/components/WhatsAppButton'));
 const OrderModal = lazy(() => import('@/components/OrderModal'));
 const ProductDetailModal = lazy(() => import('@/components/ProductDetailModal'));
 const InternationalSection = lazy(() => import('@/components/InternationalSection'));
+const AdminDashboard = lazy(() => import('@/components/AdminDashboard'));
 
 // Import images
 import heroImage from '@/assets/hero-honey.webp';
@@ -256,6 +257,7 @@ const IndexContent: React.FC = () => {
   const [selectedProduct, setSelectedProduct] = useState<Product | null>(null);
   const [detailProduct, setDetailProduct] = useState<Product | null>(null);
   const [isBacksoundMuted, setIsBacksoundMuted] = useState(false);
+  const [showDashboard, setShowDashboard] = useState(false);
 
   const { language } = useLanguage();
   const { resolvedTheme } = useTheme();
@@ -447,8 +449,15 @@ const IndexContent: React.FC = () => {
               backsoundRef.current.muted = nextMuted;
             }
           }}
+          onOpenDashboard={() => setShowDashboard(true)}
         />
       </Suspense>
+
+      {showDashboard && (
+        <Suspense fallback={null}>
+          <AdminDashboard onClose={() => setShowDashboard(false)} />
+        </Suspense>
+      )}
 
       {detailProduct && (
         <Suspense fallback={null}>

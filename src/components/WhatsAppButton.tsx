@@ -1,17 +1,20 @@
 import React from 'react';
 import { motion } from 'framer-motion';
-import { MessageCircle, Volume2, VolumeX } from 'lucide-react';
+import { MessageCircle, Volume2, VolumeX, LayoutDashboard } from 'lucide-react';
 import { useLanguage } from '@/contexts/LanguageContext';
+import { useAdmin } from '@/contexts/AdminContext';
 
 const WHATSAPP_NUMBER = '6282347905543';
 
 interface WhatsAppButtonProps {
   isMuted: boolean;
   onToggleMute: () => void;
+  onOpenDashboard: () => void;
 }
 
-const WhatsAppButton: React.FC<WhatsAppButtonProps> = ({ isMuted, onToggleMute }) => {
+const WhatsAppButton: React.FC<WhatsAppButtonProps> = ({ isMuted, onToggleMute, onOpenDashboard }) => {
   const { t } = useLanguage();
+  const { isAdmin } = useAdmin();
 
   const handleClick = () => {
     const message = t('whatsapp.message');
@@ -22,6 +25,23 @@ const WhatsAppButton: React.FC<WhatsAppButtonProps> = ({ isMuted, onToggleMute }
 
   return (
     <div className="fixed bottom-[calc(1.5rem+env(safe-area-inset-bottom))] right-6 z-40 flex flex-col items-center gap-3">
+      {isAdmin && (
+        <motion.button
+          type="button"
+          onClick={onOpenDashboard}
+          aria-label={t('admin.open')}
+          title={t('admin.open')}
+          className="w-14 h-14 rounded-full bg-honey-gold text-white shadow-lg flex items-center justify-center hover:opacity-90 transition-opacity"
+          initial={{ scale: 0, opacity: 0 }}
+          animate={{ scale: 1, opacity: 1 }}
+          transition={{ delay: 0.7, type: 'spring', bounce: 0.5 }}
+          whileHover={{ scale: 1.1 }}
+          whileTap={{ scale: 0.9 }}
+        >
+          <LayoutDashboard className="w-6 h-6" />
+        </motion.button>
+      )}
+
       <motion.button
         type="button"
         onClick={onToggleMute}
