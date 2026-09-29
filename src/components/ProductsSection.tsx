@@ -5,6 +5,8 @@ import { ShoppingBag, ZoomIn } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import SlowZoomImage from '@/components/SlowZoomImage';
 import honeyVisual from '@/assets/honey-visual.webp';
+import { useUsdRate } from '@/hooks/useUsdRate';
+import { formatIDR, formatUSD, formatRateDate } from '@/lib/currency';
 
 export interface ProductDetail {
   description: { id: string; en: string };
@@ -34,6 +36,7 @@ interface ProductsSectionProps {
 
 const ProductsSection: React.FC<ProductsSectionProps> = ({ products, onOrderProduct, onViewProduct }) => {
   const { t, language } = useLanguage();
+  const usdRate = useUsdRate();
   const productGroups = [
     {
       type: 'plastic' as const,
@@ -49,23 +52,10 @@ const ProductsSection: React.FC<ProductsSectionProps> = ({ products, onOrderProd
     },
   ];
 
-  const formatPriceIDR = (price: number) => {
-    return new Intl.NumberFormat(language === 'id' ? 'id-ID' : 'en-US', {
-      style: 'currency',
-      currency: 'IDR',
-      minimumFractionDigits: 0,
-    }).format(price);
-  };
-
-  const formatPriceUSD = (price: number) => {
-    const usdRate = 17757.40; // 1 USD = 17,757.40 IDR (as of August 30, 2026)
-    const priceInUSD = price / usdRate;
-    return new Intl.NumberFormat('en-US', {
-      style: 'currency',
-      currency: 'USD',
-      minimumFractionDigits: 2,
-    }).format(priceInUSD);
-  };
+  const rateNote =
+    usdRate.updatedAt !== null
+      ? `${t('products.rateNote')} · 1 USD = ${formatIDR(usdRate.rate, language)} (${formatRateDate(usdRate.updatedAt, language)})`
+      : `${t('products.rateNote')} · 1 USD = ${formatIDR(usdRate.rate, language)}`;
 
   return (
     <section className="py-24 bg-gradient-to-br from-muted via-background to-honey-light relative overflow-hidden">
@@ -94,6 +84,9 @@ const ProductsSection: React.FC<ProductsSectionProps> = ({ products, onOrderProd
           </h2>
           <p className="mt-2 text-muted-foreground dark:text-white/80 max-w-2xl mx-auto">
             {t('products.description')}
+          </p>
+          <p className="mt-3 text-xs text-muted-foreground/80 dark:text-white/60">
+            {rateNote}
           </p>
         </motion.div>
 
@@ -143,7 +136,7 @@ const ProductsSection: React.FC<ProductsSectionProps> = ({ products, onOrderProd
                         imgClassName="rounded-lg"
                       />
                       <div className="absolute top-4 right-4">
-                        <span className="px-3 py-1 rounded-full text-xs font-medium bg-black/45 backdrop-blur-sm text-white">
+                        <span className="px-3 py-1.5 rounded-full text-xs font-medium bg-black/45 backdrop-blur-sm text-white opacity-90 transition-all duration-300 group-hover/image:bg-honey-gold/90 group-hover/image:text-white group-hover/image:opacity-100">
                           {t(`products.packaging.${product.type}`)}
                         </span>
                       </div>
@@ -168,11 +161,11 @@ const ProductsSection: React.FC<ProductsSectionProps> = ({ products, onOrderProd
                       </div>
                       <div className="mt-3 flex flex-wrap items-center gap-x-2 gap-y-1">
                         <span className="text-lg font-bold text-honey-gold">
-                          {formatPriceIDR(product.price)}
+                          {formatIDR(product.price, language)}
                         </span>
                         <span className="text-border font-medium">|</span>
-                        <span className="text-lg font-bold text-honey-gold">
-                          {formatPriceUSD(product.price)}
+                        <span className="text-lg font-bold text-honey-gold" title={rateNote}>
+                          {formatUSD(product.price, usdRate.rate)}
                         </span>
                       </div>
                       <Button

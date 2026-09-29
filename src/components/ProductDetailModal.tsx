@@ -4,6 +4,8 @@ import { motion, AnimatePresence, type Variants } from 'framer-motion';
 import { X, Sparkles, Leaf, Droplets, Archive, Package, ShieldCheck, ShoppingBag, Beaker, Weight, Info } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Product } from './ProductsSection';
+import { useUsdRate } from '@/hooks/useUsdRate';
+import { formatIDR, formatUSD, formatRateDate } from '@/lib/currency';
 
 interface ProductDetailModalProps {
   product: Product;
@@ -23,6 +25,12 @@ const ProductDetailModal: React.FC<ProductDetailModalProps> = ({ product, onClos
   const { t, language } = useLanguage();
   const lang = language === 'en' ? 'en' : 'id';
   const name = product.name[lang];
+  const usdRate = useUsdRate();
+
+  const rateNote =
+    usdRate.updatedAt !== null
+      ? `${t('products.rateNote')} · 1 USD = ${formatIDR(usdRate.rate, language)} (${formatRateDate(usdRate.updatedAt, language)})`
+      : `${t('products.rateNote')} · 1 USD = ${formatIDR(usdRate.rate, language)}`;
 
   useEffect(() => {
     const html = document.documentElement;
@@ -46,22 +54,6 @@ const ProductDetailModal: React.FC<ProductDetailModalProps> = ({ product, onClos
       window.removeEventListener('keydown', handleKeyDown);
     };
   }, [onClose]);
-
-  const formatPriceIDR = (price: number) =>
-    new Intl.NumberFormat(language === 'id' ? 'id-ID' : 'en-US', {
-      style: 'currency',
-      currency: 'IDR',
-      minimumFractionDigits: 0,
-    }).format(price);
-
-  const formatPriceUSD = (price: number) => {
-    const usdRate = 17757.4;
-    return new Intl.NumberFormat('en-US', {
-      style: 'currency',
-      currency: 'USD',
-      minimumFractionDigits: 2,
-    }).format(price / usdRate);
-  };
 
   const sections: SectionContent[] = useMemo(() => {
     const d = product.details;
@@ -248,10 +240,18 @@ const ProductDetailModal: React.FC<ProductDetailModalProps> = ({ product, onClos
                 <Weight className="h-3.5 w-3.5" />
                 {product.weight}
               </span>
-              <span className="text-xl font-bold text-honey-gold">{formatPriceIDR(product.price)}</span>
+              <span className="text-xl font-bold text-honey-gold">{formatIDR(product.price, language)}</span>
               <span className="text-border font-medium">|</span>
-              <span className="text-xl font-bold text-honey-gold">{formatPriceUSD(product.price)}</span>
+              <span className="text-xl font-bold text-honey-gold" title={rateNote}>{formatUSD(product.price, usdRate.rate)}</span>
             </motion.div>
+            <motion.p
+              className="mt-2 text-xs text-muted-foreground/80 dark:text-white/60"
+              variants={fadeUp(0.66)}
+              initial="hidden"
+              animate="visible"
+            >
+              {rateNote}
+            </motion.p>
 
             {/* Info sections */}
             <div className="mt-7 space-y-7">

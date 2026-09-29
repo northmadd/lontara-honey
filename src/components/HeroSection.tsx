@@ -3,6 +3,7 @@ import { useLanguage } from '@/contexts/LanguageContext';
 import { motion } from 'framer-motion';
 import { ArrowRight, Play } from 'lucide-react';
 import { Button } from '@/components/ui/button';
+import CountUp from '@/components/CountUp';
 
 interface HeroSectionProps {
   onNavigate: (section: string) => void;
@@ -91,7 +92,7 @@ const HeroSection: React.FC<HeroSectionProps> = ({ onNavigate, heroImage }) => {
           >
             <Button
               honeyHover
-              className="group honey-glow px-8 py-6 text-lg font-semibold"
+              className="group honey-glow px-8 py-6 text-lg font-semibold sm:w-[17rem]"
               onClick={() => onNavigate('products')}
             >
               {t('hero.cta')}
@@ -99,7 +100,7 @@ const HeroSection: React.FC<HeroSectionProps> = ({ onNavigate, heroImage }) => {
             </Button>
             <Button
               honeyReverse
-              className="px-8 py-6 text-lg font-semibold"
+              className="px-8 py-6 text-lg font-semibold sm:w-[17rem]"
               onClick={() => onNavigate('story')}
             >
               <Play className="mr-2 w-5 h-5" />
@@ -115,12 +116,14 @@ const HeroSection: React.FC<HeroSectionProps> = ({ onNavigate, heroImage }) => {
             transition={{ duration: 0.8, delay: 0.8 }}
           >
             {[
-              { value: '100%', label: t('hero.stats.pure') },
-              { value: '10+', label: t('hero.stats.years') },
-              { value: '5000+', label: t('hero.stats.customers') },
+              { value: 100, suffix: '%', label: t('hero.stats.pure') },
+              { value: 10, suffix: '+', label: t('hero.stats.years') },
+              { value: 5000, suffix: '+', label: t('hero.stats.customers') },
             ].map((stat, i) => (
               <div key={i} className="text-center">
-                <div className={`text-2xl md:text-3xl font-serif font-bold ${i === 0 ? 'honey-text-gradient' : 'text-foreground'}`}>{stat.value}</div>
+                <div className={`text-2xl md:text-3xl font-serif font-bold ${i === 0 ? 'honey-text-gradient' : 'text-foreground'}`}>
+                  <CountUp end={stat.value} suffix={stat.suffix} />
+                </div>
                 <div className={`text-sm font-bold ${i === 0 ? 'honey-text-gradient' : 'text-muted-foreground dark:text-white/80'}`}>{stat.label}</div>
               </div>
             ))}

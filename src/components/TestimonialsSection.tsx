@@ -329,7 +329,7 @@ const TestimonialsSection: React.FC<TestimonialsSectionProps> = ({ happyPeopleIm
 
           {/* Whee; tombol geser di kanan, tombol tulis komen di bawah */}
           <div className="flex flex-col gap-5">
-            <div className="flex items-center gap-4">
+            <div className="flex flex-col lg:flex-row items-center gap-4">
               <div
                 className="relative w-full overflow-hidden"
                 style={{ height: SPACING * 3 + 140 }}
@@ -349,8 +349,8 @@ const TestimonialsSection: React.FC<TestimonialsSectionProps> = ({ happyPeopleIm
                 ))}
               </div>
 
-              {/* Tombol geser — kanan, berdekatan */}
-              <div className="flex flex-col justify-center items-center gap-2">
+              {/* Tombol geser — bawah pada mobile (horizontal), kanan pada layar besar */}
+              <div className="flex flex-row lg:flex-col justify-center items-center gap-2">
                 <button
                   type="button"
                   onClick={() => move('up')}
