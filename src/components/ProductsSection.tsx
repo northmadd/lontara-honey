@@ -136,7 +136,7 @@ const ProductsSection: React.FC<ProductsSectionProps> = ({ products, onOrderProd
                         imgClassName="rounded-lg"
                       />
                       <div className="absolute top-4 right-4">
-                        <span className="px-3 py-1.5 rounded-full text-xs font-medium bg-black/45 backdrop-blur-sm text-white opacity-90 transition-all duration-300 group-hover/image:bg-honey-gold/90 group-hover/image:text-white group-hover/image:opacity-100">
+                        <span className="px-3 py-1.5 rounded-full text-xs font-medium bg-black/45 backdrop-blur-sm text-white opacity-90">
                           {t(`products.packaging.${product.type}`)}
                         </span>
                       </div>
