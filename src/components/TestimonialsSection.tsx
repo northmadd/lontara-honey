@@ -90,7 +90,7 @@ const ReviewCard: React.FC<ReviewCardProps> = ({ review }) => {
         <p className="font-semibold text-foreground">{review.name}</p>
         <div className="mt-2 flex flex-wrap items-center gap-2">
           {review.city && review.city[lang] && (
-            <span className="inline-flex items-center rounded-full bg-black/45 px-3 py-1.5 text-xs font-medium text-white backdrop-blur-sm">
+            <span className="inline-flex items-center rounded-full bg-honey-dark px-3 py-1.5 text-xs font-medium text-white shadow-sm ring-1 ring-white/15">
               {review.city[lang]}
             </span>
           )}
