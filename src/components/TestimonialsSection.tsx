@@ -15,19 +15,45 @@ const DURATION = 380;
 const MAX_FRAMES = Math.max(30, Math.round((DURATION / 16.7) * 1.5));
 const SPACING = 214;
 
-// Posisi wheel dipindah ke scope modul supaya tidak terkunci ke komentar awal
-// saat section di-remount ketika user mengganti bahasa (en/id) atau tema
-// (light/dark) — Index memakai key={animationKey} yang me-remount semua
-// section. Catatan: lazy() React meng-cache chunk, jadi nilai modul ini tetap
-// hidup antar-remount selama sesi SPA; reload penuh akan memulai dari awal.
-let persistedWheel: {
+// Posisi wheel dipersist agar tidak terkunci ke komentar awal saat section
+// di-remount ketika user mengganti bahasa (en/id) atau tema (light/dark) —
+// Index memakai key={animationKey} yang me-remount semua section. Nilai modul
+// saja tidak cukup (bisa ikut ter-reset saat remount), jadi cadangan disimpan
+// di sessionStorage: tahan remount & reload dalam sesi tab yang sama.
+type PersistedWheel = {
   userComments: Testimonial[];
   slotIdx: number[] | null;
   centerIdx: number;
-} | null = null;
+};
+
+let persistedWheel: PersistedWheel | null = null;
+
+const WHEEL_STORAGE_KEY = 'lontara-testimonial-wheel';
+
+const readStoredWheel = (): PersistedWheel | null => {
+  if (persistedWheel) return persistedWheel;
+  try {
+    const raw = sessionStorage.getItem(WHEEL_STORAGE_KEY);
+    if (!raw) return null;
+    const parsed = JSON.parse(raw) as PersistedWheel;
+    const mergedLength = (parsed.userComments?.length ?? 0) + reviews.length;
+    const idxOk = (i: number) => Number.isInteger(i) && i >= 0 && i < mergedLength;
+    const slotOk = !parsed.slotIdx || parsed.slotIdx.every(idxOk);
+    if (!slotOk || !idxOk(parsed.centerIdx)) return null;
+    persistedWheel = parsed;
+    return parsed;
+  } catch {
+    return null;
+  }
+};
 
 const syncPersistedWheel = (userComments: Testimonial[], slotIdx: number[] | null, centerIdx: number) => {
   persistedWheel = { userComments, slotIdx, centerIdx };
+  try {
+    sessionStorage.setItem(WHEEL_STORAGE_KEY, JSON.stringify(persistedWheel));
+  } catch {
+    // Abaikan — mode privat / kuota penuh
+  }
 };
 
 const easeInOutCubic = (t: number) => (t < 0.5 ? 4 * t * t * t : 1 - Math.pow(-2 * t + 2, 3) / 2);
@@ -77,7 +103,7 @@ const ReviewCard: React.FC<ReviewCardProps> = ({ review }) => {
 
 const TestimonialsSection: React.FC<TestimonialsSectionProps> = ({ happyPeopleImage }) => {
   const { t } = useLanguage();
-  const restored = persistedWheel;
+  const restored = readStoredWheel();
   const restoredItems = restored ? [...restored.userComments, ...reviews] : reviews;
   const [items, setItems] = useState<Testimonial[]>(restoredItems);
   const [slotReviews, setSlotReviews] = useState<Testimonial[]>(() =>
@@ -210,7 +236,7 @@ const TestimonialsSection: React.FC<TestimonialsSectionProps> = ({ happyPeopleIm
 
   // Ambil komentar pengguna yang sudah tersimpan di Supabase (tampil selamanya)
   useEffect(() => {
-    const hasRestoredWheel = persistedWheel !== null;
+    const hasRestoredWheel = readStoredWheel() !== null;
     (async () => {
       try {
         const list = await listComments();
@@ -342,7 +368,7 @@ const TestimonialsSection: React.FC<TestimonialsSectionProps> = ({ happyPeopleIm
                     }}
                     className="absolute left-1/2 top-1/2 w-full max-w-xl will-change-transform"
                   >
-                    <div className="mx-auto w-full">
+                    <div className="mx-auto w-full px-4 sm:px-6">
                       <ReviewCard review={review} />
                     </div>
                   </div>
