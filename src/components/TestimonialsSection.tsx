@@ -22,7 +22,6 @@ const SPACING = 214;
 // di sessionStorage: tahan remount & reload dalam sesi tab yang sama.
 type PersistedWheel = {
   userComments: Testimonial[];
-  slotIdx: number[] | null;
   centerIdx: number;
 };
 
@@ -36,19 +35,16 @@ const readStoredWheel = (): PersistedWheel | null => {
     const raw = sessionStorage.getItem(WHEEL_STORAGE_KEY);
     if (!raw) return null;
     const parsed = JSON.parse(raw) as PersistedWheel;
-    const mergedLength = (parsed.userComments?.length ?? 0) + reviews.length;
-    const idxOk = (i: number) => Number.isInteger(i) && i >= 0 && i < mergedLength;
-    const slotOk = !parsed.slotIdx || parsed.slotIdx.every(idxOk);
-    if (!slotOk || !idxOk(parsed.centerIdx)) return null;
-    persistedWheel = parsed;
-    return parsed;
+    if (!Array.isArray(parsed?.userComments) || !Number.isInteger(parsed?.centerIdx)) return null;
+    persistedWheel = { userComments: parsed.userComments, centerIdx: parsed.centerIdx };
+    return persistedWheel;
   } catch {
     return null;
   }
 };
 
-const syncPersistedWheel = (userComments: Testimonial[], slotIdx: number[] | null, centerIdx: number) => {
-  persistedWheel = { userComments, slotIdx, centerIdx };
+const syncPersistedWheel = (userComments: Testimonial[], centerIdx: number) => {
+  persistedWheel = { userComments, centerIdx };
   try {
     sessionStorage.setItem(WHEEL_STORAGE_KEY, JSON.stringify(persistedWheel));
   } catch {
@@ -105,12 +101,17 @@ const TestimonialsSection: React.FC<TestimonialsSectionProps> = ({ happyPeopleIm
   const { t } = useLanguage();
   const restored = readStoredWheel();
   const restoredItems = restored ? [...restored.userComments, ...reviews] : reviews;
+  const nRestored = restoredItems.length;
+  // Normalisasi: kartu tengah selalu diletakkan di slot 2 dengan offset standar
+  // [-1,0,1,2,3], apa pun rotasi wheel sebelumnya. centerIdx disimpan sebagai acuan
+  // agar posisi tidak reset saat komponen di-remount (ganti bahasa/tema).
+  const restoredCenter = (((restored?.centerIdx ?? 0) % nRestored) + nRestored) % nRestored;
+  const restoredSlotIdx = [...Array(SLOT_COUNT)].map((_, s) => {
+    const idx = restoredCenter + (s - 2);
+    return ((idx % nRestored) + nRestored) % nRestored;
+  });
   const [items, setItems] = useState<Testimonial[]>(restoredItems);
-  const [slotReviews, setSlotReviews] = useState<Testimonial[]>(() =>
-    restored?.slotIdx
-      ? restored.slotIdx.map((i) => restoredItems[i])
-      : [...Array(SLOT_COUNT)].map((_, s) => reviews[((s - 2) % reviews.length + reviews.length) % reviews.length]),
-  );
+  const [slotReviews, setSlotReviews] = useState<Testimonial[]>(() => restoredSlotIdx.map((i) => restoredItems[i]));
   const [showForm, setShowForm] = useState(false);
   const [formName, setFormName] = useState('');
   const [formCity, setFormCity] = useState('');
@@ -120,11 +121,8 @@ const TestimonialsSection: React.FC<TestimonialsSectionProps> = ({ happyPeopleIm
   const [submitting, setSubmitting] = useState(false);
 
   const itemsRef = useRef(items);
-  const centerIdxRef = useRef(restored?.centerIdx ?? 0);
-  const slotIdxRef = useRef<number[]>(
-    restored?.slotIdx ??
-      [...Array(SLOT_COUNT)].map((_, s) => ((s - 2) % reviews.length + reviews.length) % reviews.length),
-  );
+  const centerIdxRef = useRef(restoredCenter);
+  const slotIdxRef = useRef<number[]>(restoredSlotIdx);
   const offsetsRef = useRef<number[]>([-1, 0, 1, 2, 3]);
   const elRefs = useRef<(HTMLDivElement | null)[]>([]);
   const animatingRef = useRef(false);
@@ -201,7 +199,7 @@ const TestimonialsSection: React.FC<TestimonialsSectionProps> = ({ happyPeopleIm
 
       offsetsRef.current = newOffsets;
       setSlotReviews(slotIdxRef.current.map((i) => itemsRef.current[i]));
-      syncPersistedWheel(userCommentsRef.current, slotIdxRef.current, centerIdxRef.current);
+      syncPersistedWheel(userCommentsRef.current, centerIdxRef.current);
 
       requestAnimationFrame(() =>
         requestAnimationFrame(() => {
@@ -215,17 +213,18 @@ const TestimonialsSection: React.FC<TestimonialsSectionProps> = ({ happyPeopleIm
     requestAnimationFrame(step);
   };
 
-  const setWheelFrom = (list: Testimonial[]) => {
+  const setWheelCenter = (list: Testimonial[], centerIndex: number) => {
     animTokenRef.current += 1;
     animatingRef.current = false;
 
     const N = list.length;
     const nidx = (n: number) => ((n % N) + N) % N;
-    centerIdxRef.current = 0;
-    slotIdxRef.current = [nidx(-2), nidx(-1), 0, 1, 2];
+    const center = nidx(centerIndex);
+    centerIdxRef.current = center;
+    slotIdxRef.current = [nidx(center - 2), nidx(center - 1), center, nidx(center + 1), nidx(center + 2)];
     offsetsRef.current = [-1, 0, 1, 2, 3];
     setSlotReviews(slotIdxRef.current.map((i) => list[i]));
-    syncPersistedWheel(list.slice(0, Math.max(0, list.length - reviews.length)), slotIdxRef.current, centerIdxRef.current);
+    syncPersistedWheel(list.slice(0, Math.max(0, list.length - reviews.length)), center);
 
     requestAnimationFrame(() =>
       requestAnimationFrame(() => {
@@ -244,9 +243,9 @@ const TestimonialsSection: React.FC<TestimonialsSectionProps> = ({ happyPeopleIm
         const merged = list.length > 0 ? [...list, ...reviews] : reviews;
         itemsRef.current = merged;
         setItems(merged);
-        syncPersistedWheel(list, slotIdxRef.current, centerIdxRef.current);
+        syncPersistedWheel(list, centerIdxRef.current);
         if (!hasRestoredWheel) {
-          setWheelFrom(merged);
+          setWheelCenter(merged, 0);
         }
       } catch {
         // Abaikan — cukup testimonial statis bawaan
@@ -306,7 +305,7 @@ const TestimonialsSection: React.FC<TestimonialsSectionProps> = ({ happyPeopleIm
       const merged = [...userList, ...reviews];
       itemsRef.current = merged;
       setItems(merged);
-      setWheelFrom(merged);
+      setWheelCenter(merged, 0);
       setFormName('');
       setFormCity('');
       setFormRating(5);

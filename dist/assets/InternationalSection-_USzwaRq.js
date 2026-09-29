@@ -1,4 +1,4 @@
-import{c as d,u as l,r as m,j as a,m as c,A as p}from"./index-D81ipRsB.js";import{I as u}from"./InternationalDetailModal-DH6Rn6AL.js";import{T as g,C as y}from"./truck-aPFS1mQt.js";import{B as h}from"./badge-check-C28tgtQa.js";import"./phone-Cb5a1Doa.js";/**
+import{c as d,u as l,r as m,j as a,m as c,A as p}from"./index-Dp76Aqkl.js";import{I as u}from"./InternationalDetailModal-8Vp65muv.js";import{T as g,C as y}from"./truck-ihkZBDWF.js";import{B as h}from"./badge-check-C7Gdq88r.js";import"./phone-BWQU8y9k.js";/**
  * @license lucide-react v0.462.0 - ISC
  *
  * This source code is licensed under the ISC license.
