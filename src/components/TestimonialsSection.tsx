@@ -58,16 +58,6 @@ interface ReviewCardProps {
   review: Testimonial;
 }
 
-const AVATAR_HUES = [12, 32, 48, 90, 150, 190, 220, 260, 300, 335];
-
-const hashString = (value: string) => {
-  let hash = 0;
-  for (let i = 0; i < value.length; i += 1) {
-    hash = (hash * 31 + value.charCodeAt(i)) >>> 0;
-  }
-  return hash;
-};
-
 // Inisial nama: 1 kata → 1 huruf ("Dewi" → D), 2 kata → 2 huruf
 // ("Mr Sumbul" → MS), 3 kata atau lebih → 2 huruf pertama ("Dewi Anggi Citra" → DA).
 const getInitials = (name: string) => {
@@ -78,11 +68,6 @@ const getInitials = (name: string) => {
     .map((word) => word.charAt(0).toUpperCase())
     .join('');
 };
-
-// Warna background avatar acak tapi stabil per nama (hash), bukan Math.random,
-// supaya tidak berubah-ubah tiap render/remount.
-const getAvatarColor = (name: string) =>
-  `hsl(${AVATAR_HUES[hashString(name) % AVATAR_HUES.length]} 55% 42%)`;
 
 const ReviewStars = ({ rating, size = 'w-4 h-4' }: { rating: number; size?: string }) => (
   <div className="flex items-center gap-1">
@@ -114,8 +99,7 @@ const ReviewCard: React.FC<ReviewCardProps> = ({ review }) => {
 
       <div className="mt-4 flex items-center gap-3">
         <span
-          className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full text-sm font-bold uppercase text-white shadow-sm ring-1 ring-white/20"
-          style={{ backgroundColor: getAvatarColor(review.name) }}
+          className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full border-2 border-honey-gold bg-transparent text-sm font-bold uppercase text-honey-gold"
           aria-hidden="true"
         >
           {getInitials(review.name)}
