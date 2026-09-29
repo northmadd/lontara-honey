@@ -90,9 +90,13 @@ export const deleteComment = async (id: string): Promise<void> => {
   if (!isSupabaseConfigured) throw new Error('supabase-not-configured');
   const res = await fetch(`${SUPABASE_URL}/rest/v1/testimonials?id=eq.${encodeURIComponent(id)}`, {
     method: 'DELETE',
-    headers: authHeaders({ Prefer: 'return=minimal' }),
+    headers: authHeaders({ Prefer: 'return=representation' }),
   });
   if (!res.ok) throw new Error(`supabase-delete-failed:${res.status}`);
+  // PostgREST mengembalikan 204 walau RLS memblokir delete (0 baris terhapus).
+  // Minta representasi agar bisa mendeteksi tidak ada baris yang benar-benar terhapus.
+  const rows = (await res.json()) as SupabaseCommentRow[];
+  if (!Array.isArray(rows) || rows.length === 0) throw new Error('supabase-delete-blocked');
 };
 
 export const updateComment = async (
