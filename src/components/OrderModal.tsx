@@ -389,9 +389,10 @@ const OrderModal: React.FC<OrderModalProps> = ({ product, onClose }) => {
             </h2>
             <button
               onClick={onClose}
-              className="p-2 rounded-full hover:bg-muted transition-colors"
+              aria-label={t('product.details.close')}
+              className="p-3 rounded-full hover:bg-muted transition-colors sm:p-2"
             >
-              <X className="w-5 h-5" />
+              <X className="w-6 h-6 sm:w-5 sm:h-5" />
             </button>
           </div>
 

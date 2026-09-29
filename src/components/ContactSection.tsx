@@ -134,6 +134,7 @@ const ContactSection: React.FC = () => {
               <Button
                 size="lg"
                 honeyHover
+                className="w-full text-base h-12 sm:w-auto sm:text-sm sm:h-11"
                 onClick={() =>
                   openWhatsApp(t('contact.wa.message'))
                 }

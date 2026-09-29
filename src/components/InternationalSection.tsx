@@ -184,9 +184,9 @@ const InternationalSection = () => {
               <h3 className="mt-4 font-bold text-honey-gold">{t(card.titleKey)}</h3>
               <div className="honey-underline mt-2" />
               <p className="mt-3 flex-1 text-sm text-muted-foreground dark:text-white/80">{t(card.textKey)}</p>
-              <div className="mt-auto inline-flex items-center gap-1.5 pt-5 text-xs font-semibold text-honey-gold opacity-70 transition-opacity duration-300 group-hover:opacity-100">
+              <div className="mt-auto inline-flex items-center gap-1.5 pt-5 text-sm font-semibold text-honey-gold transition-opacity duration-300 opacity-100 sm:text-xs sm:opacity-70 group-hover:opacity-100">
                 {t('international.details.view')}
-                <ArrowRight className="h-3.5 w-3.5 transition-transform duration-300 group-hover:translate-x-1" />
+                <ArrowRight className="h-4 w-4 transition-transform duration-300 group-hover:translate-x-1 sm:h-3.5 sm:w-3.5" />
               </div>
             </motion.article>
           ))}

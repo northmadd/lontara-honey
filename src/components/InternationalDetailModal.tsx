@@ -92,9 +92,9 @@ const InternationalDetailModal: React.FC<InternationalDetailModalProps> = ({ tit
           <button
             onClick={onClose}
             aria-label={t('product.details.close')}
-            className="absolute top-4 right-4 z-30 flex h-10 w-10 items-center justify-center rounded-full bg-foreground/10 text-foreground backdrop-blur-sm transition-colors hover:bg-foreground/20"
+            className="absolute top-4 right-4 z-30 flex h-12 w-12 items-center justify-center rounded-full bg-foreground/10 text-foreground backdrop-blur-sm transition-colors hover:bg-foreground/20 sm:h-10 sm:w-10"
           >
-            <X className="h-5 w-5" />
+            <X className="h-6 w-6 sm:h-5 sm:w-5" />
           </button>
 
           {/* Header */}
@@ -175,12 +175,22 @@ const InternationalDetailModal: React.FC<InternationalDetailModalProps> = ({ tit
               animate="visible"
             >
               {showWhatsApp && (
-                <Button onClick={openWhatsApp} variant="honey" size="lg" className="flex-1">
-                  <Phone className="h-4 w-4 mr-2" />
+                <Button
+                  onClick={openWhatsApp}
+                  variant="honey"
+                  size="lg"
+                  className="w-full text-base h-12 sm:w-auto sm:flex-1 sm:text-sm sm:h-11"
+                >
+                  <Phone className="h-5 w-5 mr-2 sm:h-4 sm:w-4" />
                   {t('contact.whatsapp')}
                 </Button>
               )}
-              <Button onClick={onClose} variant="outline" size="lg" className="flex-1">
+              <Button
+                onClick={onClose}
+                variant="outline"
+                size="lg"
+                className="w-full text-base h-12 sm:w-auto sm:flex-1 sm:text-sm sm:h-11"
+              >
                 {t('product.details.close')}
               </Button>
             </motion.div>

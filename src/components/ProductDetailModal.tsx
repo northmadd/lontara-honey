@@ -187,9 +187,9 @@ const ProductDetailModal: React.FC<ProductDetailModalProps> = ({ product, onClos
           <button
             onClick={onClose}
             aria-label={t('product.details.close')}
-            className="absolute top-4 right-4 z-30 flex h-10 w-10 items-center justify-center rounded-full bg-foreground/10 text-foreground backdrop-blur-sm transition-colors hover:bg-foreground/20"
+            className="absolute top-4 right-4 z-30 flex h-12 w-12 items-center justify-center rounded-full bg-foreground/10 text-foreground backdrop-blur-sm transition-colors hover:bg-foreground/20 sm:h-10 sm:w-10"
           >
-            <X className="h-5 w-5" />
+            <X className="h-6 w-6 sm:h-5 sm:w-5" />
           </button>
 
           {/* Hero image — slowly enlarges on open */}
@@ -285,13 +285,18 @@ const ProductDetailModal: React.FC<ProductDetailModalProps> = ({ product, onClos
                 onClick={() => onOrder(product)}
                 variant="honey"
                 size="lg"
-                className="flex-1"
+                className="w-full text-base h-12 sm:w-auto sm:flex-1 sm:text-sm sm:h-11"
               >
-                <ShoppingBag className="h-4 w-4 mr-2" />
+                <ShoppingBag className="h-5 w-5 mr-2 sm:h-4 sm:w-4" />
                 {t('products.order')}
               </Button>
-              <Button onClick={onClose} variant="outline" size="lg" className="flex-1">
-                <Info className="h-4 w-4 mr-2" />
+              <Button
+                onClick={onClose}
+                variant="outline"
+                size="lg"
+                className="w-full text-base h-12 sm:w-auto sm:flex-1 sm:text-sm sm:h-11"
+              >
+                <Info className="h-5 w-5 mr-2 sm:h-4 sm:w-4" />
                 {t('product.details.close')}
               </Button>
             </motion.div>

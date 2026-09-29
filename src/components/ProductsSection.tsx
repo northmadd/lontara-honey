@@ -143,8 +143,8 @@ const ProductsSection: React.FC<ProductsSectionProps> = ({ products, onOrderProd
 
                       {/* Tap to view details hint */}
                       <div className="absolute inset-x-0 bottom-4 flex justify-center">
-                        <span className="inline-flex items-center gap-1.5 rounded-full bg-black/45 backdrop-blur-sm px-3 py-1.5 text-xs font-medium text-white opacity-90 transition-all duration-300 group-hover/image:bg-honey-gold/90 group-hover/image:text-white group-hover/image:opacity-100">
-                          <ZoomIn className="w-3.5 h-3.5" />
+                        <span className="inline-flex items-center gap-1.5 rounded-full bg-black/45 backdrop-blur-sm px-4 py-2 text-sm font-medium text-white opacity-90 transition-all duration-300 group-hover/image:bg-honey-gold/90 group-hover/image:text-white group-hover/image:opacity-100 sm:px-3 sm:py-1.5 sm:text-xs">
+                          <ZoomIn className="w-4 h-4 sm:w-3.5 sm:h-3.5" />
                           {t('products.viewDetails')}
                         </span>
                       </div>
@@ -171,9 +171,9 @@ const ProductsSection: React.FC<ProductsSectionProps> = ({ products, onOrderProd
                       <Button
                         honeyHover
                         onClick={() => onOrderProduct(product)}
-                        className="mt-3"
+                        className="mt-3 w-full h-12 text-base sm:w-auto sm:h-10 sm:text-sm"
                       >
-                        <ShoppingBag className="w-4 h-4 mr-2" />
+                        <ShoppingBag className="w-5 h-5 mr-2 sm:w-4 sm:h-4" />
                         {t('products.order')}
                       </Button>
                     </div>
