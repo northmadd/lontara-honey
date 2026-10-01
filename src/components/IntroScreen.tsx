@@ -198,9 +198,9 @@ const IntroScreen: React.FC<IntroScreenProps> = ({ onComplete }) => {
             <motion.h1
               className="text-5xl md:text-7xl lg:text-8xl font-serif font-bold mb-4"
               style={{
-                color: '#d4a056',
+                color: 'hsl(40, 85%, 55%)',
                 textShadow:
-                  '0 0 40px rgba(212,160,86,0.5), 0 0 80px rgba(212,160,86,0.3)',
+                  '0 0 40px rgba(238,173,43,0.5), 0 0 80px rgba(238,173,43,0.3)',
               }}
               initial={{ y: 50, opacity: 0 }}
               animate={
@@ -220,7 +220,7 @@ const IntroScreen: React.FC<IntroScreenProps> = ({ onComplete }) => {
             <motion.h2
               className="text-3xl md:text-4xl lg:text-5xl font-serif tracking-[0.3em]"
               style={{
-                color: '#e8c88b',
+                color: 'hsl(40, 85%, 62%)',
               }}
               initial={{ y: 30, opacity: 0 }}
               animate={
@@ -241,7 +241,7 @@ const IntroScreen: React.FC<IntroScreenProps> = ({ onComplete }) => {
             <motion.p
               className="mt-6 text-lg md:text-xl tracking-widest uppercase"
               style={{
-                color: '#a08060',
+                color: 'rgba(238,173,43,0.78)',
               }}
               initial={{ opacity: 0 }}
               animate={
