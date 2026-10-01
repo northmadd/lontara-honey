@@ -1,39 +1,15 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { motion, AnimatePresence } from 'framer-motion';
-import { X, CreditCard, Wallet, Truck, Clock, Copy, Check, ExternalLink, Upload, Trash2, Search, MapPin } from 'lucide-react';
+import { X, CreditCard, Wallet, Truck } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
-import { Checkbox } from '@/components/ui/checkbox';
 import CountryCodeSelect, { getPhonePlaceholder } from '@/components/CountryCodeSelect';
 import { Product } from './ProductsSection';
-import qrisImage from '@/assets/qris.webp';
 
 const WHATSAPP_NUMBER = '6282347905543';
 const FORM_COOLDOWN_MS = 15_000;
-const QRIS_EXPIRY_MS = 10 * 60 * 1000;
-const STORE_LAT = -5.2146092;
-const STORE_LNG = 119.4524519;
-const STORE_ADDRESS = 'Jl. Pangkabinanga, Pangkabinanga, Pallangga, Gowa, Sulawesi Selatan 92161';
-
-interface MapPlace {
-  placeId: string;
-  lat: number;
-  lon: number;
-  display_name: string;
-}
-
-const STORE_PLACE: MapPlace = {
-  placeId: 'store',
-  lat: STORE_LAT,
-  lon: STORE_LNG,
-  display_name: STORE_ADDRESS,
-};
-const CLOUDINARY_CLOUD_NAME = import.meta.env.VITE_CLOUDINARY_CLOUD_NAME ?? '';
-const CLOUDINARY_UPLOAD_PRESET = import.meta.env.VITE_CLOUDINARY_UPLOAD_PRESET ?? '';
-const PROOF_UPLOAD_FOLDER = 'bukti-transfer';
-const PROOF_MAX_SIZE_MB = 5;
 
 const openWhatsApp = (message: string) => {
   const encodedMessage = encodeURIComponent(message);
@@ -58,74 +34,13 @@ const OrderModal: React.FC<OrderModalProps> = ({ product, onClose }) => {
     website: '',
   });
   const [phoneError, setPhoneError] = useState('');
-  const [mapQuery, setMapQuery] = useState('');
-  const [mapResults, setMapResults] = useState<MapPlace[]>([]);
-  const [mapSelected, setMapSelected] = useState<MapPlace | null>(STORE_PLACE);
-  const [mapAddress, setMapAddress] = useState(STORE_ADDRESS);
-  const [mapResolving, setMapResolving] = useState(false);
-  const [mapNoResult, setMapNoResult] = useState(false);
-  const [qrisExpired, setQrisExpired] = useState(false);
-  const [qrisAgreed, setQrisAgreed] = useState(false);
-  const [qrisConfirmed, setQrisConfirmed] = useState(false);
-  const [qrisProofError, setQrisProofError] = useState('');
-  const [secondsLeft, setSecondsLeft] = useState(QRIS_EXPIRY_MS / 1000);
-  const [copied, setCopied] = useState(false);
-  const [proofFile, setProofFile] = useState<File | null>(null);
-  const [proofPreview, setProofPreview] = useState('');
-  const [sending, setSending] = useState(false);
-  const proofPreviewRef = useRef('');
   const lastSubmission = useRef(0);
-
-  // QRIS session: 10 minutes after agreeing, then reset the payment data.
-  useEffect(() => {
-    if (formData.payment !== 'qris' || !qrisAgreed) return;
-
-    const expiresAt = Date.now() + QRIS_EXPIRY_MS;
-    setQrisExpired(false);
-    setQrisConfirmed(false);
-    setQrisProofError('');
-    setProofFile(null);
-    setProofPreview((prev) => {
-      if (prev) URL.revokeObjectURL(prev);
-      proofPreviewRef.current = '';
-      return '';
-    });
-    setSecondsLeft(QRIS_EXPIRY_MS / 1000);
-
-    const interval = window.setInterval(() => {
-      const remaining = Math.max(0, Math.round((expiresAt - Date.now()) / 1000));
-      setSecondsLeft(remaining);
-      if (remaining <= 0) {
-        window.clearInterval(interval);
-        setQrisExpired(true);
-        setQrisAgreed(false);
-        setProofFile(null);
-        setProofPreview((prev) => {
-          if (prev) URL.revokeObjectURL(prev);
-          proofPreviewRef.current = '';
-          return '';
-        });
-        setFormData((prev) => ({ ...prev, payment: 'bank' }));
-      }
-    }, 1000);
-
-    return () => window.clearInterval(interval);
-  }, [formData.payment, qrisAgreed]);
 
   useEffect(() => {
     const previousOverflow = document.body.style.overflow;
     document.body.style.overflow = 'hidden';
     return () => {
       document.body.style.overflow = previousOverflow;
-    };
-  }, []);
-
-  useEffect(() => {
-    return () => {
-      if (proofPreviewRef.current) {
-        URL.revokeObjectURL(proofPreviewRef.current);
-        proofPreviewRef.current = '';
-      }
     };
   }, []);
 
@@ -139,159 +54,11 @@ const OrderModal: React.FC<OrderModalProps> = ({ product, onClose }) => {
     }).format(price);
   };
 
-  const formatCountdown = (totalSeconds: number) => {
-    const minutes = Math.floor(totalSeconds / 60);
-    const seconds = totalSeconds % 60;
-    return `${String(minutes).padStart(2, '0')}:${String(seconds).padStart(2, '0')}`;
-  };
-
   const paymentMethods = [
     { id: 'bank', label: t('order.bank'), icon: CreditCard },
     { id: 'qris', label: 'QRIS', icon: Wallet },
     { id: 'cod', label: t('order.cod'), icon: Truck },
   ];
-
-  const mapSrc = `https://www.google.com/maps?q=${encodeURIComponent(
-    mapSelected ? `${mapSelected.lat},${mapSelected.lon}` : `${STORE_LAT},${STORE_LNG}`,
-  )}&z=16&hl=${language}&output=embed`;
-
-  const copyText = async (addressText: string) => {
-    try {
-      await navigator.clipboard.writeText(addressText);
-    } catch {
-      const textarea = document.createElement('textarea');
-      textarea.value = addressText;
-      textarea.style.position = 'fixed';
-      textarea.style.opacity = '0';
-      document.body.appendChild(textarea);
-      textarea.select();
-      document.execCommand('copy');
-      document.body.removeChild(textarea);
-    }
-    setCopied(true);
-    window.setTimeout(() => setCopied(false), 2500);
-  };
-
-  const resolveMapAddress = async (query: string) => {
-    const q = query.trim();
-    setMapResolving(true);
-    try {
-      const params = new URLSearchParams({
-        format: 'jsonv2',
-        q,
-        limit: '10',
-        addressdetails: '1',
-        'accept-language': language === 'id' ? 'id' : 'en',
-      });
-      const res = await fetch(
-        `https://nominatim.openstreetmap.org/search?${params.toString()}`,
-        { headers: { Accept: 'application/json' } },
-      );
-      if (!res.ok) throw new Error('geocode-failed');
-      const data = (await res.json()) as Array<{
-        place_id?: number;
-        lat?: string;
-        lon?: string;
-        display_name?: string;
-      }>;
-      const places: MapPlace[] = (Array.isArray(data) ? data : [])
-        .map((item, idx) => {
-          const lat = Number.parseFloat(item.lat ?? '');
-          const lon = Number.parseFloat(item.lon ?? '');
-          if (!Number.isFinite(lat) || !Number.isFinite(lon)) return null;
-          return {
-            placeId: String(item.place_id ?? idx),
-            lat,
-            lon,
-            display_name: item.display_name ?? q,
-          };
-        })
-        .filter((p): p is MapPlace => p !== null);
-      setMapResults(places);
-      setMapNoResult(places.length === 0);
-      if (places.length > 0) {
-        const first = places[0];
-        setMapSelected(first);
-        setMapAddress(first.display_name);
-      } else {
-        setMapAddress('');
-      }
-    } catch {
-      setMapResults([]);
-      setMapNoResult(true);
-      setMapAddress('');
-    } finally {
-      setMapResolving(false);
-    }
-  };
-
-  const applyMapSearch = (value?: string) => {
-    const q = (value ?? mapQuery).trim();
-    if (!q) return;
-    void resolveMapAddress(q);
-  };
-
-  const selectMapPlace = (place: MapPlace) => {
-    setMapSelected(place);
-    setMapAddress(place.display_name);
-    setFormData((prev) => ({ ...prev, address: place.display_name.slice(0, 160) }));
-    void copyText(place.display_name);
-  };
-
-  const openGoogleMaps = () => {
-    const place = mapSelected;
-    const hasCoords = place && Number.isFinite(place.lat) && Number.isFinite(place.lon);
-    const q = hasCoords ? `${place.lat},${place.lon}` : `${STORE_LAT},${STORE_LNG}`;
-    window.open(
-      `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(q)}`,
-      '_blank',
-      'noopener',
-    );
-  };
-
-  const handleProofSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0] ?? null;
-    e.target.value = '';
-    if (!file) return;
-    if (!file.type.startsWith('image/')) {
-      setQrisProofError(t('order.qris.proof.invalid'));
-      return;
-    }
-    if (file.size > PROOF_MAX_SIZE_MB * 1024 * 1024) {
-      setQrisProofError(t('order.qris.proof.tooLarge'));
-      return;
-    }
-    setQrisProofError('');
-    setProofFile(file);
-    if (proofPreviewRef.current) URL.revokeObjectURL(proofPreviewRef.current);
-    proofPreviewRef.current = URL.createObjectURL(file);
-    setProofPreview(proofPreviewRef.current);
-  };
-
-  const removeProof = () => {
-    if (proofPreviewRef.current) URL.revokeObjectURL(proofPreviewRef.current);
-    proofPreviewRef.current = '';
-    setProofPreview('');
-    setProofFile(null);
-  };
-
-  const uploadProof = async (): Promise<string> => {
-    if (!proofFile) throw new Error('no-file');
-    if (!CLOUDINARY_CLOUD_NAME || !CLOUDINARY_UPLOAD_PRESET) throw new Error('no-config');
-    const body = new FormData();
-    body.append('file', proofFile);
-    body.append('upload_preset', CLOUDINARY_UPLOAD_PRESET);
-    body.append('folder', PROOF_UPLOAD_FOLDER);
-    body.append('context', `customer=${formData.name};order=${language === 'en' ? product.name.en : product.name.id}`);
-    const res = await fetch(
-      `https://api.cloudinary.com/v1_1/${CLOUDINARY_CLOUD_NAME}/image/upload`,
-      { method: 'POST', body },
-    );
-    if (!res.ok) throw new Error('upload-failed');
-    const data = (await res.json()) as { secure_url?: string };
-    if (!data.secure_url) throw new Error('no-url');
-    return data.secure_url;
-  };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -303,28 +70,12 @@ const OrderModal: React.FC<OrderModalProps> = ({ product, onClose }) => {
       return;
     }
 
-    if (formData.payment === 'qris') {
-      if (qrisExpired) return;
-      if (!qrisAgreed) {
-        setQrisProofError(t('order.qris.rules.required'));
-        return;
-      }
-      if (!qrisConfirmed) {
-        setQrisProofError(t('order.qris.proofRequired'));
-        return;
-      }
-      if (!proofFile) {
-        setQrisProofError(t('order.qris.proof.required'));
-        return;
-      }
-    }
-
     if (Date.now() - lastSubmission.current < FORM_COOLDOWN_MS) return;
     lastSubmission.current = Date.now();
 
     const paymentLabel = paymentMethods.find(p => p.id === formData.payment)?.label || formData.payment;
 
-    const buildMessage = (proofUrl: string) =>
+    const buildMessage = () =>
       `${t('order.wa.title')}` +
       `${t('order.wa.product')} ${language === 'en' ? product.name.en : product.name.id}\n` +
       `${t('order.wa.weight')} ${product.weight}\n` +
@@ -334,39 +85,22 @@ const OrderModal: React.FC<OrderModalProps> = ({ product, onClose }) => {
       `${t('order.wa.phone')} ${formData.countryCode} ${formData.phone}\n` +
       `${formData.address ? `${t('order.wa.address')} ${formData.address}\n` : ''}` +
       `${t('order.wa.payment')} ${paymentLabel}\n` +
-      `${formData.payment === 'qris' ? `${t('order.wa.qris.note')} ${proofUrl || t('order.wa.qris.manual')}\n` : ''}` +
+      `${formData.payment === 'qris' ? `${t('order.wa.qris.request')}\n` : ''}` +
       `${formData.notes ? `${t('order.wa.notes')} ${formData.notes}\n` : ''}\n` +
       `${t('order.wa.thanks')}`;
 
-    if (formData.payment === 'qris') {
-      setSending(true);
-      try {
-        let proofUrl = '';
-        if (CLOUDINARY_CLOUD_NAME && CLOUDINARY_UPLOAD_PRESET) {
-          proofUrl = await uploadProof();
-        }
-        openWhatsApp(buildMessage(proofUrl));
-        onClose();
-      } catch {
-        lastSubmission.current = 0;
-        setQrisProofError(t('order.qris.proof.uploadFailed'));
-      } finally {
-        setSending(false);
-      }
-      return;
-    }
-
-    openWhatsApp(buildMessage(''));
+    openWhatsApp(buildMessage());
     onClose();
   };
 
   return (
     <AnimatePresence>
       <motion.div
-        className="fixed inset-0 z-50 flex items-center justify-center p-4"
+        className="fixed inset-0 z-50 flex items-end sm:items-center justify-center p-0 sm:p-6"
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
         exit={{ opacity: 0 }}
+        transition={{ duration: 0.3 }}
       >
         {/* Backdrop */}
         <motion.div
@@ -376,29 +110,36 @@ const OrderModal: React.FC<OrderModalProps> = ({ product, onClose }) => {
 
         {/* Modal */}
         <motion.div
-          className="relative bg-card rounded-3xl shadow-2xl w-full max-w-md md:max-w-xl lg:max-w-2xl max-h-[90vh] overflow-y-auto"
-          initial={{ scale: 0.9, opacity: 0, y: 20 }}
+          className="relative bg-card rounded-t-3xl sm:rounded-3xl shadow-2xl w-full max-w-md md:max-w-xl lg:max-w-2xl max-h-[94vh] sm:max-h-[90vh] overflow-hidden flex flex-col"
+          initial={{ scale: 0.92, opacity: 0, y: 60 }}
           animate={{ scale: 1, opacity: 1, y: 0 }}
-          exit={{ scale: 0.9, opacity: 0, y: 20 }}
-          transition={{ type: "spring", bounce: 0.3 }}
+          exit={{ scale: 0.92, opacity: 0, y: 60 }}
+          transition={{ type: "spring", bounce: 0.22, duration: 0.7 }}
+          role="dialog"
+          aria-modal="true"
+          aria-label={t('order.title')}
         >
+          {/* Close button */}
+          <button
+            onClick={onClose}
+            aria-label={t('product.details.close')}
+            className="absolute top-4 right-4 z-30 flex h-12 w-12 items-center justify-center rounded-full bg-foreground/10 text-foreground backdrop-blur-sm transition-colors hover:bg-foreground/20 sm:h-10 sm:w-10"
+          >
+            <X className="h-6 w-6 sm:h-5 sm:w-5" />
+          </button>
+
           {/* Header */}
-          <div className="sticky top-0 z-20 bg-card p-6 border-b border-border flex items-center justify-between">
+          <div className="flex shrink-0 items-center justify-between border-b border-border bg-card p-6 pr-16">
             <h2 className="text-2xl font-serif font-bold text-foreground">
               {t('order.title')}
             </h2>
-            <button
-              onClick={onClose}
-              aria-label={t('product.details.close')}
-              className="p-3 rounded-full hover:bg-muted transition-colors sm:p-2"
-            >
-              <X className="w-6 h-6 sm:w-5 sm:h-5" />
-            </button>
           </div>
 
+          {/* Scrollable content */}
+          <div className="min-h-0 flex-1 overflow-y-auto">
           {/* Product Summary */}
           <div className="p-6 bg-muted/50">
-            <div className="flex gap-4 items-start -mt-2">
+            <div className="flex gap-4 items-start">
               <img
                 src={product.image}
                 alt={language === 'en' ? product.name.en : product.name.id}
@@ -489,129 +230,6 @@ const OrderModal: React.FC<OrderModalProps> = ({ product, onClose }) => {
                 placeholder={t('order.addressPlaceholder')}
                 maxLength={160}
               />
-
-              <div className="mt-3 overflow-hidden rounded-lg border border-border">
-                <div className="flex gap-2 border-b border-border bg-card p-2">
-                  <Input
-                    value={mapQuery}
-                    onChange={(e) => setMapQuery(e.target.value)}
-                    onKeyDown={(e) => {
-                      if (e.key === 'Enter') {
-                        e.preventDefault();
-                        e.stopPropagation();
-                        applyMapSearch(mapQuery);
-                      }
-                    }}
-                    placeholder={t('order.map.search')}
-                    className="h-9 flex-1"
-                  />
-<Button
-                  type="button"
-                  size="sm"
-                  honeyHover
-                  onClick={() => applyMapSearch()}
-                  disabled={mapResolving}
-                  className="shrink-0"
-                >
-                    <Search className="w-4 h-4" />
-                    {t('order.map.searchBtn')}
-                  </Button>
-                </div>
-
-                {mapNoResult && (
-                  <div className="border-b border-border bg-muted/40 px-3 py-2 text-xs text-muted-foreground dark:text-white/80">
-                    {t('order.map.noResult')}
-                  </div>
-                )}
-
-                {mapResults.length > 0 && (
-                  <div className="max-h-40 overflow-y-auto border-b border-border">
-                    <p className="px-3 pt-2 text-xs font-semibold text-honey-gold">
-                      {language === 'id'
-                        ? `${mapResults.length} hasil ditemukan`
-                        : `${mapResults.length} result${mapResults.length > 1 ? 's' : ''} found`}
-                    </p>
-                    <ul>
-                      {mapResults.map((place, idx) => {
-                        const isSelected = mapSelected?.placeId === place.placeId;
-                        return (
-                          <li key={place.placeId}>
-                            <button
-                              type="button"
-                              onClick={() => selectMapPlace(place)}
-                              className={`flex w-full items-start gap-2 px-3 py-2 text-left text-xs transition-colors ${
-                                isSelected
-                                  ? 'bg-honey-gold/10'
-                                  : 'hover:bg-muted/60'
-                              }`}
-                            >
-                              <span
-                                className={`mt-0.5 flex h-5 w-5 shrink-0 items-center justify-center rounded-full text-[10px] font-bold text-white ${
-                                  isSelected ? 'bg-honey-gold' : 'bg-amber-800'
-                                }`}
-                              >
-                                {idx + 1}
-                              </span>
-                              <span className="line-clamp-2 text-foreground">
-                                {place.display_name}
-                              </span>
-                            </button>
-                          </li>
-                        );
-                      })}
-                    </ul>
-                  </div>
-                )}
-
-                <iframe
-                  title={t('order.map.title')}
-                  src={mapSrc}
-                  className="h-64 w-full"
-                  style={{ border: 0 }}
-                  loading="lazy"
-                  allowFullScreen
-                  referrerPolicy="no-referrer-when-downgrade"
-                />
-
-                <div className="border-t border-border bg-muted/40 px-3 py-2 text-left">
-                  <p className="flex items-start gap-1.5 text-xs text-foreground">
-                    <MapPin className="mt-0.5 h-3.5 w-3.5 shrink-0 text-honey-gold" />
-                    <span>
-                      {mapResolving ? t('order.map.resolving') : null}
-                      <span className={mapResolving ? 'opacity-50' : ''}>
-                        {mapAddress || STORE_ADDRESS}
-                      </span>
-                    </span>
-                  </p>
-                </div>
-              </div>
-
-              <div className="mt-2 flex flex-col gap-2 sm:flex-row">
-                <Button
-                  type="button"
-                  size="sm"
-                  honeyReverse
-                  onClick={() => void copyText(mapAddress || STORE_ADDRESS)}
-                  className="shrink-0"
-                >
-                  {copied ? <Check className="w-4 h-4" /> : <Copy className="w-4 h-4" />}
-                  {copied ? t('order.map.copied') : t('order.map.copy')}
-                </Button>
-                <Button
-                  type="button"
-                  size="sm"
-                  honeyReverse
-                  onClick={openGoogleMaps}
-                  className="shrink-0"
-                >
-                  <ExternalLink className="w-4 h-4" />
-                  {t('order.map.open')}
-                </Button>
-              </div>
-
-              <p className="mt-2 text-xs text-muted-foreground dark:text-white/80">
-                {t('order.map.hint')}
-              </p>
             </div>
 
             <div>
@@ -664,168 +282,9 @@ const OrderModal: React.FC<OrderModalProps> = ({ product, onClose }) => {
                 </div>
               )}
 
-              {formData.payment === 'qris' && !qrisExpired && (
-                <div className="mt-4 rounded-xl border border-primary/30 bg-primary/5 p-5 text-center">
-                  {qrisAgreed ? (
-                    <>
-                      <div className="inline-flex items-center gap-2 rounded-full bg-primary/10 px-3 py-1 text-sm font-semibold text-primary mb-4">
-                        <Clock className="w-4 h-4" />
-                        <span>{t('order.qris.expires')}</span>
-                        <span className="tabular-nums">{formatCountdown(secondsLeft)}</span>
-                      </div>
-
-                      <div className="mx-auto w-52 md:w-64 rounded-2xl bg-white p-4">
-                        <img
-                          src={qrisImage}
-                          alt="QRIS"
-                          decoding="async"
-                          className="w-full h-auto"
-                        />
-                      </div>
-
-                      <p className="mt-4 text-sm text-foreground">{t('order.qris.scan')}</p>
-
-                      <div className="mt-3 rounded-xl border border-border bg-card p-4 text-left">
-                        <p className="text-sm font-semibold text-foreground">{t('order.qris.proof.label')}</p>
-                        <p className="mt-1 text-xs text-muted-foreground dark:text-white/80">{t('order.qris.proof.hint')}</p>
-
-                        {proofPreview ? (
-                          <div className="mt-3">
-                            <div className="overflow-hidden rounded-lg border border-border bg-muted/30">
-                              <img src={proofPreview} alt="Transfer proof" className="max-h-52 w-full object-contain" />
-                            </div>
-                            <div className="mt-2 flex gap-2">
-                              <label className="inline-flex cursor-pointer items-center gap-2 rounded-lg border border-primary/40 bg-primary/5 px-3 py-1.5 text-xs font-medium text-primary transition-colors hover:bg-primary/10">
-                                <Upload className="h-3.5 w-3.5" />
-                                {t('order.qris.proof.replace')}
-                                <input type="file" accept="image/*" className="sr-only" onChange={handleProofSelect} />
-                              </label>
-                              <button
-                                type="button"
-                                onClick={removeProof}
-                                className="inline-flex items-center gap-2 rounded-lg border border-destructive/40 px-3 py-1.5 text-xs font-medium text-destructive transition-colors hover:bg-destructive/10"
-                              >
-                                <Trash2 className="h-3.5 w-3.5" />
-                                {language === 'en' ? 'Remove' : 'Hapus'}
-                              </button>
-                            </div>
-                          </div>
-                        ) : (
-                          <label className="mt-3 flex cursor-pointer items-center justify-center gap-2 rounded-xl border-2 border-dashed border-primary/40 bg-primary/5 px-4 py-5 text-sm font-medium text-primary transition-colors hover:bg-primary/10">
-                            <Upload className="h-5 w-5" />
-                            {t('order.qris.proof.upload')}
-                            <input type="file" accept="image/*" className="sr-only" onChange={handleProofSelect} />
-                          </label>
-                        )}
-                      </div>
-
-                      <div className="mt-3 rounded-lg border border-amber-400/40 bg-amber-50 p-3 text-xs text-amber-900 dark:bg-amber-950/40 dark:text-amber-200 text-left">
-                        {t('order.qris.proofReminder')}
-                      </div>
-
-                      <div
-                        role="checkbox"
-                        aria-checked={qrisConfirmed}
-                        aria-disabled={!proofFile}
-                        tabIndex={0}
-                        onClick={(e) => {
-                          e.preventDefault();
-                          e.stopPropagation();
-                          if (!proofFile) {
-                            setQrisProofError(t('order.qris.proof.required'));
-                            return;
-                          }
-                          const next = !qrisConfirmed;
-                          setQrisConfirmed(next);
-                          if (next) setQrisProofError('');
-                        }}
-                        onKeyDown={(e) => {
-                          if (e.key === ' ' || e.key === 'Enter') {
-                            e.preventDefault();
-                            e.stopPropagation();
-                            if (!proofFile) {
-                              setQrisProofError(t('order.qris.proof.required'));
-                              return;
-                            }
-                            const next = !qrisConfirmed;
-                            setQrisConfirmed(next);
-                            if (next) setQrisProofError('');
-                          }
-                        }}
-                        className={`mt-3 flex items-start gap-3 rounded-xl border border-border bg-card p-3 text-left cursor-pointer select-none ${
-                          !proofFile ? 'opacity-70' : ''
-                        }`}
-                      >
-                        <Checkbox
-                          type="button"
-                          checked={qrisConfirmed}
-                          onCheckedChange={(checked) => {
-                            setQrisConfirmed(Boolean(checked));
-                            if (checked) setQrisProofError('');
-                          }}
-                          className="mt-0.5 pointer-events-none"
-                        />
-                        <span className="text-xs text-foreground">{t('order.qris.confirm')}</span>
-                      </div>
-                      {qrisProofError && (
-                        <p className="mt-2 text-sm font-medium text-honey-gold">{qrisProofError}</p>
-                      )}
-                    </>
-                  ) : (
-                    <div className="rounded-xl border border-border bg-card p-4 text-left">
-                      <p className="text-sm font-semibold text-foreground">{t('order.qris.rules.title')}</p>
-                      <p className="mt-1 text-xs text-muted-foreground dark:text-white/80">{t('order.qris.rules.intro')}</p>
-                      <ul className="mt-3 space-y-2">
-                        <li className="flex items-start gap-2 text-sm text-foreground">
-                          <Check className="mt-0.5 h-4 w-4 shrink-0 text-primary" />
-                          <span>{t('order.qris.rules.rule1')}</span>
-                        </li>
-                        <li className="flex items-start gap-2 text-sm text-foreground">
-                          <Check className="mt-0.5 h-4 w-4 shrink-0 text-primary" />
-                          <span>{t('order.qris.rules.rule2')}</span>
-                        </li>
-                        <li className="flex items-start gap-2 text-sm text-foreground">
-                          <Check className="mt-0.5 h-4 w-4 shrink-0 text-primary" />
-                          <span>{t('order.qris.rules.rule3')}</span>
-                        </li>
-                      </ul>
-                      <div
-                        role="checkbox"
-                        aria-checked={qrisAgreed}
-                        tabIndex={0}
-                        onClick={(e) => {
-                          e.preventDefault();
-                          e.stopPropagation();
-                          setQrisAgreed(true);
-                          setQrisProofError('');
-                        }}
-                        onKeyDown={(e) => {
-                          if (e.key === ' ' || e.key === 'Enter') {
-                            e.preventDefault();
-                            e.stopPropagation();
-                            setQrisAgreed(true);
-                            setQrisProofError('');
-                          }
-                        }}
-                        className="mt-4 flex cursor-pointer items-center gap-3 rounded-xl border border-primary/40 bg-background p-3 text-left select-none transition-colors hover:bg-primary/5"
-                      >
-                        <Checkbox
-                          type="button"
-                          checked={qrisAgreed}
-                          onCheckedChange={() => setQrisAgreed(true)}
-                          className="pointer-events-none"
-                        />
-                        <span className="text-xs font-medium text-foreground">{t('order.qris.rules.agree')}</span>
-                      </div>
-                    </div>
-                  )}
-                </div>
-              )}
-
-              {qrisExpired && (
-                <div className="mt-4 rounded-xl border border-destructive/40 bg-destructive/5 p-4 text-sm text-foreground">
-                  <p className="font-semibold">{t('order.qris.expired.title')}</p>
-                  <p className="mt-1 text-xs text-muted-foreground dark:text-white/80">{t('order.qris.expired.desc')}</p>
+              {formData.payment === 'qris' && (
+                <div className="mt-4 rounded-xl border border-primary/30 bg-primary/5 p-4 text-sm text-foreground">
+                  {t('order.qris.requestNote')}
                 </div>
               )}
             </div>
@@ -834,12 +293,12 @@ const OrderModal: React.FC<OrderModalProps> = ({ product, onClose }) => {
               type="submit"
               size="lg"
               honeyHover
-              disabled={sending}
               className="w-full py-6 text-lg font-semibold"
             >
-              {sending ? t('order.qris.proof.uploading') : t('order.submit')}
+              {t('order.submit')}
             </Button>
           </form>
+          </div>
         </motion.div>
       </motion.div>
     </AnimatePresence>

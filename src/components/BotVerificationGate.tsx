@@ -4,6 +4,7 @@ import logo from '@/assets/logo-lontara.webp';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { useAdmin } from '@/contexts/AdminContext';
 import { Button } from '@/components/ui/button';
+import { primeBacksound } from '@/lib/backsound';
 
 const TURNSTILE_SCRIPT_SRC = 'https://challenges.cloudflare.com/turnstile/v0/api.js?render=explicit';
 
@@ -68,6 +69,7 @@ const BotVerificationGate: React.FC<BotVerificationGateProps> = ({ children }) =
       setAdminError('');
       setShowAdminLogin(false);
       markAsVerified();
+      primeBacksound();
       setIsVerified(true);
     } else {
       setAdminError(t('admin.invalid'));
@@ -268,6 +270,7 @@ const BotVerificationGate: React.FC<BotVerificationGateProps> = ({ children }) =
               honeyHover
               onClick={() => {
                 markAsVerified();
+                primeBacksound();
                 setIsVerified(true);
               }}
               className="mt-4 w-full rounded-full px-7 py-3 text-base font-bold shadow-lg shadow-amber-950/40 focus:outline-none focus:ring-2 focus:ring-amber-200 focus:ring-offset-2 focus:ring-offset-stone-950"

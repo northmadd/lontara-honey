@@ -5,7 +5,7 @@ import IntroScreen from '@/components/IntroScreen';
 import Navbar from '@/components/Navbar';
 import HeroSection from '@/components/HeroSection';
 import type { Product, ProductDetail } from '@/components/ProductsSection';
-import backsound from '@/assets/wle.mp3';
+import { getBacksound } from '@/lib/backsound';
 
 const ProductsSection = lazy(() => import('@/components/ProductsSection'));
 const AboutSection = lazy(() => import('@/components/AboutSection'));
@@ -266,6 +266,9 @@ const IndexContent: React.FC = () => {
   const animationKey = `${language}-${resolvedTheme ?? 'dark'}`;
 
   const backsoundRef = useRef<HTMLAudioElement | null>(null);
+  if (backsoundRef.current === null) {
+    backsoundRef.current = getBacksound();
+  }
   const hasStartedBacksoundRef = useRef(false);
   const lastScrollPosRef = useRef(0);
   const homeRef = useRef<HTMLDivElement>(null);
@@ -319,11 +322,11 @@ const IndexContent: React.FC = () => {
   useEffect(() => {
     document.documentElement.classList.toggle('intro-lock', showIntro);
 
-    if (backsoundRef.current) {
-      backsoundRef.current.muted = isBacksoundMuted;
-    }
-
     if (showIntro || hasStartedBacksoundRef.current || !backsoundRef.current) {
+      // Selama intro, backsound tetap senyap (sudah di-prime dari gesture Enter).
+      if (backsoundRef.current && showIntro) {
+        backsoundRef.current.muted = true;
+      }
       return () => {
         document.documentElement.classList.remove('intro-lock');
       };
@@ -336,11 +339,17 @@ const IndexContent: React.FC = () => {
     };
 
     const startBacksound = () => {
-      if (!backsoundRef.current || hasStartedBacksoundRef.current) return;
+      const audio = backsoundRef.current;
+      if (!audio || hasStartedBacksoundRef.current) return;
 
-      backsoundRef.current.volume = 1;
-      backsoundRef.current.loop = true;
-      backsoundRef.current
+      audio.loop = true;
+      audio.muted = isBacksoundMuted;
+      try {
+        audio.currentTime = 0;
+      } catch {
+        // Sebagian browser melarang set currentTime sebelum metadata siap.
+      }
+      audio
         .play()
         .then(() => {
           hasStartedBacksoundRef.current = true;
@@ -393,7 +402,6 @@ const IndexContent: React.FC = () => {
 
   return (
     <>
-      <audio ref={backsoundRef} preload="auto" src={backsound} loop className="hidden" />
       {showIntro ? (
         <IntroScreen onComplete={() => setShowIntro(false)} />
       ) : (
