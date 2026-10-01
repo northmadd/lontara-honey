@@ -6,26 +6,10 @@ import sceneVideoMp4 from '@/assets/scene.mp4';
 import sceneVideoWebm from '@/assets/scene.webm';
 import { useLanguage } from '@/contexts/LanguageContext';
 
-const NorthmadVideo: React.FC = () => (
-  <video
-    autoPlay
-    loop
-    muted
-    playsInline
-    className="northmad-video select-none pointer-events-none"
-    aria-label="Northmad"
-    tabIndex={-1}
-  >
-    <source src={sceneVideoWebm} type="video/webm" />
-    <source src={sceneVideoMp4} type="video/mp4" />
-  </video>
-);
-
-const IS_SAFARI =
-  typeof navigator !== 'undefined' &&
-  /^((?!chrome|android|crios|fxios|edg|opr|samsung).)*safari/i.test(navigator.userAgent);
-
-const SafariNorthmadVideo: React.FC = () => {
+// Video digambar lewat <canvas> dengan teknik luma-key (membuang latar gelap),
+// dipakai di SEMUA browser. Ini menghindari kotak hitam pada perangkat Android
+// tertentu (mis. vivo V23 5G) yang gagal menampilkan alpha WebM secara native.
+const KeyedNorthmadVideo: React.FC = () => {
   const videoRef = useRef<HTMLVideoElement | null>(null);
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
 
@@ -173,15 +157,14 @@ const SafariNorthmadVideo: React.FC = () => {
   }, []);
 
   return (
-    <span className="safari-northmad-badge">
+    <span className="northmad-badge">
       <video
         ref={videoRef}
-        autoPlay
         loop
         muted
         playsInline
         preload="auto"
-        className="safari-northmad-video-source select-none pointer-events-none"
+        className="northmad-video-source select-none pointer-events-none"
         tabIndex={-1}
       >
         <source src={sceneVideoMp4} type="video/mp4" />
@@ -189,7 +172,7 @@ const SafariNorthmadVideo: React.FC = () => {
       </video>
       <canvas
         ref={canvasRef}
-        className="safari-northmad-video select-none pointer-events-none"
+        className="northmad-canvas select-none pointer-events-none"
         aria-hidden="true"
       />
     </span>
@@ -358,24 +341,14 @@ const Footer: React.FC = () => {
           }
         }
 
-        .northmad-video {
-          display: block;
-          width: 200px;
-          height: auto;
-          margin: -40px auto -14px;
-          background: transparent !important;
-          border: 0;
-          outline: 0;
-        }
-
-        .safari-northmad-badge {
+        .northmad-badge {
           position: relative;
           display: block;
           width: 200px;
           margin: -40px auto -14px;
         }
 
-        .safari-northmad-video {
+        .northmad-canvas {
           display: block;
           width: 100%;
           height: auto;
@@ -384,7 +357,7 @@ const Footer: React.FC = () => {
           outline: 0;
         }
 
-        .safari-northmad-video-source {
+        .northmad-video-source {
           position: absolute;
           top: 0;
           left: 0;
@@ -611,7 +584,7 @@ const Footer: React.FC = () => {
             <span className="northmad-line" data-text={t('footer.websiteBy')}>
               {t('footer.websiteBy')}
             </span>
-            {IS_SAFARI ? <SafariNorthmadVideo /> : <NorthmadVideo />}
+            <KeyedNorthmadVideo />
           </a>
         </div>
       </div>
