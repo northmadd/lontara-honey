@@ -62,6 +62,13 @@ const KeyedNorthmadVideo: React.FC = () => {
           const luma = 0.2126 * r + 0.7152 * g + 0.0722 * b;
           // Buang latar gelap dengan ramp bersih (45..100): hanya emas yang tampil.
           data[i + 3] = luma <= 45 ? 0 : luma >= 100 ? 255 : Math.round(((luma - 45) / 55) * 255);
+          // Naikkan sedikit kontras & saturasi warna emas agar lebih menyala.
+          // Nilai emas digeser menjauh dari luma (chroma boost) lalu diberi sedikit
+          // dorongan hangat; Uint8ClampedArray otomatis meng-clamp 0..255.
+          const sat = 1.45;
+          data[i] = luma + (r - luma) * sat + 9;
+          data[i + 1] = luma + (g - luma) * sat + 6;
+          data[i + 2] = luma + (b - luma) * sat;
         }
         workCtx.putImageData(img, 0, 0);
         ctx.imageSmoothingEnabled = true;
