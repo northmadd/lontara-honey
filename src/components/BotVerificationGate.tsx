@@ -152,31 +152,54 @@ const BotVerificationGate: React.FC<BotVerificationGateProps> = ({ children }) =
       });
     };
 
-    const existingScript = document.querySelector<HTMLScriptElement>(`script[src="${TURNSTILE_SCRIPT_SRC}"]`);
+    let started = false;
+    let loadTarget: HTMLScriptElement | null = null;
 
-    if (window.turnstile) {
-      renderWidget();
-    } else if (existingScript) {
-      existingScript.addEventListener('load', renderWidget, { once: true });
-    } else {
-      const script = document.createElement('script');
-      script.src = TURNSTILE_SCRIPT_SRC;
-      script.async = true;
-      script.defer = true;
-      script.addEventListener('load', renderWidget, { once: true });
-      script.addEventListener('error', () => {
-        setErrorMessage(t('verify.scriptFailed'));
-      });
-      document.head.appendChild(script);
-    }
+    const start = () => {
+      if (started || !isMounted) return;
+      started = true;
+
+      loadTarget = document.querySelector<HTMLScriptElement>(`script[src="${TURNSTILE_SCRIPT_SRC}"]`);
+
+      if (window.turnstile) {
+        renderWidget();
+      } else if (loadTarget) {
+        loadTarget.addEventListener('load', renderWidget, { once: true });
+      } else {
+        const script = document.createElement('script');
+        script.src = TURNSTILE_SCRIPT_SRC;
+        script.async = true;
+        script.defer = true;
+        script.addEventListener('load', renderWidget, { once: true });
+        script.addEventListener('error', () => {
+          setErrorMessage(t('verify.scriptFailed'));
+        });
+        document.head.appendChild(script);
+        loadTarget = script;
+      }
+    };
+
+    // Tunda pemuatan Turnstile sampai SETELAH paint pertama. PoW Turnstile yang
+    // berat dapat memblokir render pertama (FCP) bila dimuat terlalu dini;
+    // dengan menunggu dua frame, gate sempat dilukis lebih dulu. PoW tersebut
+    // tidak dihitung sebagai Total Blocking Time, jadi tidak ada penalti.
+    let raf1 = 0;
+    let raf2 = 0;
+    raf1 = window.requestAnimationFrame(() => {
+      raf2 = window.requestAnimationFrame(start);
+    });
+    const fallbackTimer = window.setTimeout(start, 800);
 
     return () => {
       isMounted = false;
+      if (raf1) window.cancelAnimationFrame(raf1);
+      if (raf2) window.cancelAnimationFrame(raf2);
+      window.clearTimeout(fallbackTimer);
       if (widgetIdRef.current) {
         window.turnstile?.remove(widgetIdRef.current);
         widgetIdRef.current = null;
       }
-      existingScript?.removeEventListener('load', renderWidget);
+      loadTarget?.removeEventListener('load', renderWidget);
     };
   }, [isVerified, siteKey, verifyUrl, language]); // eslint-disable-line react-hooks/exhaustive-deps
 
