@@ -1,4 +1,4 @@
-import{c as L,u as S,j as e,l as W,r as E}from"./index-q_dLPer8.js";import{M as P}from"./map-pin-DCeFycVE.js";import{P as $}from"./phone-D1Wvo2oM.js";import{M as B}from"./mail-BXLy0sP6.js";/**
+import{c as L,u as S,j as e,l as W,r as E}from"./index-Dp1BZOfM.js";import{M as P}from"./map-pin-3r5cWyOa.js";import{P as $}from"./phone-D0Xk2fZQ.js";import{M as B}from"./mail-DWQmn5Ca.js";/**
  * @license lucide-react v0.462.0 - ISC
  *
  * This source code is licensed under the ISC license.
@@ -32,7 +32,8 @@ import{c as L,u as S,j as e,l as W,r as E}from"./index-q_dLPer8.js";import{M as 
           font-weight: 800;
           letter-spacing: 0.28em;
           text-transform: uppercase;
-          color: #c87f2a;
+          color: #e0aa52;
+          text-shadow: 0 0 10px rgba(212, 160, 86, 0.38);
           isolation: isolate;
         }
 
@@ -43,19 +44,19 @@ import{c as L,u as S,j as e,l as W,r as E}from"./index-q_dLPer8.js";import{M as 
           letter-spacing: 0.24em;
           background: linear-gradient(
             105deg,
-            #8b5a1b 0%,
-            #d4a056 28%,
-            #ffe0a3 46%,
-            #d4a056 56%,
+            #7a4a16 0%,
+            #e0aa52 28%,
+            #fff3cf 46%,
+            #e0aa52 56%,
             #a86b24 78%,
-            #d4a056 100%
+            #e0aa52 100%
           );
           background-size: 320% 100%;
           background-position: 210% center;
           -webkit-background-clip: text;
           background-clip: text;
           -webkit-text-fill-color: transparent;
-          text-shadow: 0 0 12px rgba(212, 160, 86, 0.3), 0 0 26px rgba(139, 90, 27, 0.24);
+          text-shadow: 0 0 14px rgba(212, 160, 86, 0.5), 0 0 30px rgba(139, 90, 27, 0.36);
           will-change: background-position, filter;
           animation: northmad-shimmer 2.4s ease-in-out infinite, northmad-glow 3s ease-in-out infinite alternate !important;
         }
@@ -69,9 +70,9 @@ import{c as L,u as S,j as e,l as W,r as E}from"./index-q_dLPer8.js";import{M as 
           position: absolute;
           inset: 0;
           display: block;
-          color: rgba(212, 160, 86, 0.24);
-          -webkit-text-fill-color: rgba(212, 160, 86, 0.22);
-          opacity: 0.38;
+          color: rgba(255, 231, 176, 0.32);
+          -webkit-text-fill-color: rgba(255, 231, 176, 0.3);
+          opacity: 0.5;
           filter: blur(0.45px);
           animation: northmad-flash 2.4s ease-in-out infinite !important;
           pointer-events: none;
@@ -89,21 +90,21 @@ import{c as L,u as S,j as e,l as W,r as E}from"./index-q_dLPer8.js";import{M as 
 
         @keyframes northmad-glow {
           0% {
-            filter: drop-shadow(0 0 2px rgba(212, 160, 86, 0.18));
+            filter: drop-shadow(0 0 3px rgba(212, 160, 86, 0.3));
           }
 
           100% {
-            filter: drop-shadow(0 0 12px rgba(212, 160, 86, 0.42));
+            filter: drop-shadow(0 0 15px rgba(212, 160, 86, 0.62));
           }
         }
 
         @keyframes northmad-flash {
           0%, 100% {
-            opacity: 0.18;
+            opacity: 0.3;
           }
 
           50% {
-            opacity: 0.48;
+            opacity: 0.62;
           }
         }
 
