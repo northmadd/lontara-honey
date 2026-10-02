@@ -1,7 +1,7 @@
 import { defineConfig, type Plugin } from "vite";
 import react from "@vitejs/plugin-react";
 import path from "node:path";
-import { copyFileSync, existsSync, readFileSync, writeFileSync, rmSync } from "node:fs";
+import { copyFileSync, existsSync, readFileSync, writeFileSync } from "node:fs";
 import { fileURLToPath } from "node:url";
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
@@ -11,6 +11,11 @@ const __dirname = path.dirname(fileURLToPath(import.meta.url));
 // permintaan render-blocking (~300ms di jaringan throttled) dan request RTT
 // tambahan tanpa mengubah tampilan. Preload logo gate juga dibuat sadar-base
 // agar tetap benar saat di-deploy ke subpath GitHub Pages.
+//
+// PENTING: file CSS asli TIDAK dihapus. Vite's runtime preload helper tetap
+// mereferensikan file itu saat chunk malas (Index/LegalPage/NotFound) dimuat
+// via import(); jika filenya hilang, lazy-load gagal dengan
+// "Unable to preload CSS". Inline <style> hanya untuk paint awal gate.
 const inlineCssPlugin = (): Plugin => ({
   name: "inline-critical-css",
   apply: "build",
@@ -19,7 +24,7 @@ const inlineCssPlugin = (): Plugin => ({
     if (!existsSync(index)) return;
     const base = (process.env.BASE_PATH || "/").replace(/\/$/, ""); // "" atau "/lontara-honey"
     let html = readFileSync(index, "utf8");
-    const inlined: string[] = [];
+    let count = 0;
 
     html = html.replace(
       /<link rel="stylesheet"[^>]*?href="([^"]+\.css)"[^>]*?>/g,
@@ -27,17 +32,15 @@ const inlineCssPlugin = (): Plugin => ({
         const rel = (href.startsWith(base) && base ? href.slice(base.length) : href).replace(/^\//, "");
         const cssPath = path.join(__dirname, "dist", rel);
         if (!existsSync(cssPath)) return match;
-        const css = readFileSync(cssPath, "utf8");
-        inlined.push(cssPath);
-        return `<style>${css}</style>`;
+        count += 1;
+        return `<style>${readFileSync(cssPath, "utf8")}</style>`;
       },
     );
 
     html = html.replace(/href="\/logo-gate\.webp"/g, `href="${base}/logo-gate.webp"`);
 
     writeFileSync(index, html);
-    for (const p of inlined) rmSync(p, { force: true });
-    if (inlined.length) console.log(`[inline-critical-css] ${inlined.length} file CSS ditanam ke index.html`);
+    if (count) console.log(`[inline-critical-css] ${count} file CSS ditanam ke index.html (file asli dipertahankan)`);
   },
 });
 
