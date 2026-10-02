@@ -1,4 +1,6 @@
 import React, { lazy, Suspense, useState, useRef, useEffect, useLayoutEffect, useMemo } from 'react';
+import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
+import { Toaster } from '@/components/ui/toaster';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { useTheme } from 'next-themes';
 import IntroScreen from '@/components/IntroScreen';
@@ -240,6 +242,10 @@ const products: Product[] = [
 ].sort((a, b) => a.price - b.price);
 
 const storyImages = [story1, story2, story3, story4];
+
+// QueryClient hanya dipakai di dalam halaman utama (useUsdRate), sehingga
+// provider-nya ikut chunk malas dan tidak membebani layar verifikasi awal.
+const queryClient = new QueryClient();
 
 // Intro cukup sekali per sesi SPA (level modul, bukan hook): balik dari quick
 // link legal di footer tidak memutar ulang, tapi refresh/reload penuh tetap
@@ -496,7 +502,12 @@ const IndexContent: React.FC = () => {
 };
 
 const Index: React.FC = () => {
-  return <IndexContent />;
+  return (
+    <QueryClientProvider client={queryClient}>
+      <Toaster />
+      <IndexContent />
+    </QueryClientProvider>
+  );
 };
 
 export default Index;

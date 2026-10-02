@@ -547,6 +547,7 @@ body {
   overflow: hidden;
   width: 100%;
   max-width: 100%;
+  min-height: 72px;
   transition: height 150ms ease;
 }
 

@@ -1,12 +1,15 @@
-import React, { useEffect, useRef, useState } from 'react';
+import React, { startTransition, useEffect, useRef, useState } from 'react';
 import { Globe, UserRound, X } from 'lucide-react';
-import logo from '@/assets/logo-lontara.webp';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { useAdmin } from '@/contexts/AdminContext';
 import { Button } from '@/components/ui/button';
 import { primeBacksound } from '@/lib/backsound';
 
 const TURNSTILE_SCRIPT_SRC = 'https://challenges.cloudflare.com/turnstile/v0/api.js?render=explicit';
+
+// Logo di public/ dengan nama stabil supaya bisa di-preload dari index.html
+// (aset ber-hash di src/assets tidak bisa direferensikan di HTML).
+const GATE_LOGO = `${import.meta.env.BASE_URL}logo-gate.webp`;
 
 type TurnstileWidgetId = string;
 
@@ -70,7 +73,9 @@ const BotVerificationGate: React.FC<BotVerificationGateProps> = ({ children }) =
       setShowAdminLogin(false);
       markAsVerified();
       primeBacksound();
-      setIsVerified(true);
+      // Transisi menahan layar verifikasi tetap tampil sampai chunk halaman
+      // utama selesai dimuat, sehingga tidak ada kedipan layar kosong.
+      startTransition(() => setIsVerified(true));
     } else {
       setAdminError(t('admin.invalid'));
     }
@@ -244,8 +249,12 @@ const BotVerificationGate: React.FC<BotVerificationGateProps> = ({ children }) =
           </button>
 
           <img
-            src={logo}
+            src={GATE_LOGO}
             alt={t('verify.logoAlt')}
+            width={112}
+            height={112}
+            fetchPriority="high"
+            decoding="async"
             className="mx-auto mb-6 h-28 w-28 rounded-full object-contain p-1 shadow-lg shadow-amber-950/60"
           />
           <p className="text-sm font-semibold uppercase tracking-[0.3em] text-white">{t('verify.eyebrow')}</p>
@@ -271,7 +280,7 @@ const BotVerificationGate: React.FC<BotVerificationGateProps> = ({ children }) =
               onClick={() => {
                 markAsVerified();
                 primeBacksound();
-                setIsVerified(true);
+                startTransition(() => setIsVerified(true));
               }}
               className="mt-4 w-full rounded-full px-7 py-3 text-base font-bold shadow-lg shadow-amber-950/40 focus:outline-none focus:ring-2 focus:ring-amber-200 focus:ring-offset-2 focus:ring-offset-stone-950"
             >
